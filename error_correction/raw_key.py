@@ -16,16 +16,20 @@ class Raw_Key:
         
     def shuffle(self):
         dicts = self.get_dictionary()
-        dicts = dicts.items()
-        random.shuffle(dicts)
-        return dicts
+        keys = list(dicts.keys())
+        random.shuffle(keys)
+        shuffle_dict = dict()
+        for key in keys:
+            shuffle_dict[key] = self.as_list[key]
+        return shuffle_dict 
+
     def get_dictionary(self):
         dicts = {}
         for i in range(self.length):
-            for x in self.as_list:
-                dicts[i] = x
+            dicts[i] =self.as_list[i]
         return dicts
-        
+
+
 class Block:
     def __init__(self, block_data:dict):
         self.indexes = indexes
@@ -33,5 +37,4 @@ class Block:
 
 rk = Raw_Key(1,0,1,0,0,0,1,0,1)
 print(rk.as_list)
-print(rk.get_dictionary())
 print(rk.shuffle())
