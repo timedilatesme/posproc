@@ -4,7 +4,7 @@ from queuelib import PriorityQueue
 import numpy as np
 
 Q = qber_estimation()
-k1=0.73/Q
+k1= np.floor(0.73/Q)
 # consider the functions to be implmented by Bob believing that the raw key of Alice is correct
 
 # function for implementing divide and conquer algorithm over a block
@@ -71,7 +71,7 @@ def cascade_effect(raw_key,last_iteration,first_error_index):
     current_error_index = first_error_index
     
     #recursive loop to correct all the possible error bits in all previous iterations due to the concerned error bit
-    while(length(set_of_error_blocks)!=0):
+    while(not(set_of_error_blocks.empty())):
         for iteration_number in range(0,last_iteration+1):
             if(iteration_number!=current_iteration):
                 block = get_corresponding_block(iteration_number,current_error_index)
@@ -100,7 +100,9 @@ def calculate_parities(iteration_block):
 def get_iteration_blocks(raw_key, iteration_number):
     kn = 2**iteration_number*k1
     dict = raw_key.get_dictionary
-    pass
+    data = list(dict.keys)
+    oned_raw_key = np.array(data)
+    return (np.reshape(oned_raw_key,raw_key.length//kn,kn))
 
 def get_corresponding_block(iteration_number,current_error_index):
     pass
