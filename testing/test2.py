@@ -1,12 +1,9 @@
 
 import random 
+l = [1, 1, 1, 0, 1, 0, 1, 1, 0, 1]
+#random.choices([0, 1], k=10)
+print("Unshuffled: ",l)
 
-def myfunction():
-  return 0.1
+random.shuffle(l)
 
-mylist = ["apple", "banana", "cherry"]
-random.shuffle(mylist)
-
-print(mylist)
-
-from 
+print(l)
