@@ -83,9 +83,6 @@ def cascade_effect(raw_key,last_iteration,first_error_index):
             else:
                 raw_key[error_index]=0
 
-                
-class class_of_block:
-
 def ask_block_parity(block):
     ...
 
@@ -93,7 +90,7 @@ def calculate_parity(block):
     return (sum(block)%2)
 
 def get_iteration_blocks(raw_key, iteration_number):
-    ...
+    pass
 
 def get
 

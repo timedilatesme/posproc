@@ -7,8 +7,6 @@ from constants import*
 #TODO: use zero knowledge proof for auth. 
 # recursive zero knowledge proof
 
-def parity(*args):
-    return sum(args)%2
 
 class Server(socket.socket):
     def __init__(self, server_type = LOCAL_SERVER, port = LOCAL_PORT):
@@ -60,7 +58,8 @@ class Client(socket.socket):
         self.server_address = server_address
         self.connect(self.server_address)
     
-    def ask_for_parity(bits_indexes):
+    def ask_for_parity(block):
+        pass
         
 
     def start_receiving():
