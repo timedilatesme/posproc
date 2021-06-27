@@ -78,7 +78,7 @@ def cascade_effect(raw_key,last_iteration,first_error_index):
         for iteration_number in range(0,last_iteration+1):
             if(iteration_number!=current_iteration):
                 block = get_corresponding_block(iteration_number,current_error_index)
-                set_of_error_blocks.append(block)
+                set_of_error_blocks.put(len(block-1),block)
             error_block_with_iter = set_of_error_blocks.pop()
             iteration = error_block_with_iter.pop(0)
             error_block = error_block_with_iter
