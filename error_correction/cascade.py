@@ -1,8 +1,10 @@
 from qber_estm.qber import qber_estimation
-import os
+import raw_key
 from queuelib import PriorityQueue
 import numpy as np
 
+all_raw_keys=[]
+all_raw_keys.append(raw_key.get_dictionary)
 Q = qber_estimation()
 k1= np.floor(0.73/Q)
 # consider the functions to be implmented by Bob believing that the raw key of Alice is correct
@@ -71,19 +73,25 @@ def cascade_effect(raw_key,last_iteration,first_error_index):
     current_error_index = first_error_index
     
     #recursive loop to correct all the possible error bits in all previous iterations due to the concerned error bit
-    while(not(set_of_error_blocks.empty())):
+
+    while(True):
         for iteration_number in range(0,last_iteration+1):
             if(iteration_number!=current_iteration):
                 block = get_corresponding_block(iteration_number,current_error_index)
                 set_of_error_blocks.append(block)
-            error_block = set_of_error_blocks.pop()
-        if(get_parity(error_block) != get_correct_parity(error_block)):
-            current_iteration = error_block.iteration
+            error_block_with_iter = set_of_error_blocks.pop()
+            iteration = error_block_with_iter.pop(0)
+            error_block = error_block_with_iter
+            
+        if(calculate_parity(error_block) != ask_block_parity(error_block)):
+            current_iteration = iteration
             current_error_index = binary(error_block)
             if (raw_key[current_error_index]==0):
                 raw_key[current_error_index]=1
             else:
                 raw_key[current_error_index]=0
+        if(set_of_error_blocks.size==0):
+            break
 
 def ask_block_parity(block):
     pass
@@ -105,10 +113,10 @@ def get_iteration_blocks(raw_key, iteration_number):
     return (np.reshape(oned_raw_key,raw_key.length//kn,kn))
 
 def get_corresponding_block(iteration_number,current_error_index):
-    pass
+    raw_key_of_iter_n = all_raw_keys[iteration_number-1]
+    twod_nth_raw_key = get_iteration_blocks(raw_key_of_iter_n,iteration_number)
+    for block in twod_nth_raw_key:
+        for i in block:
+            i.append(iteration_number)
+            return i
 
-def get_parity(error_block):
-    pass
-
-def get_correct_parity(error_block):
-    pass
