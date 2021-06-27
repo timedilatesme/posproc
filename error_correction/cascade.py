@@ -1,9 +1,11 @@
+from qber_estm.qber import qber_estimation
+import os
 from queuelib import PriorityQueue
 import numpy as np
-# consider the functions to be implmented by Bob believing that the raw key of Alice is correct
 
-class block:
-    def __
+Q = qber_estimation()
+k1=0.73/Q
+# consider the functions to be implmented by Bob believing that the raw key of Alice is correct
 
 # function for implementing divide and conquer algorithm over a block
 def binary(bob_string_block):
@@ -43,11 +45,11 @@ def cascade(raw_key, n):
         current_block_parities = calculate_parities(iteration_blocks)
 
         # asking Alice the parities of those blocks through a public channel
-        current_block_parities = ask_parities(iteration_blocks)
+        correct_block_parities = ask_parities(iteration_blocks)
 
         #loop for finding/correcting the error using binary() 
         for block_number in range(current_block_parities.length):
-            if( current_block_parities[block_number] != current_block_parities[block_number]):
+            if( correct_block_parities[block_number] != current_block_parities[block_number]):
                 error_index = binary(iteration_blocks[block_number])
                 if (raw_key[error_index]==0):
                     raw_key[error_index]=1
@@ -78,19 +80,33 @@ def cascade_effect(raw_key,last_iteration,first_error_index):
         if(get_parity(error_block) != get_correct_parity(error_block)):
             current_iteration = error_block.iteration
             current_error_index = binary(error_block)
-            if (raw_key[error_index]==0):
-                raw_key[error_index]=1
+            if (raw_key[current_error_index]==0):
+                raw_key[current_error_index]=1
             else:
-                raw_key[error_index]=0
+                raw_key[current_error_index]=0
 
 def ask_block_parity(block):
-    ...
+    pass
+
+def ask_parities(iteration_block):
+    pass
 
 def calculate_parity(block):
     return (sum(block)%2)
 
+def calculate_parities(iteration_block):
+    return (np.sum(iteration_block,axis=1))
+
 def get_iteration_blocks(raw_key, iteration_number):
+    kn = 2**iteration_number*k1
+    dict = raw_key.get_dictionary
     pass
 
-def get
+def get_corresponding_block(iteration_number,current_error_index):
+    pass
 
+def get_parity(error_block):
+    pass
+
+def get_correct_parity(error_block):
+    pass
