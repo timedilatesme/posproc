@@ -28,7 +28,8 @@ class Server(socket.socket):
 
         self.start_listening()     
 
-        # Now Start accepting connections:     
+        # Now Start accepting connections:
+        self.start_receiving()     
         
     def get_address(self):
         return self.address
@@ -63,6 +64,7 @@ class Server(socket.socket):
         connected = True
         while connected:
             msg_received = self.receive_a_message_from_client(client)
+            print(f"[Client]: {msg_received}")
             if msg_received == "Hi":
                 self.send_a_message_to_the_client(client, "Hello")
             if msg_received == "disconnect":
@@ -73,20 +75,27 @@ class Server(socket.socket):
     def start_receiving(self):
         while True:
             client,addr = self.accept()
-            client.address = addr
+            #client.address = addr
             self.clients.append(client)
             print(f"Connected with {addr}")
 
-    
+            thread = threading.Thread(target=self.handle_client, args=(client,))
+            thread.start()
 
 class Client(socket.socket):
     def __init__(self, server_address = (LOCAL_IP,LOCAL_PORT)):
         super().__init__()
         self.server_address = server_address
-        self.address = None
+        #self.__setattr__("address",None)
         self.connect(self.server_address)
+
+        rthread = threading.Thread(target=self.receive_from_server)
+        wthread = threading.Thread(target=self.write_to_server)
+        rthread.start()
+        wthread.start()
+
     
-    def ask_for_parity_to_server(self,block):
+    def ask_for_parity_from_server(self,block):
         pass
     
     def receive_a_message_from_server(self) -> str:
@@ -102,5 +111,17 @@ class Client(socket.socket):
         self.send(send_length)
         self.send(message)
 
-    def start_receiving(self):
-        pass
+    def receive_from_server(self):
+        connected = True
+        while connected:
+            msg_received = self.receive_a_message_from_server()
+            print(f"[SERVER]: {msg_received}")
+                
+
+    def write_to_server(self):
+        connected = True
+        while connected:
+            msg_to_send = self.send_a_message_to_server(input("Enter your message: "))
+
+
+s = Server()
