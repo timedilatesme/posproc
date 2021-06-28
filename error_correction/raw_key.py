@@ -15,6 +15,7 @@ class Raw_Key:
         pass        
         
     def shuffle(self):
+        #TODO: try thsi algo!
         dicts = self.get_dictionary()
         keys = list(dicts.keys())
         random.shuffle(keys)
@@ -29,8 +30,6 @@ class Raw_Key:
             dicts[i] =self.as_list[i]
         return dicts
 
-
-raw_key = Raw_Key()
 class Block:
     def __init__(self, block_data:dict):
         self.indexes = indexes
