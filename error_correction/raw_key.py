@@ -15,7 +15,7 @@ class Raw_Key:
         pass        
         
     def shuffle(self):
-        #TODO: try thsi algo!
+        #TODO: try thsi algo!: did try in test2.py
         dicts = self.get_dictionary()
         keys = list(dicts.keys())
         random.shuffle(keys)
