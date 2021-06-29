@@ -30,10 +30,12 @@ class Raw_Key:
             dicts[i] =self.as_list[i]
         return dicts
 
+'''
 class Block:
     def __init__(self, block_data:dict):
         self.indexes = indexes
         self.as_list = [raw_key[i] for i in self.indexes]
+'''
 
 rk = Raw_Key(1,0,1,0,0,0,1,0,1)
 print(rk.as_list)
