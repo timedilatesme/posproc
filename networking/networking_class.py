@@ -1,3 +1,4 @@
+import random
 import threading
 import socket
 from pyngrok import ngrok
@@ -13,13 +14,17 @@ def parity_of_indexes(raw_key,indexes):
         s += raw_key[i]
     return s%2
 
+def random_key(length):
+    return random.choices([0,1],k=length)
+
 class Server(socket.socket):
     def __init__(self, server_type = LOCAL_SERVER, port = LOCAL_PORT):
         super().__init__()
 
         self.clients = []
         self.nicknames = []
-        self.alices_key = [0,1,1,0,0,1,0,1,1] # currently assuming alices key to be alist
+        key_length = int(input("Enter Key-Length: "))
+        self.alices_key = random_key(key_length) # currently assuming alices key to be alist
         
         self.server_type = server_type
         self.port = port
