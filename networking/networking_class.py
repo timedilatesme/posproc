@@ -19,7 +19,7 @@ class Server(socket.socket):
 
         self.clients = []
         self.nicknames = []
-        self.alices_key = [0,1,1,1] # currently assuming alices key to be alist
+        self.alices_key = [0,1,1,0,0,1,0,1,1] # currently assuming alices key to be alist
         
         self.server_type = server_type
         self.port = port
@@ -68,7 +68,7 @@ class Server(socket.socket):
     def send_a_message_to_the_client(self,client,message):
         msg_length = len(message)
         send_length = str(msg_length)
-        send_length += " "*(HEADER - msg_length)
+        send_length += " "*(HEADER - len(send_length))
         client.send(send_length.encode(FORMAT))
         client.send(message.encode(FORMAT))
 
@@ -81,16 +81,7 @@ class Server(socket.socket):
                 if msg_received.startswith("ask_parity"):
                     msg_to_send = self.ask_parity_return_message(msg_received)
                     self.send_a_message_to_the_client(client, msg_to_send)
-                    
-                if msg_received == "disconnect":
-                    try :
-                        self.send_a_message_to_the_client(client, "Goodbye!")
-                        connected = False                    
-                    except:
-                        client.close()
-                    finally:
-                        print(f"[SERVER]: Client @ {address} Disconnected!")
-
+                
     def ask_parity_return_message(self,msg_received:str):
         splitted_parity_msg = msg_received.split(":")
         msg_no = int(splitted_parity_msg[1])
@@ -136,31 +127,26 @@ class Client(socket.socket):
         self.connect(self.server_address)
         self.connected = True
 
-        '''
-        rthread = threading.Thread(target=self.receive_from_server)
-        wthread = threading.Thread(target=self.write_to_server)
-        rthread.start()
-        wthread.start()'''
+        #rthread = threading.Thread(target=self.receive_from_server)
+        #wthread = threading.Thread(target=self.write_to_server)
+        #rthread.start()
+        #wthread.start()
     
     def ask_for_parity_from_server(self, indexes: list):
         self.parity_msgs_sent += 1
         msg_no = self.parity_msgs_sent
 
         def asking(indexes):
-            print("msg_no defined")
             indexes = str(indexes)
             indexes = indexes[1:-1]
             self.send_a_message_to_server(f"ask_parity:{msg_no}:{indexes}")
-            print("msg_sent_to_server!")
 
         def receiving():
             while True:
                 msg_recvd = self.receive_a_message_from_server()
-                
+
                 if msg_recvd:
-                    print("msg_recvd_from_server")
                     if msg_recvd.startswith("ask_parity"):
-                        print("ap = ask")
 
                         splitted_msg_recvd = msg_recvd.split(":")
                        
@@ -175,21 +161,24 @@ class Client(socket.socket):
                         parity = int(splitted_msg_recvd[2])
 
                         if msg_no_returned == msg_no:
-                            print("msg_returned")
                             return parity
                         elif exists_in_parity_dict(msg_no):
                             parity = self.parity_dict.get(f"{msg_no}")
                             self.parity_dict.pop(f"{msg_no}")
-                            print("exists_ckeck")
                             return parity
                         else:
                             self.parity_dict.add(f"{msg_no_returned}", parity)
-                            print("Adding to parity_dict")
         
-        athread = threading.Thread(target=asking, args=(indexes,))
+        '''athread = threading.Thread(target=asking, args=(indexes,))
         rthread = threading.Thread(target=receiving)
         athread.start()
-        rthread.start()
+        rthread.start()'''
+
+        asking(indexes)
+        parity = receiving()
+
+        return parity
+
 
     def receive_a_message_from_server(self):
         msg_length = self.recv(HEADER).decode(FORMAT)
@@ -205,7 +194,7 @@ class Client(socket.socket):
     def send_a_message_to_server(self,message):
         msg_length = len(message)
         send_length = str(msg_length)
-        send_length += " "*(HEADER - msg_length)
+        send_length += " "*(HEADER - len(send_length))
         self.send(send_length.encode(FORMAT))
         self.send(message.encode(FORMAT))
 
