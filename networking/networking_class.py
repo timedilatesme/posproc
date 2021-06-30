@@ -19,7 +19,7 @@ class Server(socket.socket):
 
         self.clients = []
         self.nicknames = []
-        self.alices_key = [0,1,1,0] # currently assuming alices key to be alist
+        self.alices_key = [0,1,1,1] # currently assuming alices key to be alist
         
         self.server_type = server_type
         self.port = port
@@ -51,7 +51,7 @@ class Server(socket.socket):
     def start_listening(self):
         print(f"[STARTING] {self.server_type} server is starting...")
         self.bind(self.LOCAL_ADDRESS)
-        self.listen()
+        self.listen(1)
         print(f"[LISTENING] Server is listening @ {self.get_address()}")
     
     def receive_a_message_from_client(self,client):
@@ -76,26 +76,22 @@ class Server(socket.socket):
         connected = True
         while connected:
             msg_received = self.receive_a_message_from_client(client)
-            print(f"[Client @ {address}]: {msg_received}")
-            if msg_received.startswith("ask_parity"):
-                self.ask_parity_return_message(msg_received)
-                
-            if msg_received == "disconnect":
-                try :
-                    self.send_a_message_to_the_client(client, "Goodbye!")
-                    connected = False                    
-                except:
-                    client.close()
-                finally:
-                    print(f"[SERVER]: Client @ {address} Disconnected!")
+            if msg_received:
+                print(f"[Client @ {address}]: {msg_received}")
+                if msg_received.startswith("ask_parity"):
+                    msg_to_send = self.ask_parity_return_message(msg_received)
+                    self.send_a_message_to_the_client(client, msg_to_send)
+                    
+                if msg_received == "disconnect":
+                    try :
+                        self.send_a_message_to_the_client(client, "Goodbye!")
+                        connected = False                    
+                    except:
+                        client.close()
+                    finally:
+                        print(f"[SERVER]: Client @ {address} Disconnected!")
 
-            '''
-            if msg_received == "stop server":
-                self.stop_server()
-                print(f"[STOPPING] local server is closing")
-                connected = False'''
-
-    def ask_parity_return_message(self,msg_received,client):
+    def ask_parity_return_message(self,msg_received:str):
         splitted_parity_msg = msg_received.split(":")
         msg_no = int(splitted_parity_msg[1])
         indexes_o = splitted_parity_msg[2].split(",")
@@ -106,18 +102,19 @@ class Server(socket.socket):
         # Assuming Alice is the instance of this Server Class
         parity = parity_of_indexes(self.alices_key, indexes)
         msg_to_send = f"ask_parity:{msg_no}:{parity}"
-        self.send_a_message_to_the_client(client, msg_to_send)
+        return msg_to_send
 
     def start_receiving(self):
         while True:
             client,addr = self.accept()
             #client.address = addr
-            self.clients.append(client)
+            #self.clients.append(client)
             print(f"Connected with {addr}")
 
-            thread = threading.Thread(target=self.handle_client, args = (client,addr))
-            print(f"[ACTIVE CONNECTIONS]: {threading.active_count()} clients are connected!")
-            thread.start()
+            #thread = threading.Thread(target=self.handle_client, args = (client,addr))
+            #thread.start()
+            #print(f"[ACTIVE CONNECTIONS]: {threading.active_count()} clients are connected!")
+            self.handle_client(client,addr)
             
     
     def stop_server(self):
@@ -139,21 +136,25 @@ class Client(socket.socket):
         self.connect(self.server_address)
 
         rthread = threading.Thread(target=self.receive_from_server)
-        #wthread = threading.Thread(target=self.write_to_server)
+        wthread = threading.Thread(target=self.write_to_server)
         rthread.start()
-        #wthread.start()
+        wthread.start()
 
     
     def ask_for_parity_from_server(self,indexes:list):
         self.parity_msgs_sent += 1
         msg_no = self.parity_msgs_sent
+        print("msg_no defined")
         indexes = str(indexes)
         indexes = indexes[1:-1]
         self.send_a_message_to_server(f"ask_parity:{msg_no}:{indexes}")
+        print("msg_sent_to_server!")
         msg_recvd = self.receive_a_message_from_server()
+        print("msg_recvd_from_server")
         splitted_msg_recv = msg_recvd.split(":")
         ap = splitted_msg_recv[0]
         if ap == "ask_parity":
+            print("ap = ask")
             def exists_in_parity_dict(msg_no):
                 parity = self.parity_dict.get(f"{msg_no}")
                 if parity == None:
@@ -162,15 +163,19 @@ class Client(socket.socket):
                     return True
 
             msg_no_returned = int(splitted_msg_recv[1])
+
             parity = int(splitted_msg_recv[2])
             if msg_no_returned == msg_no:
+                print("msg_returned")
                 return  parity
             elif exists_in_parity_dict(msg_no):                
                 parity = self.parity_dict.get(f"{msg_no}")
                 self.parity_dict.pop(f"{msg_no}")
+                print("exists_ckeck")
                 return parity                
             else:
                 self.parity_dict.add(f"{msg_no_returned}",parity)
+                print("Adding to parity_dict")
             
     
     def receive_a_message_from_server(self):
@@ -202,9 +207,14 @@ class Client(socket.socket):
     def write_to_server(self):
         connected = True
         while connected:
-            msg_to_send = input("Enter your message: ")
+            msg_to_send = input("Enter your indexes: ")
+            indexes_o = msg_to_send
+            indexes_o = indexes_o.split(",")
+            indexes = []
+            for i in indexes_o:
+                indexes.append(int(i))
             if msg_to_send == "disconnect":
                 connected = False
             else:
-                self.send_a_message_to_server(msg_to_send)
+                self.ask_for_parity_from_server(indexes)
         self.close()
