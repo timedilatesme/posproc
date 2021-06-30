@@ -1,5 +1,4 @@
 import random
-from copy import deepcopy
 from typing import Pattern
 
 class Raw_Key:

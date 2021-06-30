@@ -13,8 +13,8 @@ k1= np.floor(0.73/Q)
 def binary(bob_string_block):
     block = bob_string_block
 
-    #case of a single bit block
-    if(block.length == 1):
+    #case of a single bit block\
+    if(block.length == 1):       
         return block.getindex()
 
     else:

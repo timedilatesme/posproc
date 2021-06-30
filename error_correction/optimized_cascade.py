@@ -2,7 +2,6 @@ from error_correction.cascade import ask_block_parity, calculate_parity ,binary
 import numpy as np
 
 def optimized_cascade():
-    
     pass
 def binconf(raw_key,no_of_biconf_iter,size_of_first_block):
     iter_number = 0
