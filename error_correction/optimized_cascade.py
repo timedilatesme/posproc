@@ -1,6 +1,9 @@
 from error_correction.cascade import ask_block_parity, calculate_parity ,binary
 import numpy as np
 
+def optimized_cascade():
+    
+    pass
 def binconf(raw_key,no_of_biconf_iter,size_of_first_block):
     iter_number = 0
     while(iter_number<no_of_biconf_iter):
@@ -19,7 +22,8 @@ def binconf(raw_key,no_of_biconf_iter,size_of_first_block):
                     raw_key[error_index]=1
             else:
                 raw_key[error_index]=0
-        return raw_key
+        iter_number+=1
+    return raw_key
 
 def split_in_two_blocks(raw_key,size_of_first_block):
     shuffle = raw_key.shuffle()
