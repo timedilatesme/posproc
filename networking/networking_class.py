@@ -111,10 +111,10 @@ class Server(socket.socket):
             #self.clients.append(client)
             print(f"Connected with {addr}")
 
-            #thread = threading.Thread(target=self.handle_client, args = (client,addr))
-            #thread.start()
-            #print(f"[ACTIVE CONNECTIONS]: {threading.active_count()} clients are connected!")
-            self.handle_client(client,addr)
+            thread = threading.Thread(target=self.handle_client, args = (client,addr))
+            thread.start()
+            print(f"[ACTIVE CONNECTIONS]: {threading.active_count() - 1} clients are connected!")
+            #self.handle_client(client,addr)
             
     
     def stop_server(self):
@@ -142,7 +142,7 @@ class Client(socket.socket):
         rthread.start()
         wthread.start()'''
     
-    def ask_for_parity_from_server_updated(self, indexes: list):
+    def ask_for_parity_from_server(self, indexes: list):
         self.parity_msgs_sent += 1
         msg_no = self.parity_msgs_sent
 
