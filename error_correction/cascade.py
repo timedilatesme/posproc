@@ -117,6 +117,9 @@ def get_corresponding_block(iteration_number,current_error_index):
     twod_nth_raw_key = get_iteration_blocks(raw_key_of_iter_n,iteration_number)
     for block in twod_nth_raw_key:
         for i in block:
-            i.append(iteration_number)
-            return i
+            if(current_error_index==i):
+                block.append(iteration_number)
+                return block
+                break
+                break
 

@@ -124,8 +124,11 @@ class Client(socket.socket):
         wthread.start()
 
     
-    def ask_for_parity_from_server(self,block):
-        pass
+    def ask_for_parity_from_server(self,indexes:list):
+        self.send_a_message_to_server(f"msg_no:ask_parity:{indexes}")
+        self.receive_a_message_from_server(f"")
+        return 
+        
     
     def receive_a_message_from_server(self):
         msg_length = self.recv(HEADER).decode(FORMAT)
