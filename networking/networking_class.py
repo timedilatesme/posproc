@@ -134,50 +134,63 @@ class Client(socket.socket):
         self.server_address = server_address
         #self.__setattr__("address",None)
         self.connect(self.server_address)
+        self.connected = True
 
+        '''
         rthread = threading.Thread(target=self.receive_from_server)
         wthread = threading.Thread(target=self.write_to_server)
         rthread.start()
-        wthread.start()
-
+        wthread.start()'''
     
-    def ask_for_parity_from_server(self,indexes:list):
+    def ask_for_parity_from_server_updated(self, indexes: list):
         self.parity_msgs_sent += 1
         msg_no = self.parity_msgs_sent
-        print("msg_no defined")
-        indexes = str(indexes)
-        indexes = indexes[1:-1]
-        self.send_a_message_to_server(f"ask_parity:{msg_no}:{indexes}")
-        print("msg_sent_to_server!")
-        msg_recvd = self.receive_a_message_from_server()
-        print("msg_recvd_from_server")
-        splitted_msg_recv = msg_recvd.split(":")
-        ap = splitted_msg_recv[0]
-        if ap == "ask_parity":
-            print("ap = ask")
-            def exists_in_parity_dict(msg_no):
-                parity = self.parity_dict.get(f"{msg_no}")
-                if parity == None:
-                    return False
-                else:
-                    return True
 
-            msg_no_returned = int(splitted_msg_recv[1])
+        def asking(indexes):
+            print("msg_no defined")
+            indexes = str(indexes)
+            indexes = indexes[1:-1]
+            self.send_a_message_to_server(f"ask_parity:{msg_no}:{indexes}")
+            print("msg_sent_to_server!")
 
-            parity = int(splitted_msg_recv[2])
-            if msg_no_returned == msg_no:
-                print("msg_returned")
-                return  parity
-            elif exists_in_parity_dict(msg_no):                
-                parity = self.parity_dict.get(f"{msg_no}")
-                self.parity_dict.pop(f"{msg_no}")
-                print("exists_ckeck")
-                return parity                
-            else:
-                self.parity_dict.add(f"{msg_no_returned}",parity)
-                print("Adding to parity_dict")
-            
-    
+        def receiving():
+            while True:
+                msg_recvd = self.receive_a_message_from_server()
+                
+                if msg_recvd:
+                    print("msg_recvd_from_server")
+                    if msg_recvd.startswith("ask_parity"):
+                        print("ap = ask")
+
+                        splitted_msg_recvd = msg_recvd.split(":")
+                       
+                        def exists_in_parity_dict(msg_no):
+                            parity = self.parity_dict.get(f"{msg_no}")
+                            if parity == None:
+                                return False
+                            else:
+                                return True
+
+                        msg_no_returned = int(splitted_msg_recvd[1])
+                        parity = int(splitted_msg_recvd[2])
+
+                        if msg_no_returned == msg_no:
+                            print("msg_returned")
+                            return parity
+                        elif exists_in_parity_dict(msg_no):
+                            parity = self.parity_dict.get(f"{msg_no}")
+                            self.parity_dict.pop(f"{msg_no}")
+                            print("exists_ckeck")
+                            return parity
+                        else:
+                            self.parity_dict.add(f"{msg_no_returned}", parity)
+                            print("Adding to parity_dict")
+        
+        athread = threading.Thread(target=asking, args=(indexes,))
+        rthread = threading.Thread(target=receiving)
+        athread.start()
+        rthread.start()
+
     def receive_a_message_from_server(self):
         msg_length = self.recv(HEADER).decode(FORMAT)
         if msg_length:
