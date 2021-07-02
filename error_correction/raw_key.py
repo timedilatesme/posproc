@@ -18,7 +18,7 @@ class Raw_Key:
         del self.as_list[index]
 
     def shuffle(self):
-        #TODO: try thsi algo!: did try in test2.py
+        #TODO: try thsi algo!: did try in test2.py #DONE!
         dicts = self.get_dictionary()
         keys = list(dicts.keys())
         random.shuffle(keys)

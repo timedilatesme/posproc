@@ -6,8 +6,8 @@ from ellipticcurve.privateKey import PrivateKey
 privateKey = PrivateKey()
 publicKey = privateKey.publicKey()
 
-print(f"Public Key: {publicKey.toString()}")
-print(f"Private Key: {privateKey.toString()}")
+print(f"Public Key: {publicKey}")
+print(f"Private Key: {privateKey}")
 
 message = "My test message"
 
@@ -16,3 +16,4 @@ signature = Ecdsa.sign(message, privateKey)
 
 # To verify if the signature is valid
 print(Ecdsa.verify(message, signature, publicKey))
+

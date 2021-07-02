@@ -3,7 +3,7 @@ import random
 from constants import PUBLIC_SERVER, LOCAL_SERVER
 from networking.networking_class import Client
 import time
-from concurrent.futures import ProcessPoolExecutor
+#from concurrent.futures import ProcessPoolExecutor
 
 
 
@@ -16,7 +16,7 @@ indexes_len = int(input("Enter Indexes-Length: "))
 st = time.perf_counter()
 
 for i in range(instances):
-    bob.append(Client(server_address=('3.22.53.161', 18692)))
+    bob.append(Client())
     indexes = random.sample(range(key_length),k = indexes_len)
     p = bob[i].ask_for_parity_from_server(indexes)
     print(f"Parity is: {p}")
