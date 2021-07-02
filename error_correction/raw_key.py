@@ -3,7 +3,7 @@ from typing import Pattern
 import numpy as np
 
 class Raw_Key:
-    def __init__(self,l):
+    def __init__(self,l:list):
         self.__setattr__("as_list",l)
         self.__setattr__("parity",sum(self.as_list)%2)
         self.__setattr__("length",len(self.as_list))
