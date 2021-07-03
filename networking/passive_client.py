@@ -4,6 +4,13 @@ import socket
 from pyngrok import ngrok
 from constants import*
 
+class UserData:
+    """
+    UserData stores the data about nickname and public key of every person,
+    who uses the classical channel.
+    """
+    def __init__(self) -> None:
+        pass
 class Server(socket.socket):
     def __init__(self, server_type = LOCAL_SERVER, port = LOCAL_PORT):
         super().__init__()
