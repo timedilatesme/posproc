@@ -100,7 +100,7 @@ class Client(socket.socket):
         return public_addr
 
 
-class PassiveClient(socket.socket):
+class PassiveClient(Client):
     """
     Creates the Server (Alice's) socket    
 
