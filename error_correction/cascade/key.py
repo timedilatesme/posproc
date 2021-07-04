@@ -4,47 +4,37 @@ import random
 class Key:
     """
     A key that the Cascade protocol reconciles.
-    This class is used from Bruno Rijsman's repo. 
-    (https://github.com/brunorijsman/cascade-python.git)
-    {MIT Licence}
-    
-    We have added some modifications to work better with our program.
     """
+    _random = random.Random()
 
     ERROR_METHOD_BERNOULLI = "bernoulli"
     ERROR_METHOD_EXACT = "exact"
     ERROR_METHODS = [ERROR_METHOD_BERNOULLI, ERROR_METHOD_EXACT]
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         """
-        Generates a Key Object with the given data
-
-        Kwargs:
-            key_as_list (list, optional): [Key with proper indexing as a list].
-            key_as_str  (str, optional): [Key as a string].
-            key_as_dict (dict, optional): [Key as a dict with dict.keys as indexes and values as bit values].
+        Create an empty key.
         """
+        self._size = 0
+        self._bits = {}  # Bits are stored as dictionary, indexed by index [0..size), value 0 or 1.
 
-        # Bits are stored as dictionary, indexed by index [0..size), value 0 or 1.
-        if "key_as_list" in kwargs:
-            key_as_list = kwargs["key_as_list"]
-            self._size = len(key_as_list)
-            self._bits = {}
-            for i in range(self._size):
-                self._bits[i] = key_as_list[i]
-        elif "key_as_str" in kwargs:
-            key_as_str = kwargs["key_as_str"]
-            self._size = len(key_as_str)
-            self._bits = {}
-            for i in range(self._size):
-                self._bits[i] = key_as_str[i]
-        elif "key_as_dict" in kwargs:
-            key_as_dict = kwargs["key_as_dict"]
-            self._size = len(key_as_dict)
-            self._bits = key_as_dict
-        else:
-            self._size = 0
-            self._bits = {}
+    @staticmethod
+    def create_random_key(size):
+        """
+        Create an random key.
+
+        Args:
+            size (int): The size of the key in bits. Must be >= 0.
+
+        Returns:
+            A random key of the specified size.
+        """
+        # pylint:disable=protected-access
+        key = Key()
+        key._size = size
+        for i in range(size):
+            key._bits[i] = Key._random.randint(0, 1)
+        return key
 
     def __repr__(self):
         """
@@ -67,6 +57,20 @@ class Key:
             string += str(self._bits[i])
         return string
 
+    @staticmethod
+    def set_random_seed(seed):
+        """
+        Set the seed for the isolated random number generated that is used only in the key
+        module and nowhere else. If two applications set the seed to the same value, the key
+        module produces the exact same sequence of random keys. This is used to make experiments
+        reproduceable.
+
+        Args:
+            seed (int): The seed value for the random number generator which is isolated to the
+                key module.
+        """
+        Key._random = random.Random(seed)
+
     def get_size(self):
         """
         Get the size of the key in bits.
@@ -87,22 +91,6 @@ class Key:
             The value (0 or 1) of the key bit at the given index.
         """
         return self._bits[index]
-
-    def get_block(self, indexes: list):
-        # TODO: Make this work by returning block!
-        """
-        Get the value of the key bit at given indexes.
-
-        Args:
-            indexes (list): The indexes of the bits.
-
-        Returns:
-            Key object with the indexes as chosen from indexes:list.
-        """
-        bits = {}
-        for index in indexes:
-            bits[index] = self._bits[index]
-        return Key(key_as_dict=bits)
 
     def set_bit(self, index, value):
         """
@@ -171,60 +159,3 @@ class Key:
             if self._bits[i] != other_key._bits[i]:
                 difference += 1
         return difference
-
-
-class Random_Key_Generator:
-    """
-    Generates a random Key Object for experimentation.
-           
-    Returns:
-        Key Object: A randomly initialized Key-Object with given size.
-    """
-    _random = random.Random()
-    
-    def __init__(self, size) -> None:
-        """
-        Generates a random Key Object for experimentation
-
-        Args:
-            size (int): Size of the Key to be generated.
-
-        Returns:
-            Key: A randomly initialized Key-Object with given size.
-        """
-        self.size = size
-    
-    def get_random_key(self):
-        return self.create_random_key(self.size)    
-    @staticmethod
-    def create_random_key(size):
-        """
-        Create an random key.
-
-        Args:
-            size (int): The size of the key in bits. Must be >= 0.
-
-        Returns:
-            A random key of the specified size.
-        """
-        # pylint:disable=protected-access
-        key = Key()
-        key._size = size
-        for i in range(size):
-            key._bits[i] = Random_Key_Generator._random.randint(0, 1)
-        return key
-    
-    @staticmethod
-    def set_random_seed(seed):
-        """
-        Set the seed for the isolated random number generated that is used only in the key
-        module and nowhere else. If two applications set the seed to the same value, the key
-        module produces the exact same sequence of random keys. This is used to make experiments
-        reproduceable.
-
-        Args:
-            seed (int): The seed value for the random number generator which is isolated to the
-                key module.
-        """
-        Random_Key_Generator._random = random.Random(seed)
-
