@@ -48,7 +48,7 @@ class Authentication:
         self._private_auth_key = PrivateKey(curve=self.curve, secret = self.secret)
         self.public_auth_key = self._private_auth_key.publicKey()
 
-    def get_key_pair(self):
+    def _get_key_pair(self):
         """
         Returns:
             [tuple(PublicKey,PrivateKey)]: Gives the pub_key,priv_key pair.
@@ -86,11 +86,3 @@ class Authentication:
         """
         verify = Ecdsa.verify(message, signature, publicAuthKey, hashfunc)
         return verify
-    
-'''
-msg = "I am Paras!"
-ad = Authentication()
-
-signature = ad.sign(msg)
-vf = ad.verify("I am Paras!",signature,ad.public_key)
-print(vf)'''

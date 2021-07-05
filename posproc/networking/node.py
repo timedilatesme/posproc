@@ -1,11 +1,21 @@
+from posproc.authentication import Authentication
 from pyngrok import ngrok
-import constants
+from posproc import constants
 import socket
 
 class Node(socket.socket):
-    def __init__(self):
+    def __init__(self, username):
         super().__init__()
         
+        # define randomly generated public and private key
+        self._add_authentication_token(username)
+        
+    
+    def _add_authentication_token(self, username):
+        self.username = username
+        self._auth = Authentication()
+        self.auth_id,self._auth_key = self._auth._get_key_pair()
+                       
 
     def send_a_message_to_server(self, message: str) -> None:
         """
