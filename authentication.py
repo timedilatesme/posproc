@@ -45,15 +45,15 @@ class Authentication:
         
         #TODO: use seed to reproduce results.
         # This is the accompanying PubKey, PrivKey pair
-        self._private_key = PrivateKey(curve=self.curve, secret = self.secret)
-        self.public_key = self._private_key.publicKey()
+        self._private_auth_key = PrivateKey(curve=self.curve, secret = self.secret)
+        self.public_auth_key = self._private_auth_key.publicKey()
 
     def get_key_pair(self):
         """
         Returns:
             [tuple(PublicKey,PrivateKey)]: Gives the pub_key,priv_key pair.
         """
-        return self.public_key, self._private_key
+        return self.public_auth_key, self._private_auth_key
     
     def sign(self, message, hashfunc = sha256):
         """
@@ -66,11 +66,11 @@ class Authentication:
         Returns:
             signature (Signature): returns the signature object as defined in ECDSA.
         """
-        signature = Ecdsa.sign(message,self._private_key,hashfunc = hashfunc)
+        signature = Ecdsa.sign(message,self._private_auth_key,hashfunc = hashfunc)
         return signature
 
     @staticmethod
-    def verify(message, signature, publicKey, hashfunc=sha256) -> bool:
+    def verify(message, signature, publicAuthKey, hashfunc=sha256) -> bool:
         """
         Verifies whether the given signature is valid or not.
 
@@ -84,7 +84,7 @@ class Authentication:
             bool: [True if the signature is valid => Auth. Successful
                     False if the signature is invalid => Auth. Unsuccessful.]
         """
-        verify = Ecdsa.verify(message, signature, publicKey, hashfunc)
+        verify = Ecdsa.verify(message, signature, publicAuthKey, hashfunc)
         return verify
     
 '''
