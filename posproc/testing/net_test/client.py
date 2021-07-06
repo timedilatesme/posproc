@@ -1,6 +1,6 @@
 # python -m posproc.testing.net_test.client
 from posproc.error_correction.cascade.block import Block
-from posproc.key import Key
+from posproc.key import Key, Random_Key_Generator
 from posproc.error_correction.cascade.shuffle import Shuffle
 from posproc.constants import PUBLIC_SERVER, LOCAL_SERVER
 from posproc.networking.client import Client
@@ -37,18 +37,18 @@ def test1():
     end = time.perf_counter()
     print(f"Finished in {end-st} second(s).")
 
-def test2():
+def test2_ask_parities():
     shuffle = Shuffle(10,0)
-    bk = Key(key_as_str = '1100110101')
+    bk = Random_Key_Generator(100).get_random_key()
     
     st = time.perf_counter()
     
     c = Client('Bob',bk)
-    blocks = [Block(bk,shuffle,0,2,None),Block(bk,shuffle,8,10,None)]
+    blocks = [Block(bk,shuffle,0,50,None),Block(bk,shuffle,50,101,None)]
     ps = c.ask_parities(blocks)
     print(ps)
     
     end = time.perf_counter()
     print(f"Finished in {end-st} second(s).")
 
-test2()
+test2_ask_parities()

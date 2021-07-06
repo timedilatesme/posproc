@@ -18,7 +18,6 @@ class Node(socket.socket):
                        
 
     def send_a_message_to_the_server(self, message:bytes) -> None:
-        #TODO: Make bytes to be the default.
         """
         Bob sends a message to the server i.e. Alice 
 
