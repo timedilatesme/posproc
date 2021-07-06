@@ -29,22 +29,27 @@ class Client(Node):
             parities (list(int)): Contains parities in the same order as the blocks in blocks.
         """
         # Only send the indexes for parity.
-        blocks_indexes = [block.get_key_indexes() for block in blocks]
+        block_indexes_list = [block.get_key_indexes() for block in blocks]
         # TODO: add tracking of parity messages.
-        msg_to_send = b'ask_parities' + b':' + pickle.dumps(blocks_indexes)
+        block_indexes_list_bytes = pickle.dumps(block_indexes_list)
+        msg_to_send = 'ask_parities:'.encode(constants.FORMAT) + block_indexes_list_bytes
         
         # asking:
-        self.send_a_message_to_the_server(msg_to_send)
+        self.send_bytes_to_the_server(msg_to_send)
+        print(f"Pickled Message: {msg_to_send}")
         
         # receiving:
         while True:
-            msg_recvd = self.receive_a_message_from_server()
-            
+            msg_recvd = self.receive_bytes_from_the_server()            
             if msg_recvd:
-                if msg_recvd.startswith("ask_parities".encode(constants.FORMAT)):
-                    splitted_msg_recvd = msg_recvd.split(":".encode(constants.FORMAT))
-                    parities = pickle.loads(splitted_msg_recvd[-1])
-                    return parities                          
+                if msg_recvd.startswith('ask_parities'.encode(constants.FORMAT)):
+                    # This initial number represents the 'ask_parities:' part to be removed
+                    parities_bytes = msg_recvd.removeprefix(
+                        'ask_parities:'.encode(constants.FORMAT))
+                    parities = pickle.loads(parities_bytes) #TODO: change this if adding functionality of msg_no.
+                    return parities
+            else:
+                continue                          
 
 
     def ask_for_parity_from_server(self, indexes: list):

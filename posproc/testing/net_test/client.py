@@ -6,7 +6,7 @@ from posproc.constants import PUBLIC_SERVER, LOCAL_SERVER
 from posproc.networking.client import Client
 import time
 import random
-
+from posproc.testing.net_test.constant_data import*
 
 def test1():
     # This tests show that multiple clients at bob end only decrease the speed
@@ -38,13 +38,27 @@ def test1():
     print(f"Finished in {end-st} second(s).")
 
 def test2_ask_parities():
-    shuffle = Shuffle(10,0)
-    bk = Random_Key_Generator(100).get_random_key()
-    
+    shuffle = Shuffle(size,0)
+    bk = Random_Key_Generator(size).get_random_key()
     st = time.perf_counter()
     
     c = Client('Bob',bk)
-    blocks = [Block(bk,shuffle,0,50,None),Block(bk,shuffle,50,101,None)]
+    number_of_blocks = 100
+    blocks = []
+    for i in range(number_of_blocks):
+        a,b = random.randint(0, size), random.randint(0, size)
+        if a > b:
+            sti = b
+            eni = a
+        elif (b>a):
+            sti = a
+            eni = b
+        else:
+            sti = 0
+            eti = a
+            
+        blocks.append(Block(bk,shuffle,sti,eni,None))
+    
     ps = c.ask_parities(blocks)
     print(ps)
     

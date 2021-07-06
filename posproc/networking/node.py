@@ -16,10 +16,9 @@ class Node(socket.socket):
         self._auth = Authentication()
         self.auth_id,self._auth_key = self._auth._get_key_pair()
                        
-
-    def send_a_message_to_the_server(self, message:bytes) -> None:
+    def send_bytes_to_the_server(self, message:bytes) -> None:
         """
-        Bob sends a message to the server i.e. Alice 
+        Bob sends bytes to the server i.e. Alice 
 
         Args:
             message (bytes): The message to be sent in the form of a bytes.
@@ -31,12 +30,12 @@ class Node(socket.socket):
         self.send(send_length.encode(constants.FORMAT))
         self.send(message)
 
-    def receive_a_message_from_server(self) -> bytes:
+    def receive_bytes_from_the_server(self) -> bytes:
         """
-        Bob can receive a message from server i.e. Alice.
+        Bob can receive bytes from the server i.e. Alice.
 
         Returns:
-            message (str): The message received from the Server i.e. Alice.
+            message (bytes): The bytes received from the Server i.e. Alice.
         """
         msg_length = self.recv(constants.HEADER).decode(constants.FORMAT)
         if msg_length:
@@ -48,7 +47,8 @@ class Node(socket.socket):
                 if msg_length == ' ':
                     print("Invalid Literal for int")  # TODO : fix this error!
 
-    def send_a_message_to_the_client(self, client, message: bytes) -> None:
+    @staticmethod
+    def send_bytes_to_the_client(client, message: bytes) -> None:
         """
         Alice (Server) can send a message to Bob(Client).
 
@@ -62,7 +62,8 @@ class Node(socket.socket):
         client.send(send_length.encode(constants.FORMAT))
         client.send(message)
 
-    def receive_a_message_from_client(self, client) -> bytes:
+    @staticmethod
+    def receive_bytes_from_the_client(client) -> bytes:
         """
         Alice (Server) can receive a message from Bob (Client)
 
@@ -81,18 +82,8 @@ class Node(socket.socket):
             except:
                 if msg_length == ' ':
                     print("Blank Message!")  # TODO : fix this error!
+           
 
-    def send_a_str_message_to_the_server(self,message:str) -> None:
-        self.send_a_message_to_the_server(message.encode(constants.FORMAT))
-    
-    def receive_a_str_message_from_server(self) -> str:
-        self.receive_a_message_from_server()
-        
-    def send_a_str_message_to_the_client(self, client, message:str) -> None:
-        self.send_a_message_to_the_client(client,message.encode(constants.FORMAT))
-    
-    def receive_a_str_message_from_client():
-        pass
     def start_ngrok_tunnel(self, port):
         """
         NGROK tunnel is used for port forwarding the ngrok address to the local address

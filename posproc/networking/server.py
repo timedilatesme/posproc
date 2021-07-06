@@ -12,6 +12,9 @@ and Alice is an passive client who is just going to reply to all the questions t
 asks.
 """
 
+MSG_NO_HEADER = 10 
+#What is the maximum length of the msg_no. for eg if MSG_NO_HEADER = 2 => maximum value of msg_no is 99.
+
 
 class Server(Node):
     """
@@ -81,26 +84,29 @@ class Server(Node):
     def handle_client(self, client, address):
         connected = True
         while connected:
-            msg_received = self.receive_a_message_from_client(client)
+            msg_received = self.receive_bytes_from_the_client(client)
             if msg_received:
-                if msg_received.startswith("ask_parities".encode(constants.FORMAT)):
+                if msg_received.startswith('ask_parities'.encode(constants.FORMAT)):
+                    #print(f"[Pickled Message Recvd]: {msg_received}")
                     msg_to_send = self._ask_parities_return_message(msg_received)
-                    self.send_a_message_to_the_client(client, msg_to_send)
+                    self.send_bytes_to_the_client(client,msg_to_send)
                 else:
                     print(f"[Client @ {address}]: {msg_received}")
+            else:
+                continue
 
-    def _ask_parities_return_message(self,msg_recvd):
+    def _ask_parities_return_message(self,msg_recvd:bytes):
         #message_recvd = b'ask_parities:[block_indexes as list,[],[],...]'
-        splitted_msg_recvd = msg_recvd.split(":".encode(constants.FORMAT))
-        blocks_indexes = pickle.loads(splitted_msg_recvd[-1])
+        block_indexes_list_bytes = msg_recvd.removeprefix('ask_parities:'.encode(constants.FORMAT))
+        #print(block_indexes_list_bytes)
+        block_indexes_list = pickle.loads(block_indexes_list_bytes)
+        
+        #TODO: Store the information leaked into some new object to help in privacy amplification.
         parities = []
-        
-        #TODO: Store the information leaked into some new class to help in privacy amplification.
-        
-        for block_indexes in blocks_indexes:
+        for block_indexes in block_indexes_list:
             parity = self.__correct_key.get_indexes_parity(block_indexes)
             parities.append(parity)
-        msg_to_send = b'ask_parities:' + pickle.dumps(parities)
+        msg_to_send = 'ask_parities:'.encode(constants.FORMAT) + pickle.dumps(parities)
         return msg_to_send
     
     def start_receiving(self):
