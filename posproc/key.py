@@ -37,7 +37,7 @@ class Key:
             self._size = len(key_as_str)
             self._bits = {}
             for i in range(self._size):
-                self._bits[i] = key_as_str[i]
+                self._bits[i] = int(key_as_str[i])
         elif "key_as_dict" in kwargs:
             key_as_dict = kwargs["key_as_dict"]
             self._size = len(key_as_dict)
@@ -171,7 +171,21 @@ class Key:
             if self._bits[i] != other_key._bits[i]:
                 difference += 1
         return difference
+    
+    def get_indexes_parity(self, indexes:list):
+        """
+        Parity of given indexes from the key.
 
+        Args:
+            indexes (list(int)): The indexes for which parity is to be calculated.
+
+        Returns:
+            parity(int): parity of the given indices.
+        """
+        s = 0
+        for index in indexes:
+            s += self._bits[index]
+        return s%2
 
 class Random_Key_Generator:
     """
