@@ -2,6 +2,7 @@ import copy
 import random
 
 class Key:
+    _random = random.Random()
     """
     A key that the Cascade protocol reconciles.
     This class is used from Bruno Rijsman's repo. 
@@ -66,7 +67,39 @@ class Key:
         for i in range(self._size):
             string += str(self._bits[i])
         return string
+    
+    @staticmethod
+    def set_random_seed(seed):
+        """
+        Set the seed for the isolated random number generated that is used only in the key
+        module and nowhere else. If two applications set the seed to the same value, the key
+        module produces the exact same sequence of random keys. This is used to make experiments
+        reproduceable.
 
+        Args:
+            seed (int): The seed value for the random number generator which is isolated to the
+                key module.
+        """
+        Random_Key_Generator._random = random.Random(seed)
+    
+    @staticmethod
+    def create_random_key(size):
+        """
+        Create an random key.
+
+        Args:
+            size (int): The size of the key in bits. Must be >= 0.
+
+        Returns:
+            A random key of the specified size.
+        """
+        # pylint:disable=protected-access
+        key = Key()
+        key._size = size
+        for i in range(size):
+            key._bits[i] = Random_Key_Generator._random.randint(0, 1)
+        return key
+    
     def get_size(self):
         """
         Get the size of the key in bits.
@@ -186,59 +219,56 @@ class Key:
         for index in indexes:
             s += self._bits[index]
         return s%2
+    
+    def discard_bits(self,indexes: list) -> None:
+        """
+        Discards the bits corresponding to indexes.
 
-class Random_Key_Generator:
+        Args:
+            indexes (list): indexes of bits to be discarded.
+        """
+        indexes_remaining = list(range(self._size))
+        #print("Index_rem",indexes_remaining)
+        #print("Indexes",indexes)
+        for index in indexes:
+            indexes_remaining.remove(index)
+        
+        # print(f"Old Size: {self._size}")
+        self._size = self._size - len(indexes)
+    
+        # print(f"New Size: {self._size}")
+        # print(f"Old Bits: {self._bits}")
+    
+        new_bits = {}
+        for index,n in zip(indexes_remaining,range(self._size)):
+            new_bits[n] = self._bits[index]
+        self._bits = new_bits
+        # print(f"New Bits: {self._bits}")
+        
+        
+    def get_bits_for_qber_estimation(self, indexes: list) -> dict:
+        """
+        Gives a dict containing the bits value for qber estimation.
+        Updates the current key by removing these revealed bits.
+
+        Args:
+            indexes (list): indexes of the bits to be found.
+
+        Returns:
+            bits_for_qber (dict):  dict containing the bits value for qber estimation.
+        """
+        bits_for_qber = {}
+        for index in indexes:
+            bits_for_qber[index] = self._bits[index]
+        self.discard_bits(indexes)
+        return bits_for_qber
+
+def Random_Key_Generator(size,seed):
     """
     Generates a random Key Object for experimentation.
            
     Returns:
         Key Object: A randomly initialized Key-Object with given size.
     """
-    _random = random.Random()
-    
-    def __init__(self, size) -> None:
-        """
-        Generates a random Key Object for experimentation
-
-        Args:
-            size (int): Size of the Key to be generated.
-
-        Returns:
-            Key: A randomly initialized Key-Object with given size.
-        """
-        self.size = size
-    
-    def get_random_key(self):
-        return self.create_random_key(self.size)    
-    @staticmethod
-    def create_random_key(size):
-        """
-        Create an random key.
-
-        Args:
-            size (int): The size of the key in bits. Must be >= 0.
-
-        Returns:
-            A random key of the specified size.
-        """
-        # pylint:disable=protected-access
-        key = Key()
-        key._size = size
-        for i in range(size):
-            key._bits[i] = Random_Key_Generator._random.randint(0, 1)
-        return key
-    
-    @staticmethod
-    def set_random_seed(seed):
-        """
-        Set the seed for the isolated random number generated that is used only in the key
-        module and nowhere else. If two applications set the seed to the same value, the key
-        module produces the exact same sequence of random keys. This is used to make experiments
-        reproduceable.
-
-        Args:
-            seed (int): The seed value for the random number generator which is isolated to the
-                key module.
-        """
-        Random_Key_Generator._random = random.Random(seed)
-
+    Key.set_random_seed(seed)
+    return Key.create_random_key(size)

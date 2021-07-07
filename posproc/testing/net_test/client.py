@@ -43,7 +43,7 @@ def test2_ask_parities():
     st = time.perf_counter()
     
     c = Client('Bob',bk)
-    number_of_blocks = 100
+    number_of_blocks = 1000
     blocks = []
     for i in range(number_of_blocks):
         a,b = random.randint(0, size), random.randint(0, size)

@@ -2,10 +2,10 @@ import copy
 import heapq
 import math
 import time
-from cascade.block import Block
-from cascade.algorithm import get_algorithm_by_name
-from cascade.shuffle import Shuffle
-from cascade.stats import Stats
+from posproc.error_correction.cascade.block import Block
+from posproc.error_correction.cascade.algorithm import get_algorithm_by_name
+from posproc.error_correction.cascade.shuffle import Shuffle
+from posproc.error_correction.cascade.stats import Stats
 
 class Reconciliation:
     """
@@ -20,8 +20,7 @@ class Reconciliation:
             algorithm_name (str): The name of the Cascade algorithm.
             classical_channel (subclass of ClassicalChannel): The classical channel over which
                 Bob communicates with Alice.
-            noisy_key (Key): The noisy key as Bob received it from Alice that needs to be
-                reconciliated.
+            noisy_key (Key): The noisy key that Bob has, which needs to be reconciliated.
             estimated_bit_error_rate (float): The estimated bit error rate in the noisy key.
         """
 
@@ -89,7 +88,7 @@ class Reconciliation:
         self._reconciled_key = copy.deepcopy(self._noisy_key)
 
         # Inform Alice that we are starting a new reconciliation.
-        self._classical_channel.start_reconciliation()
+        self._classical_channel.start_reconciliation('cascade')
 
         # Do as many normal Cascade iterations as demanded by this particular Cascade algorithm.
         self._all_normal_cascade_iterations()
@@ -98,7 +97,7 @@ class Reconciliation:
         self._all_biconf_iterations()
 
         # Inform Alice that we have finished the reconciliation.
-        self._classical_channel.end_reconciliation()
+        self._classical_channel.end_reconciliation('cascade')
 
         # Compute elapsed time.
         self.stats.elapsed_process_time = time.process_time() - start_process_time
