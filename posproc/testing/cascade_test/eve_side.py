@@ -1,4 +1,4 @@
-# python -m posproc.testing.cascade_test.client_side
+# python -m posproc.testing.cascade_test.eve_side
 import time
 from posproc.networking.client import Client
 from posproc.testing.cascade_test.testing_data import ak,bk,size,seed, fraction_of_bits_for_qber_estm, algorithm
