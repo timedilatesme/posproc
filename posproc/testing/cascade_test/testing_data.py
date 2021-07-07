@@ -2,11 +2,11 @@ from random import seed
 from posproc.key import Random_Key_Generator
 
 size = 1000
-seed = 100
+seed = 99
 algorithm = 'original'
 copy_method = 'exact'
 fraction_of_bits_for_qber_estm = 0.1
-noise = 0.9
+noise = 1
 
 ak = Random_Key_Generator(size,seed)
 bk = ak.copy(noise,copy_method)
