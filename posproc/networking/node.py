@@ -9,7 +9,12 @@ class Node(socket.socket):
         
         # define randomly generated public and private key
         self._add_authentication_token(username)
-        
+    
+    def get_username(self):
+        return self.username
+    
+    def get_auth_id(self):
+        return self.auth_id
     
     def _add_authentication_token(self, username):
         self.username = username
@@ -82,9 +87,9 @@ class Node(socket.socket):
             except:
                 if msg_length == ' ':
                     print("Blank Message!")  # TODO : fix this error!
-           
-
-    def start_ngrok_tunnel(self, port):
+    
+    @staticmethod
+    def start_ngrok_tunnel(port):
         """
         NGROK tunnel is used for port forwarding the ngrok address to the local address
 

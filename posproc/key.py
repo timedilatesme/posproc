@@ -80,7 +80,7 @@ class Key:
             seed (int): The seed value for the random number generator which is isolated to the
                 key module.
         """
-        Random_Key_Generator._random = random.Random(seed)
+        Key._random = random.Random(seed)
     
     @staticmethod
     def create_random_key(size):
@@ -97,7 +97,7 @@ class Key:
         key = Key()
         key._size = size
         for i in range(size):
-            key._bits[i] = Random_Key_Generator._random.randint(0, 1)
+            key._bits[i] = Key._random.randint(0, 1)
         return key
     
     def get_size(self):

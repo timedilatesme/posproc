@@ -1,9 +1,9 @@
+import random
 from hashlib import sha256
 from ellipticcurve.ecdsa import Ecdsa
 from ellipticcurve.privateKey import PrivateKey
 from ellipticcurve.publicKey import PublicKey
-from ellipticcurve.curve import secp256k1,prime256v1
-
+from ellipticcurve.curve import CurveFp, secp256k1,prime256v1
 
 '''
 This file uses https://github.com/starkbank/ecdsa-python for authentication.
@@ -21,6 +21,9 @@ he/she has received the message from correct person.
 '''
 
 class Authentication:
+    _random = random.Random()
+    CURVE_secp256k1 = secp256k1
+    CURVE_prime256v1 = prime256v1
     """
     Generates Random Public Key, Private Key Pair for performing ecdsa.
     Or more generally known as Elliptic Curve Digital Signature Authentication.
@@ -31,19 +34,21 @@ class Authentication:
     
     """
 
-    def __init__(self, curve=secp256k1,secret = None) -> None:
+    def __init__(self, curve : CurveFp = secp256k1, seed = None) -> None:
         """
         Random Auth. Data Generator.
 
         Args:
-            curve ([CurveFp], optional): [curve to be used for ECDSA]. Defaults to secp256k1.
-            secret ([int], optional): [The secret key in int format]. Defaults to None. If None a random int is used.
+            curve (CurveFp, optional): Curve to be used for ECDSA. Defaults to secp256k1.
+            seed (Any, optional): The seed to be used for random auth. key generation. Defaults to None. If None a random int is used.
         """
         
-        self.curve = curve
-        self.secret = secret
+        # set the seed to be the value provided.
+        self.set_random_seed(seed)
         
-        #TODO: use seed to reproduce results.
+        self.curve = curve
+        self.secret = Authentication._random.randrange(1, curve.N)
+
         # This is the accompanying PubKey, PrivKey pair
         self._private_auth_key = PrivateKey(curve=self.curve, secret = self.secret)
         self.public_auth_key = self._private_auth_key.publicKey()
@@ -86,3 +91,16 @@ class Authentication:
         """
         verify = Ecdsa.verify(message, signature, publicAuthKey, hashfunc)
         return verify
+    
+    @staticmethod
+    def set_random_seed(seed):
+        """
+        Set the seed for the isolated random number generated that is used only in the Authentication
+        module and nowhere else. If two applications set the seed to the same value, the key module 
+        produces the exact same sequence of random keys. This is used to make experiments reproduceable.
+
+        Args:
+            seed (int): The seed value for the random number generator which is isolated to the
+                Authentication module.
+        """
+        Authentication._random = random.Random(seed)

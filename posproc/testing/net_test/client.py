@@ -6,7 +6,7 @@ from posproc.constants import PUBLIC_SERVER, LOCAL_SERVER
 from posproc.networking.client import Client
 import time
 import random
-from posproc.testing.net_test.constant_data import bk
+from posproc.testing.net_test.constant_data import bk,size
 
 def test1():
     # This may not work due to some changes added to client class and server class.

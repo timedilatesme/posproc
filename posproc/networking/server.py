@@ -141,7 +141,7 @@ class Server(Node):
         #TODO: Make some way to stop the server!
         while self.server_is_active:
             client, addr = self.accept()
-            self.active_clients[client.username] = client.auth_id
+            #self.active_clients[client.username] = client.auth_id
             
             print(f"Connected with {addr}")
 

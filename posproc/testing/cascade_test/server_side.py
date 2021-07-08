@@ -2,11 +2,11 @@
 
 
 from posproc.networking.server import Server
-from posproc.testing.cascade_test.testing_data import*
+from posproc.testing.cascade_test.testing_data import alice_key
 
 def run():
-    print(f'Alice\'s Key: {ak}')
-    s = Server('Alice',ak)
+    print(f'Alice\'s Key: {alice_key}')
+    s = Server('Alice',alice_key)
 
 if __name__ == "__main__":
     run()
