@@ -6,10 +6,12 @@ seed = 99
 algorithm = 'original'
 copy_method = 'exact'
 fraction_of_bits_for_qber_estm = 0.1
-noise = 1
+noise_bob = 0.5
+noise_eve = 1
 
-ak = Random_Key_Generator(size,seed)
-bk = ak.copy(noise,copy_method)
+alice_key = Random_Key_Generator(size,seed)
+bob_key = alice_key.copy(noise_bob,copy_method)
+eve_key = alice_key.copy(noise_eve,copy_method)
 
 
 """

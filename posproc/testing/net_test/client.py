@@ -6,9 +6,10 @@ from posproc.constants import PUBLIC_SERVER, LOCAL_SERVER
 from posproc.networking.client import Client
 import time
 import random
-from posproc.testing.net_test.constant_data import*
+from posproc.testing.net_test.constant_data import bk
 
 def test1():
+    # This may not work due to some changes added to client class and server class.
     # This tests show that multiple clients at bob end only decrease the speed
     # of this protocol so we'll use only 1 client and only one server !        
     bob = []
@@ -65,4 +66,7 @@ def test2_ask_parities():
     end = time.perf_counter()
     print(f"Finished in {end-st} second(s).")
 
-test2_ask_parities()
+def test3_simple_connection_for_acessing_client_socket():
+    c = Client('Bob',bk)
+
+test3_simple_connection_for_acessing_client_socket()

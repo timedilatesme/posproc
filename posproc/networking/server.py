@@ -138,10 +138,10 @@ class Server(Node):
         return msg_to_send
     
     def start_receiving(self):
+        #TODO: Make some way to stop the server!
         while self.server_is_active:
-            if self.server_is_active == False:
-                print('Server INACTIVE')
             client, addr = self.accept()
+            self.active_clients[client.username] = client.auth_id
             
             print(f"Connected with {addr}")
 
@@ -150,12 +150,16 @@ class Server(Node):
             thread.start()
             print(
                 f"[ACTIVE CONNECTIONS]: {threading.active_count() - 1} clients are connected!")
-            
+    
     def stop_server(self):
         #TODO: Make it work!
         self.server_is_active = False
         exit()
 
-    def broadcast_to_all(self, message):
-        #TODO: Try this out!
-        pass
+    def broadcast_to_all(self, message: bytes):
+        for client in self.active_clients:
+            self.send_bytes_to_the_client(client, message)
+        
+
+class Server_to_check_Eavesdropping(Server):
+    pass
