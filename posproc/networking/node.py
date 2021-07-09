@@ -9,6 +9,7 @@ class Node(socket.socket):
         
         # define randomly generated public and private key
         self._add_authentication_token(username)
+        self.address = self.getsockname()
     
     def get_username(self):
         return self.username
