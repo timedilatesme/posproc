@@ -161,5 +161,39 @@ class Server(Node):
             self.send_bytes_to_the_client(client, message)
         
 
-class Server_to_check_Eavesdropping(Server):
-    pass
+class Server_to_simulate_eavesdropping(Server):
+    def handle_client(self, client, address):
+        connected = True
+        while connected:
+            msg_received = self.receive_bytes_from_the_client(client)
+
+            if msg_received:
+                if msg_received.startswith('ask_parities'.encode(constants.FORMAT)):
+                    msg_to_send = self._ask_parities_return_message(
+                        msg_received)
+                    self.send_bytes_to_the_client(client, msg_to_send)
+
+                elif msg_received.startswith('reconciliation_status'.encode(constants.FORMAT)):
+                    splitted_msg = msg_received.split(b':')
+                    reconciliation_algorithm = splitted_msg[1].decode(
+                        constants.FORMAT)
+                    status = splitted_msg[2].decode(constants.FORMAT)
+                    self.reconciliation_status[reconciliation_algorithm] = status
+                    if self.reconciliation_status['cascade'] == 'Completed':
+                        print("Alice's New Key:", self._correct_key)
+
+                elif msg_received.startswith('qber_estimation'.encode(constants.FORMAT)):
+                    indexes_bytes = msg_received.removeprefix(
+                        'qber_estimation:'.encode(constants.FORMAT))
+                    indexes = pickle.loads(indexes_bytes)
+                    bits_dict = self._correct_key.get_bits_for_qber_estimation(
+                        indexes)
+                    bits_dict_bytes = pickle.dumps(bits_dict)
+                    msg_to_send = 'qber_estimation:'.encode(
+                        constants.FORMAT) + bits_dict_bytes
+                    self.send_bytes_to_the_client(client, msg_to_send)
+
+                elif msg_received == 'close_server'.encode(constants.FORMAT):
+                    self.server_is_active = False
+                    #TODO : Is this good enough?
+                    sys.exit()
