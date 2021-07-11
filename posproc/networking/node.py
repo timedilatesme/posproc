@@ -2,6 +2,7 @@ from posproc.authentication import Authentication
 from pyngrok import ngrok
 from posproc import constants
 import socket
+import string, random
 
 class Node(socket.socket):
     def __init__(self, username):
@@ -9,7 +10,6 @@ class Node(socket.socket):
         
         # define randomly generated public and private key
         self._add_authentication_token(username)
-        self.address = self.getsockname()
     
     def get_username(self):
         return self.username
@@ -106,3 +106,7 @@ class Node(socket.socket):
         ip = socket.gethostbyaddr(url[0])[-1][0]
         public_addr = (ip, int(url[1]))
         return public_addr
+    
+    @staticmethod
+    def random_string_generator(size=10, chars=string.ascii_letters + string.hexdigits):
+        return ''.join(random.choice(chars) for _ in range(size))
