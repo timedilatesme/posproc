@@ -107,7 +107,7 @@ class Reconciliation:
         self.stats.unrealistic_efficiency = self._compute_efficiency(self.stats.ask_parity_blocks)
         realistic_reconciliation_bits = self.stats.ask_parity_bits + self.stats.reply_parity_bits
         self.stats.realistic_efficiency = self._compute_efficiency(realistic_reconciliation_bits)
-
+        
         # Return the probably, but not surely, corrected key.
         return self._reconciled_key
 

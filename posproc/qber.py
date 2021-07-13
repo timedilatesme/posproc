@@ -17,6 +17,7 @@ def qber_estimation(key_size, active_client, fraction = 0.1, seed = None):
     # Generate random indexes to be used for qber estimation.   
     indexes = random.sample(range(key_size),int(fraction*key_size))
     sample_length = len(indexes)
+    # print(f"Indexes: {indexes}")
 
     # Get the bit values that bob and alice have. 
     raw_key_a = active_client.ask_server_for_bits_to_estimate_qber(indexes)

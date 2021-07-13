@@ -13,6 +13,8 @@ class User:
         self.connected_to_server = status
         
     def __repr__(self) -> str:
+        self.__str__()
+    def __str__(self) -> str:
         if self.connected_to_server:
             constatus = "Connected"
         else:
@@ -31,10 +33,8 @@ class UserData:
         self.users = {} # {username:user} 
     
     def __repr__(self) -> str:
-        s = ""
-        for user in self.users:
-            s += user.__repr__() + "\n\n"
-        return s
+        for user in self.users.values():
+            return str(user)        
     
     def update_user_data(self,new_user:User) -> None:
         """

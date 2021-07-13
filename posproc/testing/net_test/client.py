@@ -68,5 +68,7 @@ def test2_ask_parities():
 
 def test3_simple_connection_for_acessing_client_socket():
     c = Client('Bob',bk)
+    c.disconnect_from_server()
+    #c2 = Client('Ram', bk)
 
 test3_simple_connection_for_acessing_client_socket()
