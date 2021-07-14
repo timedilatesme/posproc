@@ -15,7 +15,13 @@ def cascade_algorithm_test_eavesdropping():
     
     recon = Reconciliation(algorithm,eve,eve_key,error_rate)
     recon.reconcile()
-    print(f'Eve\'s Reconciled Key: {recon.get_reconciled_key()}')
+    eve._current_key = recon.get_reconciled_key()
+    #print(f'Eve\'s Reconciled Key: {eve._current_key}')
+    new_error_rate = qber_estimation(
+        eve._current_key._size, eve, fraction=1, seed=seed)
+
+    print(f'Eve\'s new QBER is: {new_error_rate}')
+    
     end = time.perf_counter()
     print(f"Finished in {end-st} second(s).")
     

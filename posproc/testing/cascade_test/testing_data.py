@@ -3,11 +3,11 @@ from posproc.key import Random_Key_Generator
 from posproc.networking.user_data import UserData
 
 size = 1000
-seed = 99
+seed = 30
 algorithm = 'original'
 copy_method = 'exact'
 fraction_of_bits_for_qber_estm = 0.1
-noise_bob = 0.5
+noise_bob = 0.05
 noise_eve = 1
 user_data = UserData()
 

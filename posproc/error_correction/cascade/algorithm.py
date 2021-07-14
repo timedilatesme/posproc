@@ -206,3 +206,23 @@ _OPTION8_ALGORITHM = Algorithm(name="option8",
                                biconf_cascade=False,
                                sub_block_reuse=True,
                                block_parity_inference=False)
+
+_CUSTOM1_ALGORITHM = Algorithm(name="custom1",
+                               cascade_iterations=2,
+                               block_size_function=_original_block_size_function,
+                               biconf_iterations=0,
+                               biconf_error_free_streak=False,
+                               biconf_correct_complement=False,
+                               biconf_cascade=False,
+                               sub_block_reuse=False,
+                               block_parity_inference=False)
+
+_CUSTOM2_ALGORITHM = Algorithm(name="custom2",
+                               cascade_iterations=0,
+                               block_size_function=_original_block_size_function,
+                               biconf_iterations=10,
+                               biconf_error_free_streak=True,
+                               biconf_correct_complement=False,
+                               biconf_cascade=False,
+                               sub_block_reuse=False,
+                               block_parity_inference=False)
