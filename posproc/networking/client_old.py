@@ -171,6 +171,7 @@ class Client(Node):
         self.connected_to_server = False
 
 class Eavesdropper(Client):
+    # TODO: needs updating this is not currently working.
     def __init__(self, username, noisy_key: Key, server_address=(constants.LOCAL_IP, constants.LOCAL_PORT)):
         #TODO: Convert args to kwargs for easy implementation.
         super().__init__(username)
