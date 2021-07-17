@@ -1,4 +1,7 @@
 import pickle
+from ellipticcurve.privateKey import PrivateKey
+
+from ellipticcurve.publicKey import PublicKey
 from posproc.key import Key
 from posproc import constants
 from posproc.networking.node import Node
@@ -18,29 +21,40 @@ class Client(Node):
     Super Class:
         Node : The parent class containing all necessary details similar to both Server and Client.
     """
-    def __init__(self, username: str, current_key: Key, server_address=(constants.LOCAL_IP, constants.LOCAL_PORT)):
+
+    def __init__(self, username: str, current_key: Key, auth_keys: tuple[PublicKey,PrivateKey] = None, 
+                 server_address=(constants.LOCAL_IP, constants.LOCAL_PORT)):
         """
         Initialize the active client with the following parameters.
 
         Args:
-            username (str): The username of this client.
+            username (str): The username of this client.(Must be unique for every client.)
             current_key (Key): The initial key of the active client. Mostly this is the noisy Key.
+            auth_keys (tuple[PubKey, PrivKey]): If the user already has a key pair then no need to reproduce another key pair.
             server_address (tuple, optional): The address of the server to connect to? Defaults to (constants.LOCAL_IP, constants.LOCAL_PORT).
         """
         #TODO: Convert args to kwargs for easy implementation.
-        super().__init__(username)
+        super().__init__(username, auth_Keys = auth_keys)
+        print()
         #TODO add way to check for already existing username.
         self._current_key = current_key
-
+        
         self.server_address = server_address
+        
+        self.authenticating = True
+        self.server_authenticated = False
+                
         self.connect(self.server_address)
         self.connected_to_server = True
-        # self.user_data = user_data
+
+        self.user = User(username, address=self.getsockname(),
+                         auth_id = self.auth_id)         
 
         self.reconciliation_status = {'cascade': 'Not yet started',
+                                      'winnow': 'Not yet started',
                                       'ldpc': 'Not yet started',
                                       'polar': 'Not yet started'}
-
+    
     def ask_parities(self, blocks):
         """
         Sends blocks as bytes to the server and then the server
@@ -130,4 +144,3 @@ class Client(Node):
     
     def disconnect_from_server(self):
         self.send_bytes_to_the_server("disconnect".encode(constants.FORMAT))
-        

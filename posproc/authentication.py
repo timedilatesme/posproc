@@ -1,3 +1,4 @@
+import secrets
 import random
 from hashlib import sha256
 from ellipticcurve.ecdsa import Ecdsa
@@ -34,24 +35,30 @@ class Authentication:
     
     """
 
-    def __init__(self, curve : CurveFp = secp256k1, seed = None) -> None:
+    def __init__(self, curve : CurveFp = secp256k1, seed = None, auth_Keys: tuple[PublicKey, PrivateKey] = None) -> None:
         """
-        Random Auth. Data Generator.
+        Random Authentication Data Generator.
 
         Args:
             curve (CurveFp, optional): Curve to be used for ECDSA. Defaults to secp256k1.
             seed (Any, optional): The seed to be used for random auth. key generation. Defaults to None. If None a random int is used.
+            auth_Keys: If the user already has a key pair then no need to reproduce another key pair.
         """
         
-        # set the seed to be the value provided.
-        self.set_random_seed(seed)
-        
-        self.curve = curve
-        self.secret = Authentication._random.randrange(1, curve.N)
+        if not auth_Keys:
+            # set the seed to be the value provided or a random seq. of bytes.
+            self.set_random_seed(seed or secrets.token_bytes())
 
-        # This is the accompanying PubKey, PrivKey pair
-        self._private_auth_key = PrivateKey(curve=self.curve, secret = self.secret)
-        self.public_auth_key = self._private_auth_key.publicKey()
+            self.curve = curve
+            self.secret = Authentication._random.randrange(1, self.curve.N)
+            # This is the accompanying PubKey, PrivKey pair
+            self._private_auth_key = PrivateKey(curve=self.curve, secret = self.secret)
+            self.public_auth_key = self._private_auth_key.publicKey()
+        else:
+            self.public_auth_key = auth_Keys[0]
+            self._private_auth_key = auth_Keys[1]
+            
+            
 
     def _get_key_pair(self):
         """
@@ -104,3 +111,46 @@ class Authentication:
                 Authentication module.
         """
         Authentication._random = random.Random(seed)
+
+
+    def start_authentication_protocol(self):
+        auth_init_msg = "auth_init_request".encode(constants.FORMAT)
+        self.send_bytes_to_the_server(auth_init_msg)
+        while self.authenticating:
+            msg_recvd = self.receive_bytes_from_the_server()
+            if msg_recvd:
+                if msg_recvd.startswith("authentication".encode(constants.FORMAT)):
+                    msg_recvd_bytes = msg_recvd.removeprefix(
+                        'authentication:'.encode(constants.FORMAT))
+                    msg_recvd = pickle.loads(msg_recvd_bytes)
+                    msg = msg_recvd[0]
+                    signature = msg_recvd[1]
+                    publicAuthKey_Server = self.user_data.get_user_by_address(
+                        self.server_address).auth_id
+                    self.server_authenticated = self._auth.verify(
+                        msg, signature, publicAuthKey_Server)
+                    if self.server_authenticated:
+                        print("Server authentication successful!")
+                        self.authentication_return_message()
+                        self.authenticating = False  # Done Authenticating so break the loop
+                    else:
+                        print("Server authentication unsuccessful!")
+                        # TODO: maybe add some way of restarting auth.
+                        self.authenticating = False
+
+    def authentication_return_message(self):
+        #TODO: add something for random length
+        # Send the first message for authentication
+        msg_to_send_1 = self.random_string_generator()
+        # TODO: can add more hash functions randomly
+        msg_to_send_2 = self._auth.sign(msg_to_send_1)
+
+        msg_to_send = (msg_to_send_1, msg_to_send_2)
+        # TODO: add a way so that authentication is also hidden.
+        msg_to_send_bytes = "authentication:".encode(
+            constants.FORMAT) + pickle.dumps(msg_to_send)
+
+        self.send_bytes_to_the_server(msg_to_send_bytes)
+                    
+                                        
+            

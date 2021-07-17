@@ -1,17 +1,24 @@
 import socket
 import string, random
+from ellipticcurve.privateKey import PrivateKey
+from ellipticcurve.publicKey import PublicKey
 from pyngrok import ngrok
 from posproc import constants
 from posproc.authentication import Authentication
 
 class Node(socket.socket):
-    def __init__(self, username):
+    def __init__(self, username, auth_Keys: tuple[PublicKey, PrivateKey] = None):
         super().__init__()
         
         self.username = username
         
-        # define randomly generated public and private key
-        self._add_authentication_token()
+        self._add_authentication_token(auth_Keys=auth_Keys)
+        
+    def _get_auth_keys(self):
+        """
+        Public Key, Private Key
+        """
+        return self.auth_id,self._auth_key
     
     def get_username(self):
         return self.username
@@ -19,8 +26,8 @@ class Node(socket.socket):
     def get_auth_id(self):
         return self.auth_id
     
-    def _add_authentication_token(self):
-        self._auth = Authentication()
+    def _add_authentication_token(self, auth_Keys):
+        self._auth = Authentication(auth_Keys=auth_Keys)
         self.auth_id,self._auth_key = self._auth._get_key_pair()
                        
     def send_bytes_to_the_server(self, message:bytes) -> None:
@@ -107,7 +114,3 @@ class Node(socket.socket):
         ip = socket.gethostbyaddr(url[0])[-1][0]
         public_addr = (ip, int(url[1]))
         return public_addr
-    
-    @staticmethod
-    def random_string_generator(size=10, chars=string.ascii_letters + string.hexdigits):
-        return ''.join(random.choice(chars) for _ in range(size))

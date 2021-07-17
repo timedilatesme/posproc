@@ -1,4 +1,5 @@
 import os
+import secrets
 import sys
 import pickle
 import threading
@@ -34,6 +35,7 @@ class Server(Node):
         #Get the __init__ of Node class.
         super().__init__(username)
         
+        
         #This is the correct_key i.e. the Key that Alice has.
         #TODO: __ or _ for best security?
         self._current_key = current_key
@@ -41,14 +43,15 @@ class Server(Node):
         self.server_type = server_type
         self.port = port
 
-        # The status of different algorithms for Error Correction.
-        self.reconciliation_status = {'cascade': 'Not yet started',
-                                      'winnow': 'Not yet started',
-                                      'ldpc': 'Not yet started',
-                                      'polar': 'Not yet started'}
 
+        # The User Data for all people on this server 
+        self.user_data = UserData()
+        
         # set the address corresponding to Local or Public Server.
         self._set_the_address_variable()
+        self.user = User(username, address=self.address, auth_id=self.auth_id)
+        self.user_data.update_user_data(self.user)
+        print("UserData (After Server Add): ", self.user_data.users)
         
         self.threads = [];
         
@@ -62,18 +65,83 @@ class Server(Node):
 
         # Now Start accepting connections:
         self.start_receiving()
+        
+        # The status of different algorithms for Error Correction.
+        self.reconciliation_status = {'cascade': 'Not yet started',
+                                      'winnow': 'Not yet started',
+                                      'ldpc': 'Not yet started',
+                                      'polar': 'Not yet started'}
+        
+    def update_user_data(self, new_user: User):
+        """
+        Adds a new user to the server's user data.
 
+        Args:
+            new_user (User): The new user to be added. 
+        """
+        self.user_data.update_user_data(new_user)
+
+    def get_user_data(self):
+        """
+        Get the user data currently stored at the server
+
+        Returns:
+            [UserData]: an instance of class UserData which stores all users.
+        """
+        return self.user_data
+    
+    def add_this_client_to_user_data(self,client,address):
+        """
+        Asks the client for it's User object to update the current user data.
+        User object includes: User(username, address, publicAuthKey)
+        """
+        msg_to_send = "user_object:?".encode(constants.FORMAT)
+        self.send_bytes_to_the_client(client, msg_to_send)
+        
+        while True:
+            msg_recvd = self.receive_bytes_from_the_client(client)
+            if msg_recvd:
+                if msg_recvd.startswith("user_object:".encode(constants.FORMAT)):
+                    user_bytes = msg_recvd.removeprefix(
+                        "user_object:".encode(constants.FORMAT))
+                    client_user = pickle.loads(user_bytes)
+                    break
+        
+        # pubKey = self.user_data.user_already_exists(client_user)
+        
+        # if pubKey:
+        #     self.user_data.users[pubKey].address = address
+        # else:
+        #     self.update_user_data(client_user)                                            
+        
+        self.update_user_data(client_user)
+        
     def start_listening(self):
         print(f"[STARTING] {self.server_type} server is starting...")
         self.bind(self.LOCAL_ADDRESS)
         self.listen()
         print(f"[LISTENING] Server is listening @ {self.get_address()}")
+    
+    def handle_authentication(self, client):
+        # Send the first message for authentication
+        msg_to_send_1 = secrets.token_bytes()
+        # TODO: can add more hash functions randomly
+        msg_to_send_2 = self._auth.sign(msg_to_send_1)
+
+        msg_to_send = (msg_to_send_1, msg_to_send_2)
+        # TODO: add a way so that authentication is also hidden.
+        msg_to_send_bytes = "authentication:".encode(
+            constants.FORMAT) + pickle.dumps(msg_to_send)
+
+        self.send_bytes_to_the_client(client, msg_to_send_bytes)
+        
 
     def start_receiving(self):
         #TODO: Make some way to stop the server!
         while self.server_is_active:
             client, addr = self.accept()
             print(f"Connected with {addr}")
+            self.user_data.update_user_data()
 
             thread = threading.Thread(
                 target=self.handle_client, args=(client, addr))
@@ -83,7 +151,7 @@ class Server(Node):
             print(
                 f"[ACTIVE CONNECTIONS]: {threading.active_count() - 1} clients are connected!")
         self.close()
-        sys.exit()
+        # sys.exit()
 
     def handle_client(self, client, address: tuple) -> None:
         connected = True
@@ -91,7 +159,25 @@ class Server(Node):
             msg_received = self.receive_bytes_from_the_client(client)
 
             if msg_received:
-                if msg_received.startswith("username:".encode(constants.FORMAT)):
+                if msg_received.startswith("auth_init_request".encode(constants.FORMAT)):
+                    self.handle_authentication(client)
+                
+                elif msg_received.startswith("authentication".encode(constants.FORMAT)):
+                    msg_recvd_bytes = msg_recvd.removeprefix(
+                        'authentication:'.encode(constants.FORMAT))
+                    msg_recvd = pickle.loads(msg_recvd_bytes)
+                    msg = msg_recvd[0]
+                    signature = msg_recvd[1]
+                    publicAuthKey_Client = self.user_data.get_user_by_address(
+                        client.getsockname()).auth_id
+                    self.client_authenticated = self._auth.verify(
+                        msg, signature, publicAuthKey_Client)
+                    if self.client_authenticated:
+                        print(f"Client @ {address} authentication successful!")
+                    else:
+                        print(f"Client @ {address} authentication unsuccessful!")
+                    
+                elif msg_received.startswith("username:".encode(constants.FORMAT)):
                     client_username = msg_received.removeprefix(
                         "username:".encode(constants.FORMAT))
                     client_username = client_username.decode(constants.FORMAT)

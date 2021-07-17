@@ -6,8 +6,8 @@ from ellipticcurve.privateKey import PrivateKey
 privateKey = PrivateKey()
 publicKey = privateKey.publicKey()
 
-print(f"Public Key: {publicKey}")
-print(f"Private Key: {privateKey}")
+print(f"Public Key: {publicKey.toString()}")
+print(f"Private Key: {privateKey.toString()}")
 
 message = "My test message"
 

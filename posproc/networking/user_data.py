@@ -1,3 +1,4 @@
+from ellipticcurve.publicKey import PublicKey
 import numpy as np
 class User:
     """
@@ -13,14 +14,12 @@ class User:
         self.connected_to_server = status
         
     def __repr__(self) -> str:
-        self.__str__()
-    def __str__(self) -> str:
-        if self.connected_to_server:
-            constatus = "Connected"
-        else:
-            constatus = "Not Connected!"
-        user_string = f"User:\n     username:          {self.username} \n     address:           {self.address} \n     auth_id:           {self.auth_id} \n     connection_status: {constatus}"
-        return user_string
+        return self.username
+    def __eq__(self, other: object) -> bool:
+        s = True
+        for attr in self.__dict__.keys():
+            s = s and self.__getattribute__(attr) == other.__getattribute__(attr)
+        return s 
 
         
 class UserData:
@@ -30,11 +29,24 @@ class UserData:
     This data will be available to all users of the network.
     """
     def __init__(self) -> None:
-        self.users = {} # {username:user} 
+        self.users = {} # {publicKey:user} 
     
     def __repr__(self) -> str:
+        s = ''
         for user in self.users.values():
-            return str(user)        
+            s += user.username + ' ,'
+        return s
+    
+    def user_already_exists(self, client_user: User) -> PublicKey | False:
+        exists = False
+        for pubKey,user in self.users.items():
+            if user == client_user:
+                exists = True
+                return pubKey
+        if not exists:
+            return False          
+            
+                
     
     def update_user_data(self,new_user:User) -> None:
         """
@@ -43,7 +55,7 @@ class UserData:
         Args:
             new_user (User): [description]
         """
-        self.users[new_user.address] = new_user
+        self.users[new_user.auth_id] = new_user
     
     def get_user_by_address(self, address: tuple) -> User:
         """
@@ -55,13 +67,12 @@ class UserData:
         Returns:
             User: the user with the given address.
         """
-        for user in self.users.values():
-            if user.address == address:
-                user_needed = user
-        try:
-            return user_needed
-        except Exception:
-            raise Exception("User doesn't exist.")
+        # try:
+        #     return self.users[address]
+        # except:
+        #     raise Exception("User doesn't exist.")
+        
+        self.users[address]        
     
     def get_user_by_name(self, username: str) -> User:
         """
@@ -73,7 +84,10 @@ class UserData:
         Returns:
             [User]: the user corresponding to the given username.
         """
+        for user in self.users.values():
+            if user.username == username:
+                user_needed = user
         try:
-            return self.users[username]
-        except:
+            return user_needed
+        except Exception:
             raise Exception("User doesn't exist.")
