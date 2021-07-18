@@ -1,3 +1,4 @@
+import os
 import socket
 import string, random
 from ellipticcurve.privateKey import PrivateKey
@@ -19,6 +20,11 @@ class Node(socket.socket):
         Public Key, Private Key
         """
         return self.auth_id,self._auth_key
+    
+    def save_auth_keys_as_txt(self,path):
+        # os.path.join
+        # fh = open()
+        pass        
     
     def get_username(self):
         return self.username

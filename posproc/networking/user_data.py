@@ -14,12 +14,7 @@ class User:
         self.connected_to_server = status
         
     def __repr__(self) -> str:
-        return self.username
-    def __eq__(self, other: object) -> bool:
-        s = True
-        for attr in self.__dict__.keys():
-            s = s and self.__getattribute__(attr) == other.__getattribute__(attr)
-        return s 
+        return self.username 
 
         
 class UserData:
@@ -28,24 +23,25 @@ class UserData:
     who uses the classical channel. This is for authentication purpose.
     This data will be available to all users of the network.
     """
-    def __init__(self) -> None:
-        self.users = {} # {publicKey:user} 
+    def __init__(self, *args) -> None:
+        """
+        Initialize with some users.
+        Just enter as much users as you want.
+        """
+        self.users = {}  # {publicKeyAsPem:user}
+        
+        for user in args:
+            self.users[user.auth_id] = user   
+         
     
     def __repr__(self) -> str:
-        s = ''
-        for user in self.users.values():
-            s += user.username + ' ,'
-        return s
+        return str(self.users)
     
-    def user_already_exists(self, client_user: User) -> PublicKey | False:
-        exists = False
-        for pubKey,user in self.users.items():
-            if user == client_user:
-                exists = True
-                return pubKey
-        if not exists:
-            return False          
-            
+    def user_already_exists(self, client_user: User):
+        if client_user.auth_id.toPem() in self.users.keys():
+            return client_user.auth_id
+        else:
+            return None
                 
     
     def update_user_data(self,new_user:User) -> None:
@@ -53,9 +49,9 @@ class UserData:
         Updates the existing user data with the new user.
 
         Args:
-            new_user (User): [description]
+            new_user (User): The user object of the user that needs to be added.
         """
-        self.users[new_user.auth_id] = new_user
+        self.users[new_user.auth_id.toPem()] = new_user
     
     def get_user_by_address(self, address: tuple) -> User:
         """

@@ -1,4 +1,6 @@
+import os
 import pickle
+import secrets
 from ellipticcurve.privateKey import PrivateKey
 
 from ellipticcurve.publicKey import PublicKey
@@ -33,28 +35,84 @@ class Client(Node):
             auth_keys (tuple[PubKey, PrivKey]): If the user already has a key pair then no need to reproduce another key pair.
             server_address (tuple, optional): The address of the server to connect to? Defaults to (constants.LOCAL_IP, constants.LOCAL_PORT).
         """
-        #TODO: Convert args to kwargs for easy implementation.
-        super().__init__(username, auth_Keys = auth_keys)
-        print()
-        #TODO add way to check for already existing username.
+        self.username = username
+        authKeys = self.check_if_auth_keys_exist()
+        
+        # print("Already Stored: ", authKeys[1].toPem())
+                
+        super().__init__(username, auth_Keys = authKeys)
+        
+        # print("Private Key: ", self._auth_key.toPem())
+        
+        if not authKeys:
+            self.save_auth_keys_as_file()   
+        
         self._current_key = current_key
         
         self.server_address = server_address
-        
-        self.authenticating = True
-        self.server_authenticated = False
                 
         self.connect(self.server_address)
         self.connected_to_server = True
 
         self.user = User(username, address=self.getsockname(),
-                         auth_id = self.auth_id)         
+                         auth_id = self.auth_id)
+        self.authenticating = True
+        self.start_authentication_protocol()    
 
         self.reconciliation_status = {'cascade': 'Not yet started',
                                       'winnow': 'Not yet started',
                                       'ldpc': 'Not yet started',
                                       'polar': 'Not yet started'}
     
+    def start_authentication_protocol(self):
+        while self.authenticating:
+            msg_recvd = self.receive_bytes_from_the_server()
+            if msg_recvd:
+                if msg_recvd.startswith("user_object:?".encode(constants.FORMAT)):
+                    msg_1 = self.user
+                    msg_to_send = "user_object:".encode(
+                        constants.FORMAT) + pickle.dumps(msg_1)
+                    self.send_bytes_to_the_server(msg_to_send)
+                elif msg_recvd.startswith("auth_init:".encode(constants.FORMAT)):
+                    msg_ = secrets.token_hex()
+                    msg_sign = self._auth.sign(msg_)
+                    msg_to_send_tuple = (msg_, msg_sign)
+                    msg_to_send = "authentication:".encode(
+                        constants.FORMAT) + pickle.dumps(msg_to_send_tuple)
+                    self.send_bytes_to_the_server(msg_to_send)
+                    self.authenticating = False
+        # print("Authentication Fn Done!")
+    
+    def check_if_auth_keys_exist(self) -> tuple[PublicKey, PrivateKey]:
+        dirpath = constants.data_storage + self.username + '_auth_keys/'
+        if os.path.exists(dirpath):
+            with open(dirpath + 'privKey.pickle', 'rb') as privKeyFH:
+                privKey = pickle.load(privKeyFH)
+
+            with open(dirpath + 'pubKey.pickle', 'rb') as pubKeyFH:
+                pubKey = pickle.load(pubKeyFH)
+            
+            return (pubKey, privKey)
+        else:
+            return None
+                    
+    def save_auth_keys_as_file(self):
+        """
+        Saves the randomly generated auth keys for future reference.
+        These will only be used for a short amount of time!
+        """
+        pubKey, privKey = self._get_auth_keys() # (PubKey, PrivKey)
+        
+        dirpath = constants.data_storage + self.username + '_auth_keys/'
+        if os.path.exists(dirpath) == False:
+            os.makedirs(dirpath)
+        with open(dirpath + 'privKey.pickle' , 'wb') as privKeyFH:
+            pickle.dump(privKey, privKeyFH)
+        
+        with open(dirpath + 'pubKey.pickle', 'wb') as pubKeyFH:
+            pickle.dump(pubKey, pubKeyFH)       
+                    
+                    
     def ask_parities(self, blocks):
         """
         Sends blocks as bytes to the server and then the server

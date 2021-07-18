@@ -4,6 +4,9 @@ import sys
 import pickle
 import threading
 import socket
+from ellipticcurve.privateKey import PrivateKey
+
+from ellipticcurve.publicKey import PublicKey
 from posproc.key import Key
 from posproc import constants
 from posproc.networking.node import Node
@@ -19,7 +22,9 @@ class Server(Node):
 
     """
 
-    def __init__(self, username: str, current_key: Key, server_type = constants.LOCAL_SERVER, port=constants.LOCAL_PORT):
+    def __init__(self, username: str, current_key: Key, 
+                 user_data: UserData = None, server_type=constants.LOCAL_SERVER, 
+                 port=constants.LOCAL_PORT, auth_keys : tuple[PublicKey, PrivateKey] = None):
         """
         Alice's key is needed for performing computation.
         This Node will only run on Alice's address so only she knows the correct key.
@@ -27,13 +32,14 @@ class Server(Node):
         Args:
             username (str): Name the Server!
             current_key (Key): Alice's Key Obtained from the QKD protocol.
-            user_data (UserData): The object that will store all the data about users on the network.
+            user_data (UserData): Initialize user data with some users. Defaults to None.             
             server_type (str, optional): [Either LOCAL_SERVER or PUBLIC_SERVER {defined in constants.py}]. Defaults to LOCAL_SERVER.
             port (int, optional): [The local port to be used for hosting the server. Defaults to LOCAL_PORT]. Defaults to LOCAL_PORT.
         """
+        self.username = username
         
         #Get the __init__ of Node class.
-        super().__init__(username)
+        super().__init__(username, auth_Keys= auth_keys)
         
         
         #This is the correct_key i.e. the Key that Alice has.
@@ -45,19 +51,33 @@ class Server(Node):
 
 
         # The User Data for all people on this server 
-        self.user_data = UserData()
+        user_data_loaded = self.check_if_user_data_file_exists()
+        
+        if user_data:
+            self.user_data = user_data
+        elif user_data_loaded:
+            self.user_data = user_data_loaded
+            # print(self.user_data)
+        else:
+            self.user_data = UserData()
         
         # set the address corresponding to Local or Public Server.
         self._set_the_address_variable()
         self.user = User(username, address=self.address, auth_id=self.auth_id)
         self.user_data.update_user_data(self.user)
-        print("UserData (After Server Add): ", self.user_data.users)
+        # print("UserData (After Server Add): ", self.user_data.users)
         
         self.threads = [];
         
         # The Server will start on this address
         # Then we can port-forward the ngrok address to this address
         self.LOCAL_ADDRESS = (constants.LOCAL_IP, constants.LOCAL_PORT)
+        
+        # The status of different algorithms for Error Correction.
+        self.reconciliation_status = {'cascade': 'Not yet started',
+                                      'winnow': 'Not yet started',
+                                      'ldpc': 'Not yet started',
+                                      'polar': 'Not yet started'}
         
         # Start Listening!
         self.start_listening()
@@ -66,11 +86,24 @@ class Server(Node):
         # Now Start accepting connections:
         self.start_receiving()
         
-        # The status of different algorithms for Error Correction.
-        self.reconciliation_status = {'cascade': 'Not yet started',
-                                      'winnow': 'Not yet started',
-                                      'ldpc': 'Not yet started',
-                                      'polar': 'Not yet started'}
+    
+    def save_user_data_as_file(self):
+        datapath = os.path.join(constants.data_storage,'server_' + self.username)
+        if os.path.exists(datapath) == False:
+            os.makedirs(datapath)
+        filepath = os.path.join(datapath, 'user_data.pickle')
+        with open(filepath, 'wb') as fh:
+            pickle.dump(self.user_data, fh)
+    
+    def check_if_user_data_file_exists(self):
+        datapath = os.path.join(
+            constants.data_storage, 'server_' + self.username + '/', 'user_data.pickle')
+        if os.path.exists(datapath):  
+            with open(datapath, 'rb') as fh:
+                user_data = pickle.load(fh)
+            return user_data
+        else:
+            return None
         
     def update_user_data(self, new_user: User):
         """
@@ -90,9 +123,10 @@ class Server(Node):
         """
         return self.user_data
     
-    def add_this_client_to_user_data(self,client,address):
+    def add_this_client_to_user_data_or_do_authentication_if_already_exists(self,client,address):
         """
         Asks the client for it's User object to update the current user data.
+        If the user's Public Key already exists in the user data then authentication is done. 
         User object includes: User(username, address, publicAuthKey)
         """
         msg_to_send = "user_object:?".encode(constants.FORMAT)
@@ -102,51 +136,58 @@ class Server(Node):
             msg_recvd = self.receive_bytes_from_the_client(client)
             if msg_recvd:
                 if msg_recvd.startswith("user_object:".encode(constants.FORMAT)):
-                    user_bytes = msg_recvd.removeprefix(
+                    msg_bytes = msg_recvd.removeprefix(
                         "user_object:".encode(constants.FORMAT))
-                    client_user = pickle.loads(user_bytes)
+                    client_user = pickle.loads(msg_bytes) 
+                    
+                    auth_init_msg = "auth_init:".encode(constants.FORMAT)
+                    self.send_bytes_to_the_client(client, auth_init_msg)
+                    
+                elif msg_recvd.startswith("authentication:".encode(constants.FORMAT)):
+                    msg_bytes = msg_recvd.removeprefix("authentication:".encode(constants.FORMAT))
+                    message,signature = pickle.loads(msg_bytes)
                     break
+                    
+        # print("User Data: ",self.user_data)
+        pubKey = self.user_data.user_already_exists(client_user)
+        # print("PubKey: ", pubKey)
         
-        # pubKey = self.user_data.user_already_exists(client_user)
-        
-        # if pubKey:
-        #     self.user_data.users[pubKey].address = address
-        # else:
-        #     self.update_user_data(client_user)                                            
-        
-        self.update_user_data(client_user)
+        if pubKey:
+            verify = self._auth.verify(message, signature, pubKey)
+            if verify:
+                self.user_data.users[pubKey.toPem()].address = address
+                print(
+                    f"Authentication with Client @ {address} was successful!")
+            else:
+                print(f"Authentication with Client @ {address} was unsuccessful!")
+                client.close()
+            return verify
+        else:
+            self.update_user_data(client_user)
+            # print("User Data after Client Add: ", self.user_data)
+            return None
         
     def start_listening(self):
         print(f"[STARTING] {self.server_type} server is starting...")
         self.bind(self.LOCAL_ADDRESS)
         self.listen()
-        print(f"[LISTENING] Server is listening @ {self.get_address()}")
-    
-    def handle_authentication(self, client):
-        # Send the first message for authentication
-        msg_to_send_1 = secrets.token_bytes()
-        # TODO: can add more hash functions randomly
-        msg_to_send_2 = self._auth.sign(msg_to_send_1)
-
-        msg_to_send = (msg_to_send_1, msg_to_send_2)
-        # TODO: add a way so that authentication is also hidden.
-        msg_to_send_bytes = "authentication:".encode(
-            constants.FORMAT) + pickle.dumps(msg_to_send)
-
-        self.send_bytes_to_the_client(client, msg_to_send_bytes)
-        
+        print(f"[LISTENING] Server is listening @ {self.get_address()}")    
 
     def start_receiving(self):
         #TODO: Make some way to stop the server!
         while self.server_is_active:
             client, addr = self.accept()
             print(f"Connected with {addr}")
-            self.user_data.update_user_data()
+            
+            verified = self.add_this_client_to_user_data_or_do_authentication_if_already_exists(client, addr)
 
-            thread = threading.Thread(
-                target=self.handle_client, args=(client, addr))
-            self.threads.append(thread)
-            thread.start()
+            if verified != False:  
+                thread = threading.Thread(
+                    target=self.handle_client, args=(client, addr))
+                self.threads.append(thread)
+                thread.start()
+                
+            self.save_user_data_as_file()
 
             print(
                 f"[ACTIVE CONNECTIONS]: {threading.active_count() - 1} clients are connected!")
