@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+Real_Data_Testing/
+real_data_test/
 
 # C extensions
 *.so
