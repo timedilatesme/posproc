@@ -43,13 +43,26 @@ class Node(socket.socket):
         Args:
             message (bytes): The message to be sent in the form of a bytes.
         """
-        msg_length = len(message)
-        send_length = str(msg_length)
+        msg_length = len(message) # msg = b"abcdefghij" => msg_len = 10  
+        send_length = str(msg_length)  # => send_length =  '10'
         send_length += " "*(constants.HEADER - len(send_length))
+        # send_length_length = 
         
         self.send(send_length.encode(constants.FORMAT))
         self.send(message)
-
+    
+    def reduce_to_1byte(self, message: bytes):
+        org_msg_length = str(len(message))
+        length_of_msg_length = str(len(org_msg_length))
+        
+        all_msgs = []
+        msg = message
+        while True:
+            
+            
+            
+        
+        
     def receive_bytes_from_the_server(self) -> bytes:
         """
         Bob can receive bytes from the server i.e. Alice.

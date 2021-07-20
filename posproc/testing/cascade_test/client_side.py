@@ -49,7 +49,7 @@ def cascade_algorithm_test():
     
 
 def authentication_test():
-    print(f'Bob\'s Initial Key: {bob_key}')
+    # print(f'Bob\'s Initial Key: {bob_key}')
     st = time.perf_counter()
 
     bob = Client('Bob', bob_key)
@@ -68,15 +68,17 @@ def authentication_test():
     # Update bob's key to the new reconciled key.
     bob._current_key = recon.get_reconciled_key()
 
-    print(f'Bob\'s Reconciled Key: {recon.get_reconciled_key()._bits}')
+    # print(f'Bob\'s Reconciled Key: {recon.get_reconciled_key()._bits}')
     #print("Bob Key New Size: ",bob_key._size)
     new_error_rate = qber_estimation(
-        bob._current_key._size, bob, fraction=1, seed=seed)
+        bob._current_key._size, bob, fraction=.1, seed=seed)
     
+    # print(f'Bob\'s new Key: {bob._current_key}')
     print(f'Bob\'s new QBER is: {new_error_rate}')
     
     # print("User Data: ",user_data)
     end = time.perf_counter()
     print(f"Finished in {end-st} second(s).")
 
-authentication_test()
+if __name__ == "__main__":
+    authentication_test()

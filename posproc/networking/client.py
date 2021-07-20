@@ -92,6 +92,8 @@ class Client(Node):
             with open(dirpath + 'pubKey.pickle', 'rb') as pubKeyFH:
                 pubKey = pickle.load(pubKeyFH)
             
+            # privKey = PrivateKey.fromString(b"a") #TODO: For checking authentication failure. 
+            
             return (pubKey, privKey)
         else:
             return None

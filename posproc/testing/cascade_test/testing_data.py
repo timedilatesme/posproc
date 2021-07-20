@@ -1,8 +1,8 @@
 from random import seed
-from posproc.key import Random_Key_Generator
+from posproc.key import Key, Random_Key_Generator
 from posproc.networking.user_data import UserData
 
-size = 1000
+size = 50000
 seed = 30
 algorithm = 'original'
 copy_method = 'exact'
@@ -15,6 +15,8 @@ alice_key = Random_Key_Generator(size,seed)
 bob_key = alice_key.copy(noise_bob,copy_method)
 eve_key = alice_key.copy(noise_eve,copy_method)
 
+# alice_key = Key(key_as_str = '1111111111')
+# bob_key = Key(key_as_str =  '0000000000')
 
 """
 TEST1  

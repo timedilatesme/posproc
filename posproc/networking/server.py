@@ -248,7 +248,7 @@ class Server(Node):
                     status = splitted_msg[2].decode(constants.FORMAT)
                     self.reconciliation_status[reconciliation_algorithm] = status
                     # if self.reconciliation_status['cascade'] == 'Completed':
-                    #     print("Alice's New Key:", self._current_key._bits)
+                        # print("Alice's New Key:", self._current_key._bits)
                 
                 elif msg_received == 'disconnect'.encode(constants.FORMAT):
                     connected = False
