@@ -35,7 +35,29 @@ class Node(socket.socket):
     def _add_authentication_token(self, auth_Keys):
         self._auth = Authentication(auth_Keys=auth_Keys)
         self.auth_id,self._auth_key = self._auth._get_key_pair()
-                       
+    
+    @staticmethod                 
+    def reduce_original_message_to_one_byte(message: bytes) -> list[bytes]:
+        """
+        Gives a list containing the original message and the lengths to be send in each iteration.
+
+        Args:
+            message (bytes): original message to be sent.
+
+        Returns:
+            list[bytes]
+        """
+        all_msgs = [message]
+        msg = message
+        while True:
+            if len(msg) == 1:
+                break
+            else:
+                msg = str(len(msg))
+                msg = msg.encode(constants.FORMAT)
+                all_msgs.insert(0, msg)
+        return all_msgs          
+        
     def send_bytes_to_the_server(self, message:bytes) -> None:
         """
         Bob sends bytes to the server i.e. Alice 
@@ -43,26 +65,12 @@ class Node(socket.socket):
         Args:
             message (bytes): The message to be sent in the form of a bytes.
         """
-        msg_length = len(message) # msg = b"abcdefghij" => msg_len = 10  
-        send_length = str(msg_length)  # => send_length =  '10'
-        send_length += " "*(constants.HEADER - len(send_length))
-        # send_length_length = 
+        messages = self.reduce_original_message_to_one_byte(message)
+        print("The messages being sent: ", messages[:-1], messages[-1][0:10])
         
-        self.send(send_length.encode(constants.FORMAT))
-        self.send(message)
+        for msg in messages:
+            self.send(msg)
     
-    def reduce_to_1byte(self, message: bytes):
-        org_msg_length = str(len(message))
-        length_of_msg_length = str(len(org_msg_length))
-        
-        all_msgs = []
-        msg = message
-        while True:
-            
-            
-            
-        
-        
     def receive_bytes_from_the_server(self) -> bytes:
         """
         Bob can receive bytes from the server i.e. Alice.
@@ -70,15 +78,17 @@ class Node(socket.socket):
         Returns:
             message (bytes): The bytes received from the Server i.e. Alice.
         """
-        msg_length = self.recv(constants.HEADER).decode(constants.FORMAT)
-        if msg_length:
+        msg_0 = self.recv(1) # Receive the first msg in messages = [b'oneDigitNo', ....]
+
+        if msg_0:
             try:
-                msg_length = int(msg_length)
-                message = self.recv(int(msg_length))
-                return message
+                msg_len = msg_0
+                while msg_len.isdigit():
+                    msg_len = self.recv(int(msg_len))
+                return msg_len
             except:
-                if msg_length == ' ':
-                    print("Invalid Literal for int")  # TODO : fix this error!
+                if msg_0 == ' ':
+                    print("Blank Message!")
 
     @staticmethod
     def send_bytes_to_the_client(client, message: bytes) -> None:
@@ -89,11 +99,10 @@ class Node(socket.socket):
             client (ActiveClient): The client who is going to receive message i.e. Bob.
             message (bytes): The message to be sent to Bob.
         """
-        msg_length = len(message)
-        send_length = str(msg_length)
-        send_length += " "*(constants.HEADER - len(send_length))
-        client.send(send_length.encode(constants.FORMAT))
-        client.send(message)
+        messages = Node.reduce_original_message_to_one_byte(message)
+
+        for msg in messages:
+            client.send(msg)
 
     @staticmethod
     def receive_bytes_from_the_client(client) -> bytes:
@@ -104,17 +113,19 @@ class Node(socket.socket):
             client (ActiveClient): The client who is going to send the message i.e. Bob.
 
         Returns:
-            message (str): The message received from Bob(Client)
+            message (bytes): The message received from Bob(Client)
         """
-        msg_length = client.recv(constants.HEADER).decode(constants.FORMAT)
-        if msg_length:
+        msg_0 = client.recv(1)  # Receive the first msg in messages = [b'oneDigitNo', ....]
+
+        if msg_0:
             try:
-                msg_length = int(msg_length)
-                message = client.recv(int(msg_length))
-                return message
+                msg_len = msg_0
+                while msg_len.isdigit():
+                    msg_len = client.recv(int(msg_len))
+                return msg_len
             except:
-                if msg_length == ' ':
-                    print("Blank Message!")  # TODO : fix this error!
+                if msg_0 == ' ':
+                    print("Blank Message!")
     
     @staticmethod
     def start_ngrok_tunnel(port):
