@@ -49,7 +49,7 @@ def cascade_algorithm_test():
     
 
 def authentication_test():
-    # print(f'Bob\'s Initial Key: {bob_key}')
+    print(f'Bob\'s Initial Key: {bob_key}')
     st = time.perf_counter()
 
     bob = Client('Bob', bob_key)

@@ -1,13 +1,15 @@
 import os
 import pickle
 import secrets
+import time
 from ellipticcurve.privateKey import PrivateKey
 
 from ellipticcurve.publicKey import PublicKey
 from posproc.key import Key
 from posproc import constants
 from posproc.networking.node import Node
-from posproc.networking.user_data import UserData, User
+from posproc.networking.user_data import User
+from posproc.error_correction.cascade.block import Block
 
 """
 This module contains code for active client who is going to be doing all the computation.
@@ -44,12 +46,19 @@ class Client(Node):
         
         # print("Private Key: ", self._auth_key.toPem())
         
+        
+        if server_address == None:
+            # FIXME: change it to something else from None!
+            with open(constants.data_storage + 'server_address.pickle', 'rb') as fh:
+                self.server_address = pickle.load(fh)
+        else:
+            self.server_address = server_address
+        
         if not authKeys:
             self.save_auth_keys_as_file()   
         
         self._current_key = current_key
         
-        self.server_address = server_address
                 
         self.connect(self.server_address)
         self.connected_to_server = True
@@ -97,6 +106,12 @@ class Client(Node):
             return (pubKey, privKey)
         else:
             return None
+    
+    def save_current_key_as_text(self, path = None):
+        if not path:
+            path = os.path.join(constants.data_storage, f'{self.username}_Key.txt')
+        with open(path, 'w') as fh:
+            fh.write(self._current_key.__str__())
                     
     def save_auth_keys_as_file(self):
         """
@@ -115,7 +130,7 @@ class Client(Node):
             pickle.dump(pubKey, pubKeyFH)       
                     
                     
-    def ask_parities(self, blocks):
+    def ask_parities(self, blocks: list[Block]) :
         """
         Sends blocks as bytes to the server and then the server
         replies with the appropriate parities of the blocks asked.
@@ -130,7 +145,9 @@ class Client(Node):
         # TODO: make this algo faster it's currently very slow for large blocks.
         block_indexes_list = [block.get_key_indexes() for block in blocks]
         # TODO: add tracking of parity messages.
-        block_indexes_list_bytes = pickle.dumps(block_indexes_list)
+        block_indexes_list_bytes = pickle.dumps(block_indexes_list) # 
+        
+        print(f"Block Indexes List Bytes Sent: {len(block_indexes_list_bytes)}")
         msg_to_send = 'ask_parities:'.encode(
             constants.FORMAT) + block_indexes_list_bytes
 
@@ -204,3 +221,19 @@ class Client(Node):
     
     def disconnect_from_server(self):
         self.send_bytes_to_the_server("disconnect".encode(constants.FORMAT))
+        
+    def check_network_speed(self, BytesSize = 1000):
+        msg = b'speed_test:'  + secrets.token_bytes(BytesSize)        
+        
+        startTime = time.perf_counter()
+        
+        self.send_bytes_to_the_server(msg)
+        
+        while True:
+            msg_recvd = self.receive_bytes_from_the_server()
+            if msg_recvd:
+                if msg_recvd.startswith(b'speed_test:'):
+                    endTime = time.perf_counter()
+                    break
+        deltaTime = (endTime - startTime)/2
+        return f"Speed is {BytesSize/deltaTime} bytes/sec"

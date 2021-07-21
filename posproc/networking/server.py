@@ -1,9 +1,7 @@
+import hashlib
 import os
-import secrets
-import sys
 import pickle
 import threading
-import socket
 from ellipticcurve.privateKey import PrivateKey
 
 from ellipticcurve.publicKey import PublicKey
@@ -67,6 +65,10 @@ class Server(Node):
         self.user_data.update_user_data(self.user)
         # print("UserData (After Server Add): ", self.user_data.users)
         
+        if server_type == constants.PUBLIC_SERVER:
+            with open(constants.data_storage + 'server_address.pickle', 'wb') as fh:
+                pickle.dump(self.address, fh)
+                
         self.threads = [];
         
         # The Server will start on this address
@@ -240,6 +242,10 @@ class Server(Node):
                     msg_to_send = 'qber_estimation:'.encode(
                         constants.FORMAT) + bits_dict_bytes
                     self.send_bytes_to_the_client(client, msg_to_send)
+                    print("Final Key: ", hashlib.sha256(
+                        self._current_key.__str__().encode(constants.FORMAT)))
+                    # self._current_key = hash(self._current_key)
+                    # self.save_current_key_as_text() # TODO: make it so that it can be accesed from outside!
                 
                 elif msg_received.startswith('reconciliation_status'.encode(constants.FORMAT)):
                     splitted_msg = msg_received.split(b':')
@@ -257,9 +263,11 @@ class Server(Node):
                     self.server_is_active = False
                     # self.shutdown(
                     #self.close() # TODO: Is it good?
-
-                else:
-                    print(f"[Client @ {address}]: {msg_received}")
+                elif msg_received.startswith(b'speed_test:'):
+                    self.send_bytes_to_the_client(client, msg_received)
+                
+                elif msg_received.startswith(b'test:'):
+                    print(f"[Client @ {address}]: {len(msg_received)}")
             else:
                 continue
         client.close()
@@ -268,6 +276,7 @@ class Server(Node):
         #message_recvd = b'ask_parities:[block_indexes as list,[],[],...]'
         block_indexes_list_bytes = msg_recvd.removeprefix(
             'ask_parities:'.encode(constants.FORMAT))
+        print(f"Block Indexes List Bytes Received: {len(block_indexes_list_bytes)}")
         #print(block_indexes_list_bytes)
         block_indexes_list = pickle.loads(block_indexes_list_bytes)
 
@@ -305,7 +314,13 @@ class Server(Node):
             self.address = (constants.LOCAL_IP, self.port)
         if self.server_type == constants.PUBLIC_SERVER:
             self.address = self.start_ngrok_tunnel(self.port)
-
+            
+    def save_current_key_as_text(self, path=None):
+        if not path:
+            path = os.path.join(constants.data_storage,
+                                f'{self.username}_Key.txt')
+        with open(path, 'w') as fh:
+            fh.write(self._current_key.__str__())
 
 class Server_to_simulate_eavesdropping(Server):
     pass

@@ -7,7 +7,7 @@ seed = 30
 algorithm = 'original'
 copy_method = 'exact'
 fraction_of_bits_for_qber_estm = 0.1
-noise_bob = 0.05
+noise_bob = 0.5
 noise_eve = 1
 user_data = UserData()
 
@@ -17,6 +17,8 @@ eve_key = alice_key.copy(noise_eve,copy_method)
 
 # alice_key = Key(key_as_str = '1111111111')
 # bob_key = Key(key_as_str =  '0000000000')
+
+
 
 """
 TEST1  

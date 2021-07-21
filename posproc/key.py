@@ -16,37 +16,52 @@ class Key:
     ERROR_METHOD_EXACT = "exact"
     ERROR_METHODS = [ERROR_METHOD_BERNOULLI, ERROR_METHOD_EXACT]
 
-    def __init__(self, **kwargs):
+    def __init__(self, key_from_file: str = None, key_as_list: list = None, key_as_str: str = None, key_as_dict: dict = None):
         """
         Generates a Key Object with the given data
 
         Kwargs:
-            key_as_list (list, optional): [Key with proper indexing as a list].
-            key_as_str  (str, optional): [Key as a string].
-            key_as_dict (dict, optional): [Key as a dict with dict.keys as indexes and values as bit values].
+            key_from_file (str, optional): Path to the Key stored in a .txt file type.
+            key_as_list (list, optional): Key with proper indexing as a list.
+            key_as_str  (str, optional): Key as a string.
+            key_as_dict (dict, optional): Key as a dict with dict.keys as indexes and values as bit values.
         """
 
         # Bits are stored as dictionary, indexed by index [0..size), value 0 or 1.
-        if "key_as_list" in kwargs:
-            key_as_list = kwargs["key_as_list"]
+        if key_from_file:
+            self.make_key_from_file(key_from_file)
+        elif key_as_list:
             self._size = len(key_as_list)
             self._bits = {}
             for i in range(self._size):
                 self._bits[i] = key_as_list[i]
-        elif "key_as_str" in kwargs:
-            key_as_str = kwargs["key_as_str"]
+        elif key_as_str:
             self._size = len(key_as_str)
             self._bits = {}
             for i in range(self._size):
                 self._bits[i] = int(key_as_str[i])
-        elif "key_as_dict" in kwargs:
-            key_as_dict = kwargs["key_as_dict"]
+        elif key_as_dict:
             self._size = len(key_as_dict)
             self._bits = key_as_dict
         else:
             self._size = 0
             self._bits = {}
-
+    
+    def make_key_from_file(self, path, size = None):
+        with open(path, 'r') as file:
+            key = file.read(size)
+        self._bits = {}        
+        
+        i = 0
+        for val in key:
+            if val.isalnum():
+                self._bits[i] = int(val)
+                i += 1
+            else:
+                continue
+        
+        self._size = i
+            
     def __repr__(self):
         """
         Get the unambiguous string representation of the key.
@@ -122,7 +137,7 @@ class Key:
         return self._bits[index]
 
     def get_block(self, indexes: list):
-        # TODO: Make this work by returning block!
+        # FIXME: Make this work by returning block!
         """
         Get the value of the key bit at given indexes.
 
@@ -262,6 +277,33 @@ class Key:
             bits_for_qber[index] = self._bits[index]
         self.discard_bits(indexes)
         return bits_for_qber
+    
+
+def divide_into_chunks_for_larger_key(keyObject : Key, chunkSize : int):
+    key_length = keyObject._size
+    key_dict = keyObject._bits
+    
+    numOfCompleteChunks = key_length//chunkSize
+    
+    allSubKeys = {} # {chunkIndex# : SubKey}
+    for chunkIndex in range(numOfCompleteChunks):
+        subKeyList = []
+        for bitIndex in range(chunkSize):
+            subKeyList.append(key_dict[chunkIndex + bitIndex])
+        subKey = Key(key_as_list = subKeyList)
+        allSubKeys[chunkIndex] = subKey
+    
+    incompleteChunkIndex = numOfCompleteChunks
+    incompleteChunkSize = key_length%chunkSize
+    incompleteSubKeyList = []
+    
+    for bitIndex in range(incompleteChunkSize):
+        incompleteSubKeyList.append(key_dict[incompleteChunkIndex + bitIndex])
+    incompleteSubKey = Key(key_as_list= incompleteSubKeyList)
+    allSubKeys[incompleteChunkIndex] = incompleteSubKey
+    
+    return allSubKeys
+    
 
 def Random_Key_Generator(size,seed):
     """

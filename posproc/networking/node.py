@@ -66,10 +66,10 @@ class Node(socket.socket):
             message (bytes): The message to be sent in the form of a bytes.
         """
         messages = self.reduce_original_message_to_one_byte(message)
-        print("The messages being sent: ", messages[:-1], messages[-1][0:10])
+        # print("The messages being sent: ", messages[:-1], messages[-1][0:10])
         
         for msg in messages:
-            self.send(msg)
+            self.sendall(msg)
     
     def receive_bytes_from_the_server(self) -> bytes:
         """
@@ -102,7 +102,7 @@ class Node(socket.socket):
         messages = Node.reduce_original_message_to_one_byte(message)
 
         for msg in messages:
-            client.send(msg)
+            client.sendall(msg)
 
     @staticmethod
     def receive_bytes_from_the_client(client) -> bytes:
