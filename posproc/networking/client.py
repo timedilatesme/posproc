@@ -80,14 +80,14 @@ class Client(Node):
                 if msg_recvd.startswith("user_object:?".encode(constants.FORMAT)):
                     msg_1 = self.user
                     msg_to_send = "user_object:".encode(
-                        constants.FORMAT) + pickle.dumps(msg_1)
+                        constants.FORMAT) + pickle.dumps(msg_1,protocol=pickle.HIGHEST_PROTOCOL)
                     self.send_bytes_to_the_server(msg_to_send)
                 elif msg_recvd.startswith("auth_init:".encode(constants.FORMAT)):
                     msg_ = secrets.token_hex()
                     msg_sign = self._auth.sign(msg_)
                     msg_to_send_tuple = (msg_, msg_sign)
                     msg_to_send = "authentication:".encode(
-                        constants.FORMAT) + pickle.dumps(msg_to_send_tuple)
+                        constants.FORMAT) + pickle.dumps(msg_to_send_tuple,protocol=pickle.HIGHEST_PROTOCOL)
                     self.send_bytes_to_the_server(msg_to_send)
                     self.authenticating = False
         # print("Authentication Fn Done!")
@@ -124,10 +124,10 @@ class Client(Node):
         if os.path.exists(dirpath) == False:
             os.makedirs(dirpath)
         with open(dirpath + 'privKey.pickle' , 'wb') as privKeyFH:
-            pickle.dump(privKey, privKeyFH)
+            pickle.dump(privKey, privKeyFH,protocol=pickle.HIGHEST_PROTOCOL)
         
         with open(dirpath + 'pubKey.pickle', 'wb') as pubKeyFH:
-            pickle.dump(pubKey, pubKeyFH)       
+            pickle.dump(pubKey, pubKeyFH,protocol=pickle.HIGHEST_PROTOCOL)       
                     
                     
     def ask_parities(self, blocks: list[Block]) :
@@ -145,7 +145,7 @@ class Client(Node):
         # TODO: make this algo faster it's currently very slow for large blocks.
         block_indexes_list = [block.get_key_indexes() for block in blocks]
         # TODO: add tracking of parity messages.
-        block_indexes_list_bytes = pickle.dumps(block_indexes_list) # 
+        block_indexes_list_bytes = pickle.dumps(block_indexes_list,protocol=pickle.HIGHEST_PROTOCOL) # 
         
         print(f"Block Indexes List Bytes Sent: {len(block_indexes_list_bytes)}")
         msg_to_send = 'ask_parities:'.encode(
@@ -200,7 +200,7 @@ class Client(Node):
         return bits
 
     def ask_server_for_bits_to_estimate_qber(self, indexes: list) -> dict:
-        indexes_bytes = pickle.dumps(indexes)
+        indexes_bytes = pickle.dumps(indexes,protocol=pickle.HIGHEST_PROTOCOL)
         #TODO: add message no. for this also.
         msg_to_send = 'qber_estimation:'.encode(
             constants.FORMAT) + indexes_bytes

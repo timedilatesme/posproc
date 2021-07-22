@@ -67,7 +67,7 @@ class Server(Node):
         
         if server_type == constants.PUBLIC_SERVER:
             with open(constants.data_storage + 'server_address.pickle', 'wb') as fh:
-                pickle.dump(self.address, fh)
+                pickle.dump(self.address, fh,protocol=pickle.HIGHEST_PROTOCOL)
                 
         self.threads = [];
         
@@ -95,7 +95,7 @@ class Server(Node):
             os.makedirs(datapath)
         filepath = os.path.join(datapath, 'user_data.pickle')
         with open(filepath, 'wb') as fh:
-            pickle.dump(self.user_data, fh)
+            pickle.dump(self.user_data, fh,protocol=pickle.HIGHEST_PROTOCOL)
     
     def check_if_user_data_file_exists(self):
         datapath = os.path.join(
@@ -238,7 +238,7 @@ class Server(Node):
                     bits_dict = self._current_key.get_bits_for_qber_estimation(
                         indexes)
                     # print("Bits to send to Client: ", bits_dict)
-                    bits_dict_bytes = pickle.dumps(bits_dict)
+                    bits_dict_bytes = pickle.dumps(bits_dict,protocol=pickle.HIGHEST_PROTOCOL)
                     msg_to_send = 'qber_estimation:'.encode(
                         constants.FORMAT) + bits_dict_bytes
                     self.send_bytes_to_the_client(client, msg_to_send)
@@ -286,7 +286,7 @@ class Server(Node):
             parity = self._current_key.get_indexes_parity(block_indexes)
             parities.append(parity)
         msg_to_send = 'ask_parities:'.encode(
-            constants.FORMAT) + pickle.dumps(parities)
+            constants.FORMAT) + pickle.dumps(parities,protocol=pickle.HIGHEST_PROTOCOL)
         return msg_to_send
 
     def stop_server(self):
