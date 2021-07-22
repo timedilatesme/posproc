@@ -3,6 +3,7 @@ import os
 import pickle
 import secrets
 import time
+import gc
 from ellipticcurve.privateKey import PrivateKey
 
 from ellipticcurve.publicKey import PublicKey
@@ -18,7 +19,7 @@ In theory we consider bob to be the active client who asks question to alice abo
 and Alice is an passive client who is just going to reply to all the questions that bob
 asks.
 """
-
+gc.disable()
 class Client(Node):
     """
     Adds the active client and connects it to the server
@@ -50,7 +51,7 @@ class Client(Node):
         
         if server_address == None:
             # FIXME: change it to something else from None!
-            with open(constants.data_storage + 'server_address.pickle', 'rb',buffering=100000) as fh:
+            with open(constants.data_storage + 'server_address.pickle', 'rb') as fh:
                 self.server_address = pickle.load(fh)
         else:
             self.server_address = server_address
@@ -96,10 +97,10 @@ class Client(Node):
     def check_if_auth_keys_exist(self) -> tuple[PublicKey, PrivateKey]:
         dirpath = constants.data_storage + self.username + '_auth_keys/'
         if os.path.exists(dirpath):
-            with open(dirpath + 'privKey.pickle', 'rb',buffering=100000) as privKeyFH:
+            with open(dirpath + 'privKey.pickle', 'rb') as privKeyFH:
                 privKey = pickle.load(privKeyFH)
 
-            with open(dirpath + 'pubKey.pickle', 'rb',buffering=100000) as pubKeyFH:
+            with open(dirpath + 'pubKey.pickle', 'rb') as pubKeyFH:
                 pubKey = pickle.load(pubKeyFH)
             
             # privKey = PrivateKey.fromString(b"a") #TODO: For checking authentication failure. 
@@ -111,7 +112,7 @@ class Client(Node):
     def save_current_key_as_text(self, path = None):
         if not path:
             path = os.path.join(constants.data_storage, f'{self.username}_Key.txt')
-        with open(path, 'w',buffering=100000) as fh:
+        with open(path, 'w') as fh:
             fh.write(self._current_key.__str__())
                     
     def save_auth_keys_as_file(self):
@@ -124,10 +125,10 @@ class Client(Node):
         dirpath = constants.data_storage + self.username + '_auth_keys/'
         if os.path.exists(dirpath) == False:
             os.makedirs(dirpath)
-        with open(dirpath + 'privKey.pickle' , 'wb',buffering=100000) as privKeyFH:
+        with open(dirpath + 'privKey.pickle' , 'wb') as privKeyFH:
             pickle.dump(privKey, privKeyFH,protocol=pickle.HIGHEST_PROTOCOL)
         
-        with open(dirpath + 'pubKey.pickle', 'wb',buffering=100000) as pubKeyFH:
+        with open(dirpath + 'pubKey.pickle', 'wb') as pubKeyFH:
             pickle.dump(pubKey, pubKeyFH,protocol=pickle.HIGHEST_PROTOCOL)       
                     
                     
@@ -164,7 +165,7 @@ class Client(Node):
                     parities_bytes = msg_recvd.removeprefix(
                         'ask_parities:'.encode(constants.FORMAT))
                     # TODO: change this if adding functionality of msg_no.
-                    return pickle.loads(parities_bytes,protocol = pickle.HIGHEST_PROTOCOL)
+                    return pickle.loads(parities_bytes,protocol = pickle.HIGHEST_PROTOCOL,buffers=10000000)
 
     def start_reconciliation(self, reconciliation_algorithm: str):
         """

@@ -3,6 +3,7 @@ import hashlib
 import os
 import pickle
 import threading
+import gc
 from ellipticcurve.privateKey import PrivateKey
 
 from ellipticcurve.publicKey import PublicKey
@@ -13,7 +14,7 @@ from posproc.networking.user_data import User, UserData
 
 MSG_NO_HEADER = 10
 #What is the maximum length of the msg_no. for eg if MSG_NO_HEADER = 2 => maximum value of msg_no is 99.
-
+gc.disable()
 
 class Server(Node):
     """
@@ -67,7 +68,7 @@ class Server(Node):
         # print("UserData (After Server Add): ", self.user_data.users)
         
         if server_type == constants.PUBLIC_SERVER:
-            with open(constants.data_storage + 'server_address.pickle', 'wb',buffering=100000) as fh:
+            with open(constants.data_storage + 'server_address.pickle', 'wb') as fh:
                 pickle.dump(self.address, fh,protocol=pickle.HIGHEST_PROTOCOL)
                 
         self.threads = [];
@@ -95,14 +96,14 @@ class Server(Node):
         if os.path.exists(datapath) == False:
             os.makedirs(datapath)
         filepath = os.path.join(datapath, 'user_data.pickle')
-        with open(filepath, 'wb',buffering=100000) as fh:
+        with open(filepath, 'wb') as fh:
             pickle.dump(self.user_data, fh,protocol=pickle.HIGHEST_PROTOCOL)
     
     def check_if_user_data_file_exists(self):
         datapath = os.path.join(
             constants.data_storage, 'server_' + self.username + '/', 'user_data.pickle')
         if os.path.exists(datapath):  
-            with open(datapath, 'rb',buffering=100000) as fh:
+            with open(datapath, 'rb') as fh:
                 user_data = pickle.load(fh)
             return user_data
         else:
@@ -279,7 +280,7 @@ class Server(Node):
             'ask_parities:'.encode(constants.FORMAT))
         print(f"Block Indexes List Bytes Received: {len(block_indexes_list_bytes)}")
         #print(block_indexes_list_bytes)
-        block_indexes_list = pickle.loads(block_indexes_list_bytes)
+        block_indexes_list = pickle.loads(block_indexes_list_bytes,buffer = 10000000)
 
         #TODO: Store the information leaked into some new object to help in privacy amplification.
         parities = []
@@ -287,7 +288,7 @@ class Server(Node):
             parity = self._current_key.get_indexes_parity(block_indexes)
             parities.append(parity)
         msg_to_send = 'ask_parities:'.encode(
-            constants.FORMAT) + pickle.dumps(parities,protocol=pickle.HIGHEST_PROTOCOL)
+            constants.FORMAT) + pickle.dumps(parities,protocol=pickle.HIGHEST_PROTOCO)
         return msg_to_send
 
     def stop_server(self):
@@ -320,7 +321,7 @@ class Server(Node):
         if not path:
             path = os.path.join(constants.data_storage,
                                 f'{self.username}_Key.txt')
-        with open(path, 'w',buffering=100000) as fh:
+        with open(path, 'w') as fh:
             fh.write(self._current_key.__str__())
 
 class Server_to_simulate_eavesdropping(Server):

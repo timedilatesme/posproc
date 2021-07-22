@@ -12,7 +12,7 @@ def qber_test():
     st = time.perf_counter()
 
     bob = Client('Bob', bob_key)
-    error_rate = qber_estimation(size, bob, fraction=0.5, seed = seed)
+    error_rate = qber_estimation(size, bob, fraction=0.1, seed = seed)
     print(f'QBER is: {error_rate}')
     print(f'Key after QBER: {bob_key}')
     
@@ -42,7 +42,7 @@ def cascade_algorithm_test():
     
     #print(f'Bob\'s Reconciled Key: {recon.get_reconciled_key()._bits}')
     #print("Bob Key New Size: ",bob_key._size)
-    new_error_rate = qber_estimation(bob_key._size,bob, fraction=fraction_of_bits_for_qber_estm, seed = seed )
+    new_error_rate = qber_estimation(bob_key._size,bob, fraction=1, seed = seed )
     print(f'Bob\'s new QBER is: {new_error_rate}')
     end = time.perf_counter()
     print(f"Finished in {end-st} second(s).")
@@ -71,7 +71,7 @@ def authentication_test():
     # print(f'Bob\'s Reconciled Key: {recon.get_reconciled_key()._bits}')
     #print("Bob Key New Size: ",bob_key._size)
     new_error_rate = qber_estimation(
-        bob._current_key._size, bob, fraction=.1, seed=seed)
+        bob._current_key._size, bob, fraction=1, seed=seed)
     
     # print(f'Bob\'s new Key: {bob._current_key}')
     print(f'Bob\'s new QBER is: {new_error_rate}')

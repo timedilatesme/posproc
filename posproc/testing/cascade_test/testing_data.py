@@ -2,9 +2,9 @@ from random import seed
 from posproc.key import Key, Random_Key_Generator
 from posproc.networking.user_data import UserData
 
-size = 200000
+size = 10000
 seed = 59
-algorithm = 'original'
+algorithm = 'biconf'
 copy_method = 'exact'
 fraction_of_bits_for_qber_estm = 0.1
 noise_bob = 0.1
