@@ -1,5 +1,4 @@
 # python -m posproc.testing.cascade_test.server_side
-import pickle
 
 from posproc import constants
 from posproc.networking.server import Server

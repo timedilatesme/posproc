@@ -242,8 +242,8 @@ class Server(Node):
                     msg_to_send = 'qber_estimation:'.encode(
                         constants.FORMAT) + bits_dict_bytes
                     self.send_bytes_to_the_client(client, msg_to_send)
-                    print("Final Key: ", hashlib.sha256(
-                        self._current_key.__str__().encode(constants.FORMAT)))
+                    # print("Final Key: ", hashlib.sha256(
+                    #     self._current_key.__str__().encode(constants.FORMAT)))
                     # self._current_key = hash(self._current_key)
                     # self.save_current_key_as_text() # TODO: make it so that it can be accesed from outside!
                 

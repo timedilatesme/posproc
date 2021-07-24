@@ -71,7 +71,7 @@ def authentication_test():
     # print(f'Bob\'s Reconciled Key: {recon.get_reconciled_key()._bits}')
     #print("Bob Key New Size: ",bob_key._size)
     new_error_rate = qber_estimation(
-        bob._current_key._size, bob, fraction=.1, seed=seed)
+        bob._current_key._size, bob, fraction=fraction_of_bits_for_qber_estm, seed=seed)
     
     # print(f'Bob\'s new Key: {bob._current_key}')
     print(f'Bob\'s new QBER is: {new_error_rate}')

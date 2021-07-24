@@ -2,7 +2,7 @@ from random import seed
 from posproc.key import Key, Random_Key_Generator
 from posproc.networking.user_data import UserData
 
-size = 10000
+size = 50000
 seed = 59
 algorithm = 'biconf'
 copy_method = 'exact'

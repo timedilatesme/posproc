@@ -288,7 +288,7 @@ class Server(Node):
             parity = self._current_key.get_indexes_parity(block_indexes)
             parities.append(parity)
         msg_to_send = 'ask_parities:'.encode(
-            constants.FORMAT) + pickle.dumps(parities,protocol=pickle.HIGHEST_PROTOCO)
+            constants.FORMAT) + pickle.dumps(parities,protocol=pickle.HIGHEST_PROTOCOL)
         return msg_to_send
 
     def stop_server(self):
