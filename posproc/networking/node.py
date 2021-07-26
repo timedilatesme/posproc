@@ -105,7 +105,7 @@ class Node(socket.socket):
             client.sendall(msg)
 
     @staticmethod
-    def receive_bytes_from_the_client(client) -> bytes:
+    def receive_bytes_from_the_client(client:socket.socket) -> bytes:
         """
         Alice (Server) can receive a message from Bob (Client)
 
