@@ -16,6 +16,7 @@ def qber_estimation(key_size, active_client, fraction = 0.1, seed = None):
     random.seed(seed)
     # Generate random indexes to be used for qber estimation.   
     indexes = random.sample(range(key_size),int(fraction*key_size))
+    
     sample_length = len(indexes)
     # print(f"Indexes: {indexes}")
 

@@ -202,7 +202,7 @@ class Server(Node):
         connected = True
         while connected:
             msg_received = self.receive_bytes_from_the_client(client)
-
+            
             if msg_received:
                 if msg_received.startswith("auth_init_request".encode(constants.FORMAT)):
                     self.handle_authentication(client)
@@ -236,6 +236,7 @@ class Server(Node):
                 elif msg_received.startswith('qber_estimation'.encode(constants.FORMAT)):
                     indexes_bytes = msg_received.removeprefix(
                         'qber_estimation:'.encode(constants.FORMAT))
+                    print("Length of indexes bytes:",len(indexes_bytes))
                     indexes = pickle.loads(indexes_bytes)
                     bits_dict = self._current_key.get_bits_for_qber_estimation(
                         indexes)
@@ -275,12 +276,17 @@ class Server(Node):
         client.close()
     
     def _ask_parities_return_message(self, msg_recvd: bytes):
-        #message_recvd = b'ask_parities:[block_indexes as list,[],[],...]'
+        #message_recvd = b'ask_parities:[block_indexes as list,[],[],...[]]'
         block_indexes_list_bytes = msg_recvd.removeprefix(
             'ask_parities:'.encode(constants.FORMAT))
         print(f"Block Indexes List Bytes Received: {len(block_indexes_list_bytes)}")
         #print(block_indexes_list_bytes)
-        block_indexes_list = pickle.loads(block_indexes_list_bytes,buffer = 10000000)
+        try:
+            block_indexes_list = pickle.loads(block_indexes_list_bytes)
+        except:
+            #pickled_list_bytes = pickle.dumps(block_indexes_list_bytes)
+            #block_indexes_list = pickle.loads(pickled_list_bytes)
+            print("BLOCK INDEXES LIST BYTES:", block_indexes_list_bytes)
 
         #TODO: Store the information leaked into some new object to help in privacy amplification.
         parities = []

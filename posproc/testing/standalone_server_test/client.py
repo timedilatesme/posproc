@@ -150,22 +150,27 @@ class Client(Node):
         block_indexes_list_bytes = pickle.dumps(block_indexes_list,protocol=pickle.HIGHEST_PROTOCOL) # 
         
         print(f"Block Indexes List Bytes Sent: {len(block_indexes_list_bytes)}")
+        if(len(block_indexes_list_bytes)>50000):
+            print("Msg bytes sent to the server:",block_indexes_list_bytes)
         msg_to_send = 'ask_parities:'.encode(
             constants.FORMAT) + block_indexes_list_bytes
 
         # asking:
         self.send_bytes_to_the_server(msg_to_send)
-
+        
         # receiving:
         while self.connected_to_server:
             msg_recvd = self.receive_bytes_from_the_server()
             if msg_recvd:
                 if msg_recvd.startswith('ask_parities'.encode(constants.FORMAT)):
                     # This initial number represents the 'ask_parities:' part to be removed
-                    parities_bytes = msg_recvd.removeprefix(
-                        'ask_parities:'.encode(constants.FORMAT))
+                
+                    parities_bytes = msg_recvd.removeprefix('ask_parities:'.encode(constants.FORMAT))
                     # TODO: change this if adding functionality of msg_no.
-                    return pickle.loads(parities_bytes,protocol = pickle.HIGHEST_PROTOCOL,buffers=10000000)
+                    return pickle.loads(parities_bytes)
+                    
+                        
+
 
     def start_reconciliation(self, reconciliation_algorithm: str):
         """
@@ -202,11 +207,14 @@ class Client(Node):
         return bits
 
     def ask_server_for_bits_to_estimate_qber(self, indexes: list) -> dict:
+        #print("Indexes are: ", indexes)
+        #print("Number of indexes:", len(indexes))
         indexes_bytes = pickle.dumps(indexes,protocol=pickle.HIGHEST_PROTOCOL)
         #TODO: add message no. for this also.
         msg_to_send = 'qber_estimation:'.encode(
             constants.FORMAT) + indexes_bytes
-        # print("Message Send for QBER: ", msg_to_send)
+
+        #print("Message Send for QBER: ", msg_to_send)
 
         # asking:
         self.send_bytes_to_the_server(msg_to_send)
@@ -218,8 +226,10 @@ class Client(Node):
                 if msg_recvd.startswith('qber_estimation'.encode(constants.FORMAT)):
                     bits_dict_bytes = msg_recvd.removeprefix(
                         'qber_estimation:'.encode(constants.FORMAT))
+                    #print("BITS DICT BYTES: ", bits_dict_bytes)
+                    print("LENGTH BITS DICTS BYTES:", len(bits_dict_bytes))
                     # TODO: change this if adding functionality of msg_no.
-                    return pickle.loads(bits_dict_bytes,protocol = pickle.HIGHEST_PROTOCOL)
+                    return pickle.loads(bits_dict_bytes)
     
     def disconnect_from_server(self):
         self.send_bytes_to_the_server("disconnect".encode(constants.FORMAT))

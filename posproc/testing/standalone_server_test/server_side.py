@@ -2,7 +2,7 @@
 import pickle
 
 from posproc import constants
-from posproc.networking.server import Server
+from posproc.testing.standalone_server_test.server import Server
 from posproc.testing.cascade_test.testing_data import alice_key, user_data
 from posproc.networking.user_data import User
 

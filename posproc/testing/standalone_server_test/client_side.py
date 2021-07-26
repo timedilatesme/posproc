@@ -1,7 +1,7 @@
 # python -m posproc.testing.standalone_server_test.client_side
 from posproc.networking.user_data import User
 import time
-from posproc.networking.client import Client
+from posproc.testing.standalone_server_test.client import Client
 from posproc.testing.cascade_test.testing_data import user_data,bob_key,size,seed, fraction_of_bits_for_qber_estm, algorithm
 from posproc.error_correction.cascade.reconciliation import Reconciliation
 from posproc.qber import qber_estimation
