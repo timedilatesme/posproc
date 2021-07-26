@@ -1,3 +1,7 @@
 from twisted.internet import reactor
 from twisted.protocols.basic import NetstringReceiver
-from twisted.protocols.amp import AMP
+from posproc import constants
+from twisted.internet.protocol import ServerFactory, ClientFactory
+
+class CommunicationProtocol(NetstringReceiver):
+    MAX_LENGTH = constants.MAX_DATA_LENGTH
