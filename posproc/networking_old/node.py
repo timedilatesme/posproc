@@ -7,7 +7,7 @@ from pyngrok import ngrok
 from posproc import constants
 from posproc.authentication import Authentication
 
-class Node(socket.socket):
+class _Node(socket.socket):
     def __init__(self, username, auth_Keys: tuple[PublicKey, PrivateKey] = None):
         super().__init__()
         
@@ -144,3 +144,62 @@ class Node(socket.socket):
         ip = socket.gethostbyaddr(url[0])[-1][0]
         public_addr = (ip, int(url[1]))
         return public_addr
+
+class Node(_Node):
+    pass
+
+# class Node(_Node):
+#     CHUNK_SIZE = 100 # must be greater than the packet start delimeter length.
+#     PACKET_START_DELIMETER = b'###'
+#     PACKET_END_DELIMETER = b'$$$'
+#     PACKER_DATA_SEPARATOR = b':::'
+    
+#     def send_bytes_to_the_server(self, message: bytes) -> None:
+#         messageLength = len(message)
+#         messageToSend = self.PACKET_START_DELIMETER + messageLength + \
+#             self.PACKER_DATA_SEPARATOR + message + self.PACKET_END_DELIMETER
+#         self.sendall(messageToSend)
+    
+#     def receive_bytes_from_the_server(self) -> bytes:
+#         messageReceived = self.recv(self.CHUNK_SIZE)
+#         if messageReceived.startswith(self.PACKET_START_DELIMETER):
+#             messageReceived = messageReceived.removeprefix(self.PACKET_START_DELIMETER)
+#             sepStartIndex1 = messageReceived.find(self.PACKER_DATA_SEPARATOR)
+#             messageLength = messageReceived[0:sepStartIndex1]
+#             messageReceived.removeprefix(messageLength + self.PACKER_DATA_SEPARATOR)
+#             messageLength = int(messageLength)
+            
+#             if messageLength <= len(messageReceived):
+#                 return messageReceived[0:messageLength]
+#             else:
+#                 while not messageReceived.endswith(self.PACKET_END_DELIMETER):
+#                     messageReceived += self.recv(self.CHUNK_SIZE)
+#                 messageReceived.removesuffix(self.PACKET_END_DELIMETER)
+#                 return messageReceived
+            
+#     @staticmethod
+#     def send_bytes_to_the_client(client, message: bytes) -> None:
+#         messageLength = len(message)
+#         messageToSend = Node.PACKET_START_DELIMETER +  str(messageLength).encode(constants.FORMAT) + \
+#             Node.PACKER_DATA_SEPARATOR + message + Node.PACKET_END_DELIMETER
+#         client.sendall(messageToSend)    
+            
+#     @staticmethod
+#     def receive_bytes_from_the_client(client: socket.socket) -> bytes:
+#         messageReceived = client.recv(Node.CHUNK_SIZE)
+#         if messageReceived.startswith(Node.PACKET_START_DELIMETER):
+#             messageReceived = messageReceived.removeprefix(
+#                 Node.PACKET_START_DELIMETER)
+#             sepStartIndex1 = messageReceived.find(Node.PACKER_DATA_SEPARATOR)
+#             messageLength = messageReceived[0:sepStartIndex1]
+#             messageReceived.removeprefix(
+#                 messageLength + Node.PACKER_DATA_SEPARATOR)
+#             messageLength = int(messageLength)
+
+#             if messageLength <= len(messageReceived):
+#                 return messageReceived[0:messageLength]
+#             else:
+#                 while not messageReceived.endswith(Node.PACKET_END_DELIMETER):
+#                     messageReceived += client.recv(Node.CHUNK_SIZE)
+#                 messageReceived.removesuffix(Node.PACKET_END_DELIMETER)
+#                 return messageReceived 
