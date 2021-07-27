@@ -78,18 +78,39 @@ class _Node(socket.socket):
         Returns:
             message (bytes): The bytes received from the Server i.e. Alice.
         """
-        msg_0 = self.recv(1) # Receive the first msg in messages = [b'oneDigitNo', ....]
+        '''msg_0 = self.recv(1) # Receive the first msg in messages = [b'oneDigitNo', ....]
 
         if msg_0:
             try:
                 msg_len = msg_0
                 while msg_len.isdigit():
                     msg_len = self.recv(int(msg_len))
+                    
                 return msg_len
             except:
                 if msg_0 == ' ':
-                    print("Blank Message!")
-
+                    print("Blank Message!")'''
+        BUFF_SIZE = 4096
+        
+        msg_0 = self.recv(1)
+        
+        data = b''
+        if(msg_0):
+            try:
+                msg_len = self.recv(int(msg_0))
+                while True:
+                    part = self.recv(BUFF_SIZE)
+                    data+=part
+                    
+                    if(len(part)<BUFF_SIZE):
+                        #print("LENGTH OF RECIEVED DATA IS:",len(data))
+                        #print("DATA IS:",data)
+                        break
+                return data
+            except:
+                if(msg_0 == ' '):
+                    print("Blank Message!")    
+        
     @staticmethod
     def send_bytes_to_the_client(client, message: bytes) -> None:
         """
@@ -115,7 +136,7 @@ class _Node(socket.socket):
         Returns:
             message (bytes): The message received from Bob(Client)
         """
-        msg_0 = client.recv(1)  # Receive the first msg in messages = [b'oneDigitNo', ....]
+        '''msg_0 = client.recv(1)  # Receive the first msg in messages = [b'oneDigitNo', ....]
 
         if msg_0:
             try:
@@ -125,7 +146,28 @@ class _Node(socket.socket):
                 return msg_len
             except:
                 if msg_0 == ' ':
-                    print("Blank Message!")
+                    print("Blank Message!")'''
+        
+        BUFF_SIZE = 4096
+        
+        msg_0 = client.recv(1)
+        
+        data = b''
+        if(msg_0):
+            try:
+                msg_len = client.recv(int(msg_0))
+                while True:
+                    part = client.recv(BUFF_SIZE)
+                    data+=part
+                    
+                    if(len(part)<BUFF_SIZE):
+                        #print("LENGTH OF RECIEVED DATA IS:",len(data))
+                        #print("DATA IS:",data)
+                        break
+                return data
+            except:
+                if(msg_0 == ' '):
+                    print("Blank Message!")   
     
     @staticmethod
     def start_ngrok_tunnel(port):

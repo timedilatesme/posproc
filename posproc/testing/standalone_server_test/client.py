@@ -9,7 +9,7 @@ from ellipticcurve.privateKey import PrivateKey
 from ellipticcurve.publicKey import PublicKey
 from posproc.key import Key
 from posproc import constants
-from posproc.networking.node import Node
+from posproc.networking_old.node import Node
 from posproc.networking.user_data import User
 from posproc.error_correction.cascade.block import Block
 
@@ -150,8 +150,8 @@ class Client(Node):
         block_indexes_list_bytes = pickle.dumps(block_indexes_list,protocol=pickle.HIGHEST_PROTOCOL) # 
         
         print(f"Block Indexes List Bytes Sent: {len(block_indexes_list_bytes)}")
-        if(len(block_indexes_list_bytes)>50000):
-            print("Msg bytes sent to the server:",block_indexes_list_bytes)
+        #if(len(block_indexes_list_bytes)>50000):
+            #print("Msg bytes sent to the server:",block_indexes_list_bytes)
         msg_to_send = 'ask_parities:'.encode(
             constants.FORMAT) + block_indexes_list_bytes
 

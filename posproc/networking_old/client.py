@@ -7,7 +7,7 @@ from ellipticcurve.privateKey import PrivateKey
 from ellipticcurve.publicKey import PublicKey
 from posproc.key import Key
 from posproc import constants
-from posproc.networking.node import Node
+from posproc.networking_old.node import Node
 from posproc.networking.user_data import User
 from posproc.error_correction.cascade.block import Block
 
