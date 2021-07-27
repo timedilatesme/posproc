@@ -112,6 +112,8 @@ class UrsinaNetworkingEvents():
 
     def event(self, func):
         if func.__name__ in self.event_table:
+            # checks if the key named 'func.__name__' exist in event_table ?
+            # event_table = { funcName : [] }
             self.event_table[func.__name__].append(func)
         else:
             self.event_table[func.__name__] = [func]
@@ -201,7 +203,7 @@ class UrsinaNetworkingConnectedClient():
 
 class UrsinaNetworkingServer():
 
-    def __init__(self, Ip_, Port_):
+    def __init__(self, address):
 
         self.lock = threading.Lock()
         self.events_manager = UrsinaNetworkingEvents(self.lock)
@@ -209,6 +211,24 @@ class UrsinaNetworkingServer():
         self.event = self.events_manager.event
         self.clients = []
         self.lock = threading.Lock()
+
+        try:
+            self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server.bind(address)
+            self.server.listen()
+            self.receiveThread = threading.Thread(target=self.receive)
+            self.receiveThread.start()
+            
+            self.serverSocket = self.server
+
+            ursina_networking_log("UrsinaNetworkingServer",
+                                  "__init__", "Server started !")
+            ursina_networking_log("UrsinaNetworkingServer",
+                                  "__init__", f"Address   :   {address}")
+
+        except Exception as e:
+            ursina_networking_log("UrsinaNetworkingServer",
+                                  "__init__", f"Cannot create the server : {e}")
 
     def process_net_events(self):
         self.events_manager.process_net_events()
@@ -283,11 +303,9 @@ class UrsinaNetworkingServer():
             self.handle_thread = threading.Thread(
                 target=self.handle, args=(client,))
             self.handle_thread.start()
-
-
 class UrsinaNetworkingClient():
 
-    def __init__(self, Ip_, Port_):
+    def __init__(self, server_address: tuple[str,int]):
 
         try:
             self.connected = False
@@ -295,22 +313,23 @@ class UrsinaNetworkingClient():
             self.events_manager = UrsinaNetworkingEvents(self.lock)
             self.network_buffer = UrsinaNetworkingDatagramsBuffer()
             self.event = self.events_manager.event
-            self.connected = False
+            
+            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.clientSocket = self.client
+            
             self.handle_thread = threading.Thread(
-                target=self.handle, args=(Ip_, Port_,))
+                target=self.handle, args=(server_address,))
             self.handle_thread.start()
-            self.lock = threading.Lock()
+            
         except Exception as e:
             ursina_networking_log(
                 "UrsinaNetworkingClient", "__init__", f"Cannot connect to the server : {e}")
-
     def process_net_events(self):
         self.events_manager.process_net_events()
 
-    def handle(self, Ip_, Port_):
+    def handle(self, server_address):
         try:
-            self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.connection_response = self.client.connect_ex((Ip_, Port_))
+            self.connection_response = self.client.connect_ex(server_address)
 
             if self.connection_response == 0:
                 self.connected = True
