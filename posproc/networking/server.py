@@ -10,7 +10,7 @@ from posproc.networking.user_data import User, UserData
 from ellipticcurve.privateKey import PrivateKey
 from ellipticcurve.publicKey import PublicKey
 from posproc import constants
-
+    
 class Server:
     def __init__(self, username: str, current_key: Key,
                  user_data: UserData = None, server_type=constants.LOCAL_SERVER,
@@ -69,3 +69,8 @@ class Server:
             return user_data
         else:
             return None
+    
+    def Initialize_Events(self):
+        @self.ursinaServer.event
+        def onClientConnected(CLient):
+            pass

@@ -31,7 +31,6 @@ import socket
 import threading
 import pickle
 import zlib
-import traceback
 
 HEADERSIZE = 10
 MESSAGE_LENGTH = 10
@@ -204,8 +203,9 @@ class UrsinaNetworkingConnectedClient():
 class UrsinaNetworkingServer():
 
     def __init__(self, address):
-
+        
         self.lock = threading.Lock()
+        self.shutdown = threading.Event()
         self.events_manager = UrsinaNetworkingEvents(self.lock)
         self.network_buffer = UrsinaNetworkingDatagramsBuffer()
         self.event = self.events_manager.event
@@ -260,7 +260,7 @@ class UrsinaNetworkingServer():
                 Client.send_message(Message_, Content_)
 
     def handle(self, Client_):
-        while True:
+        while not self.shutdown.is_set():            
             try:
                 self.network_buffer.receive_datagrams(Client_)
 
@@ -287,11 +287,9 @@ class UrsinaNetworkingServer():
                 ursina_networking_log(
                     "UrsinaNetworkingServer", "handle", f"unknown error : {e}")
                 break
-
+            
     def receive(self):
-
-        while True:
-
+        while not self.shutdown.is_set():
             client, address = self.server.accept()
 
             self.clients.append(UrsinaNetworkingConnectedClient(
@@ -309,6 +307,7 @@ class UrsinaNetworkingClient():
 
         try:
             self.connected = False
+            self.shutdown = threading.Event()
             self.lock = threading.Lock()
             self.events_manager = UrsinaNetworkingEvents(self.lock)
             self.network_buffer = UrsinaNetworkingDatagramsBuffer()
@@ -339,8 +338,8 @@ class UrsinaNetworkingClient():
                 ursina_networking_log(
                     "UrsinaNetworkingClient", "handle", "Client connected successfully !")
 
-                while True:
-
+                while not self.shutdown.is_set():                    
+                    
                     try:
 
                         self.network_buffer.receive_datagrams(self.client)
@@ -383,3 +382,22 @@ class UrsinaNetworkingClient():
         except Exception as e:
             ursina_networking_log("UrsinaNetworkingClient", "send_message", e)
             return False
+
+
+class AdvancedServer:
+    def __init__(self) -> None:
+        self.set_all_necessary_attributes()
+    
+    def set_all_necessary_attributes(self):
+        self.ursinaServer = UrsinaNetworkingServer()
+        self.shutdown = threading.Event()
+        self.eventsManager = self.ursinaServer.events_manager
+        self.event = self.eventsManager.event
+        self.socket = self.ursinaServer.serverSocket
+        
+    def start_events_processing_thread(self):
+        def process_net_events():
+            while not self.shutdown.is_set():
+                self.ursinaServer.process_net_events()
+        self.processEventsThread = threading.Thread(target=process_net_events)
+        self.processEventsThread.start()
