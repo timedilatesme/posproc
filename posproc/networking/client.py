@@ -1,65 +1,39 @@
-from posproc.networking.uebn import UrsinaNetworkingClient, ursina_networking_log
-import socket
-import threading
 import os
 import pickle
-from ellipticcurve.privateKey import PrivateKey
-from ellipticcurve.publicKey import PublicKey
+import secrets
 from posproc.key import Key
 from posproc import constants
+from posproc.networking.uebn import AdvancedClient
+from ellipticcurve.privateKey import PrivateKey
+from ellipticcurve.publicKey import PublicKey
 from posproc.networking.user_data import User
 from posproc.error_correction.cascade.block import Block
 from posproc.authentication import Authentication
 
-class Client(UrsinaNetworkingClient):
+class Client(AdvancedClient):
     def __init__(self, username: str, current_key: Key, auth_keys: tuple[PublicKey, PrivateKey] = None,
-                 server_address=(constants.LOCAL_IP, constants.LOCAL_PORT)):
+                 server_address = (constants.LOCAL_IP, constants.LOCAL_PORT)):
         super().__init__(server_address)
-
+        
         self.username = username
+        
         auth_keys = self.check_if_auth_keys_exist()
         self._add_authentication_token(auth_Keys=auth_keys)
-        
-        if server_address == None:
-            with open(constants.data_storage + 'server_address.pickle', 'rb') as fh:
-                self.server_address = pickle.load(fh)
-        else:
-            self.server_address = server_address
-
         if not auth_keys:
-            self.save_auth_keys_as_file()   
+            self.save_auth_keys_as_file()
         
         self._current_key = current_key
-        
-        # self.connect(self.server_address)
-        # self.connected_to_server = True
 
         self.user = User(username, address=self.server_address,
                          auth_id = self.auth_id)
-        # self.authenticating = True
-        # self.start_authentication_protocol()    
-
-        # self.reconciliation_status = {'cascade': 'Not yet started',
-        #                               'winnow': 'Not yet started',
-        #                               'ldpc': 'Not yet started',
-        #                               'polar': 'Not yet started'}   
-    
-    def event(self, func):
-        if func.__name__ in self.events_manager.event_table:
-            self.events_manager.event_table[func.__name__].append(func)
-        else:
-            self.events_manager.event_table[func.__name__] = [func]
-            
-    # @event
-    # def onConnectionEstablished():
-    #     print('I am Connected to server!')
-    
-    # @event
-    # def userObject(self, Content):
-    #     msg_to_send = pickle.dumps(self.user)
-    #     self.send_message("requestUserObjectFromClient",msg_to_send)       
         
-    
+        self.authenticating = True
+
+        self.reconciliation_status = {'cascade': 'Not yet started',
+                                      'winnow': 'Not yet started',
+                                      'ldpc': 'Not yet started',
+                                      'polar': 'Not yet started'}   
+        
     def _get_auth_keys(self):
         """
         Public Key, Private Key
@@ -68,12 +42,8 @@ class Client(UrsinaNetworkingClient):
     
     def _add_authentication_token(self, auth_Keys):
         self._auth = Authentication(auth_Keys=auth_Keys)
-        self.auth_id, self._auth_key = self._auth._get_key_pair()
+        self.auth_id, self._auth_key = self._auth._get_key_pair()        
 
-    
-    
-    def start_authentication_protocol(self):    
-        pass
 
     def ask_parities(self, blocks: list[Block]) :
         pass
@@ -143,3 +113,16 @@ class Client(UrsinaNetworkingClient):
         bits = self._current_key.get_bits_for_qber_estimation(indexes)
         # print("Updated Noisy Key",self._current_key._bits)
         return bits
+    
+    def Initialize_Events(self):
+        @self.event
+        def userObject(Content):
+            print('user Object Called')
+            self.send_message_to_server('clientUserObject', self.user)
+
+        @self.event
+        def authInit(Content):
+            msg = secrets.token_hex()
+            msg_sign = self._auth.sign(msg)
+            msg_to_send_tuple = (msg, msg_sign)
+            self.send_message_to_server('authResponse',msg_to_send_tuple)

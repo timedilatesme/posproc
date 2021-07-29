@@ -84,6 +84,7 @@ class Client(Node):
                     self.send_bytes_to_the_server(msg_to_send)
                 elif msg_recvd.startswith("auth_init:".encode(constants.FORMAT)):
                     msg_ = secrets.token_hex()
+                    
                     msg_sign = self._auth.sign(msg_)
                     msg_to_send_tuple = (msg_, msg_sign)
                     msg_to_send = "authentication:".encode(

@@ -1,29 +1,30 @@
-from posproc.networking.uebn import UrsinaNetworkingServer, ursina_networking_log
-from posproc.utils import Utilities
-import socket
-import pickle
 import os
-from posproc.authentication import Authentication
-import threading
+import pickle
+from posproc.networking.client import Client
 from posproc.key import Key
-from posproc.networking.user_data import User, UserData
-from ellipticcurve.privateKey import PrivateKey
-from ellipticcurve.publicKey import PublicKey
 from posproc import constants
+from posproc.utils import Utilities
+from ellipticcurve.publicKey import PublicKey
+from ellipticcurve.privateKey import PrivateKey
+from posproc.authentication import Authentication
+from posproc.networking.user_data import User, UserData
+from posproc.networking.uebn import AdvancedServer, UrsinaNetworkingConnectedClient, UrsinaNetworkingServer
     
-class Server:
+class Server(AdvancedServer):
     def __init__(self, username: str, current_key: Key,
                  user_data: UserData = None, server_type=constants.LOCAL_SERVER,
                  port=constants.LOCAL_PORT, auth_keys: tuple[PublicKey, PrivateKey] = None):
-        
-        self._add_authentication_token(auth_keys)
-        self.username = username
-        
         self.server_type = server_type
         self.port = port
         self._set_the_address_variable()
         
-        self.ursinaServer = UrsinaNetworkingServer(self.address)
+        super().__init__(self.address)
+
+        
+        self.username = username
+        
+        self._add_authentication_token(auth_keys)
+        
         
         self.current_key = current_key
         self.set_user_data_variable(user_data)
@@ -71,6 +72,48 @@ class Server:
             return None
     
     def Initialize_Events(self):
-        @self.ursinaServer.event
-        def onClientConnected(CLient):
+        @self.event
+        def onClientConnected(Client):
+            print("OnClientConnected")
+            self.add_this_client_to_user_data_or_do_authentication_if_already_exists(Client)
+
+    def add_this_client_to_user_data_or_do_authentication_if_already_exists(self, Client:UrsinaNetworkingConnectedClient):
+        """
+        Asks the client for it's User object to update the current user data.
+        If the user's Public Key already exists in the user data then authentication is done. 
+        User object includes: User(username, address, publicAuthKey)
+        """
+        print("authCalled")
+        self.send_message_to_client(Client, 'userObject', '') # ask for user object
+        
+        @self.receiver_event
+        def clientUserObject():
             pass
+        client_user = clientUserObject()
+        print("Client USer: ",client_user)
+        
+        self.send_message_to_client(Client, 'authInit','') 
+        
+        @self.receiver_event
+        def authResponse():
+            pass
+        message, signature = authResponse()
+        print("Auth response received")
+
+        pubKey = self.user_data.user_already_exists(client_user)
+        # print("PubKey: ", pubKey)
+        
+        if pubKey:
+            verify = self._auth.verify(message, signature, pubKey)
+            if verify:
+                self.user_data.users[pubKey.toPem()].address = Client.address
+                print(
+                    f"Authentication with Client @ {Client.address} was successful!")
+            else:
+                print(f"Authentication with Client @ {Client.address} was unsuccessful!")
+                Client.socket.close() #FIXME: Make This cleaner!
+            return verify
+        else:
+            self.update_user_data(client_user)
+            # print("User Data after Client Add: ", self.user_data)
+            return None    

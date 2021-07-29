@@ -28,7 +28,8 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 """
 import socket
 import threading
-import pickle
+from typing import Any, Tuple, List, Dict
+import jsonpickle
 import zlib
 import traceback
 
@@ -44,6 +45,16 @@ BUILTIN_EVENT_CLIENT_DISCONNECTED   = "onClientDisconnected"
 
 STATE_HEADER    = "STATE_HEADER"
 STATE_PAYLOAD   = "STATE_PAYLOAD"
+
+FORMAT = 'utf-8'
+
+def dumps(Object : Any) -> bytes:
+    dataBytes = jsonpickle.dumps(Object).encode(FORMAT)
+    return dataBytes
+
+def loads(dataBytes: bytes) -> Any:
+    Object = jsonpickle.loads(dataBytes.decode(FORMAT))
+    return Object
 
 def rename(newName):
     def decorator(f):
@@ -73,7 +84,7 @@ def ursina_networking_encode_message(Message_, Content_):
             "Message"   :   Message_,
             "Content"   :   Content_
         }
-        EncodedMessage = pickle.dumps(Message)
+        EncodedMessage = dumps(Message)
         MessageLength = len(EncodedMessage)
         LengthToBytes = MessageLength.to_bytes(MESSAGE_LENGTH, byteorder = "big")
         FinalMessage = LengthToBytes + EncodedMessage
@@ -171,7 +182,7 @@ class UrsinaNetworkingDatagramsBuffer():
                     self.state = STATE_HEADER
                     self.state_changed = True
                     self.receive_all = True
-                    self.pickled_datas = pickle.loads(self.payload)
+                    self.pickled_datas = loads(self.payload)
                     self.datagrams.append(self.pickled_datas)
 
             if not self.state_changed:
@@ -387,7 +398,7 @@ class UrsinaNetworkingClient():
 
 
 class AdvancedServer:
-    def __init__(self, address) -> None:
+    def __init__(self, address: Tuple[str, int]) -> None:
         self.messages_to_send = {} # stores messages to be sent as { Client_ : (Message_,Content_) }
         self.address = address
         self.shutdown = threading.Event() # Keeps a tab on whether to keep the server running or not?
@@ -433,12 +444,13 @@ class AdvancedServer:
     def start_sending_messages_thread(self):
         def messageSending():
             while not self.shutdown.is_set():
-                self.ursinaServer.lock.acquire()
-                for Client_ in self.messages_to_send:
-                    arguments = self.messages_to_send[Client_]
-                    Client_.send_message(*arguments)
-                self.messages_to_send.clear()
-                self.ursinaServer.lock.release()
+                if self.messages_to_send:
+                    self.ursinaServer.lock.acquire()
+                    for Client_ in self.messages_to_send:
+                        arguments = self.messages_to_send[Client_]
+                        Client_.send_message(*arguments)
+                    self.messages_to_send.clear()
+                    self.ursinaServer.lock.release()
         
         messagingThread = threading.Thread(target = messageSending)
         messagingThread.start()
@@ -497,11 +509,12 @@ class AdvancedClient:
     def start_sending_messages_thread(self):
         def messageSending():
             while not self.shutdown.is_set():
-                self.ursinaClient.lock.acquire()
-                for message,content in self.messages_to_send.items():
-                    self.ursinaClient.send_message(message, content)
-                self.messages_to_send.clear()
-                self.ursinaClient.lock.release()
+                if self.messages_to_send:
+                    self.ursinaClient.lock.acquire()
+                    for message,content in self.messages_to_send.items():
+                        self.ursinaClient.send_message(message, content)
+                    self.messages_to_send.clear()
+                    self.ursinaClient.lock.release()
         messagingThread = threading.Thread(target = messageSending)
         messagingThread.start()
 

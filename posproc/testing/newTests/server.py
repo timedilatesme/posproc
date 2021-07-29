@@ -4,13 +4,9 @@ import pickle
 
 # python -m posproc.testing.newTests.server
 
-s = Server("Alice", alice_key)
+server = Server("Alice", alice_key)
 
-@s.event
-def requestUserObjectFromClient(Client, Content):
-    Client.send_message("userObject", "")
-    clientUserObject = pickle.loads(Content)
-    print("User Object: ", clientUserObject)
-
-while True:
-    s.process_net_events()
+server.start_ursina_server()
+server.start_sending_messages_thread()
+server.start_events_processing_thread()
+server.Initialize_Events()
