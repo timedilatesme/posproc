@@ -133,6 +133,8 @@ class UrsinaNetworkingEvents():
         self.lock.release()                
 
     def event(self, func):
+        # NOTE: Currently it is not possible to define an event inside an event
+        # FIXME: Maybe add some functionality for the above!
         if func.__name__ in self.event_table:
             self.event_table[func.__name__].append(func)
         else:
@@ -410,17 +412,38 @@ class AdvancedServer:
 
             @self.event
             @rename(func.__name__)
-            def receivingLogic(Content):
+            def receivingLogic(Client, Content):
                 self.ursinaServer.lock.acquire()
                 self.tempVar = Content
                 dataAvailable.set()
                 self.ursinaServer.lock.release()
-
+            
             dataAvailable.wait()
             tempVar = self.tempVar
             del self.tempVar
 
             return tempVar
+        return wrapper
+    
+    def get_connected_client_object(self, func):
+
+        def wrapper():
+            self.clientObject = None
+            clientObjectAvailable = threading.Event()
+
+            @self.event
+            @rename(func.__name__)
+            def receivingLogic(Client):
+                self.ursinaServer.lock.acquire()
+                self.clientObject = Client
+                clientObjectAvailable.set()
+                self.ursinaServer.lock.release()
+
+            clientObjectAvailable.wait()
+            clientObject = self.clientObject
+            del self.clientObject
+
+            return clientObject
         return wrapper
     
     def start_ursina_server(self):
@@ -486,7 +509,6 @@ class AdvancedClient:
             
             return tempVar
         return wrapper
-                   
         
 
     def start_ursina_client(self):

@@ -72,31 +72,34 @@ class Server(AdvancedServer):
             return None
     
     def Initialize_Events(self):
-        @self.event
-        def onClientConnected(Client):
-            print("OnClientConnected")
-            self.add_this_client_to_user_data_or_do_authentication_if_already_exists(Client)
+        @self.get_connected_client_object
+        def onClientConnected():
+            pass
+        Client = onClientConnected()
+        verify = self.add_this_client_to_user_data_or_do_authentication_if_already_exists(
+            Client)
 
-    def add_this_client_to_user_data_or_do_authentication_if_already_exists(self, Client:UrsinaNetworkingConnectedClient):
+    def add_this_client_to_user_data_or_do_authentication_if_already_exists(self, Client: UrsinaNetworkingConnectedClient):
         """
         Asks the client for it's User object to update the current user data.
         If the user's Public Key already exists in the user data then authentication is done. 
         User object includes: User(username, address, publicAuthKey)
         """
-        print("authCalled")
-        self.send_message_to_client(Client, 'userObject', '') # ask for user object
-        
         @self.receiver_event
         def clientUserObject():
             pass
-        client_user = clientUserObject()
-        print("Client USer: ",client_user)
-        
-        self.send_message_to_client(Client, 'authInit','') 
         
         @self.receiver_event
         def authResponse():
             pass
+        
+        self.send_message_to_client(Client, 'userObject', '')  # ask for user object
+        client_user = clientUserObject()
+        print("Client USer: ", client_user)
+        
+        self.send_message_to_client(Client, 'authInit','') 
+        
+        
         message, signature = authResponse()
         print("Auth response received")
 
