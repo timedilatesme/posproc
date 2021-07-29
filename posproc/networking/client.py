@@ -116,7 +116,7 @@ class Client(AdvancedClient):
     
     def Initialize_Events(self):
         @self.event
-        def authInit(Content):
+        def static_authInit(Content):
             print('authInit')
             msg = secrets.token_hex()
             msg_sign = self._auth.sign(msg)

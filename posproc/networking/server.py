@@ -72,37 +72,37 @@ class Server(AdvancedServer):
         else:
             return None
     
-    def Initialize_Events(self):
-        verify = self.add_this_client_to_user_data_or_do_authentication_if_already_exists()
+    def start_ursina_server(self):
+        super().start_ursina_server()
 
-    def add_this_client_to_user_data_or_do_authentication_if_already_exists(self):
+        @self.event
+        def onClientConnected(Client):
+            # print('oncl')
+            Client.send_message('static_authInit', '')
+    
+    def Initialize_Events(self):
+        
+        @self.event
+        def authResponse(Client:UrsinaNetworkingConnectedClient,Content):
+            verify = self.add_this_client_to_user_data_or_do_authentication_if_already_exists(Client,Content)
+            Client.authenticated = verify
+            
+    def add_this_client_to_user_data_or_do_authentication_if_already_exists(self,clientObject, receivedTuple):
         """
         Asks the client for it's User object to update the current user data.
         If the user's Public Key already exists in the user data then authentication is done. 
         User object includes: User(username, address, publicAuthKey)
         """
-        @self.receiver_event
-        def authResponse():
-            print('authresp')
-
-        @self.get_connected_client_object
-        def onClientConnected():
-            pass
-
-        clientObject = onClientConnected()
-        print("ClientObject",clientObject)
-        self.send_message_to_client(clientObject, 'authInit', '')
-        
-        client_user, message, signature = authResponse()
-        print("Auth response received")
-        
+        client_user, message, signature  = receivedTuple
         pubKey = self.user_data.user_already_exists(client_user)
         # print("PubKey: ", pubKey)
         
         if pubKey:
             verify = self._auth.verify(message, signature, pubKey)
             if verify:
+                self.ursinaServer.lock.acquire()
                 self.user_data.users[pubKey.toPem()].address = clientObject.address
+                self.ursinaServer.lock.release()
                 print(
                     f"Authentication with Client @ {clientObject.address} was successful!")
             else:
