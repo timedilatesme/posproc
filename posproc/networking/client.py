@@ -24,7 +24,7 @@ class Client(AdvancedClient):
         
         self._current_key = current_key
 
-        self.user = User(username, address=self.server_address,
+        self.user = User(username, address=None,
                          auth_id = self.auth_id)
         
         self.authenticating = True
@@ -116,13 +116,11 @@ class Client(AdvancedClient):
     
     def Initialize_Events(self):
         @self.event
-        def userObject(Content):
-            print('user Object Called')
-            self.send_message_to_server('clientUserObject', self.user)
-
-        @self.event
         def authInit(Content):
+            print('authInit')
             msg = secrets.token_hex()
             msg_sign = self._auth.sign(msg)
-            msg_to_send_tuple = (msg, msg_sign)
-            self.send_message_to_server('authResponse',msg_to_send_tuple)
+            msg_to_send_tuple = (self.user, msg, msg_sign)
+            print("message being sent")
+            self.send_message_to_server('authResponse', msg_to_send_tuple)
+        # self.send_message_to_server('authResponse','duhhhhhh')    

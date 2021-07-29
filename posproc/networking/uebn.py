@@ -111,8 +111,8 @@ class UrsinaNetworkingEvents():
     def process_net_events(self):
         self.lock.acquire()
         for event in self.events:
-            Func = event[0]
-            Args = event[1]
+            Func = event[0] #name of func
+            Args = event[1] 
             try:
                 for events_ in self.event_table:
                     for event_ in self.event_table[ events_ ]:
@@ -404,46 +404,49 @@ class AdvancedServer:
         self.messages_to_send = {} # stores messages to be sent as { Client_ : (Message_,Content_) }
         self.address = address
         self.shutdown = threading.Event() # Keeps a tab on whether to keep the server running or not?
-    
+        
+        
     def receiver_event(self, func):
-        def wrapper():
-            self.tempVar = None
-            dataAvailable = threading.Event()
+        self.tempVar = None
+        dataAvailable = threading.Event()
 
-            @self.event
-            @rename(func.__name__)
-            def receivingLogic(Client, Content):
-                self.ursinaServer.lock.acquire()
-                self.tempVar = Content
-                dataAvailable.set()
-                self.ursinaServer.lock.release()
-            
+        @self.event
+        @rename(func.__name__)
+        def receivingLogic(Client, Content):
+            self.ursinaServer.lock.acquire()
+            self.tempVar = Content
+            dataAvailable.set()
+            self.ursinaServer.lock.release()
+        
+        def wrapper(*args):
             dataAvailable.wait()
             tempVar = self.tempVar
             del self.tempVar
-
+            func(*args)
             return tempVar
+        
         return wrapper
     
     def get_connected_client_object(self, func):
 
-        def wrapper():
-            self.clientObject = None
-            clientObjectAvailable = threading.Event()
+        self.clientObject = None
+        clientObjectAvailable = threading.Event()
 
-            @self.event
-            @rename(func.__name__)
-            def receivingLogic(Client):
-                self.ursinaServer.lock.acquire()
-                self.clientObject = Client
-                clientObjectAvailable.set()
-                self.ursinaServer.lock.release()
+        @self.event
+        @rename(func.__name__)
+        def receivingLogic(Client):
+            self.ursinaServer.lock.acquire()
+            self.clientObject = Client
+            clientObjectAvailable.set()
+            self.ursinaServer.lock.release()
 
+        def wrapper(*args):
             clientObjectAvailable.wait()
             clientObject = self.clientObject
             del self.clientObject
-
+            func(*args)
             return clientObject
+                
         return wrapper
     
     def start_ursina_server(self):
@@ -491,23 +494,27 @@ class AdvancedClient:
         self.shutdown = threading.Event()
     
     def receiver_event(self, func):
-        def wrapper():
-            self.tempVar = None
-            dataAvailable = threading.Event()
-            
-            @self.event
-            @rename(func.__name__)
-            def receivingLogic(Content):
-                self.ursinaClient.lock.acquire()
-                self.tempVar = Content
-                dataAvailable.set()
-                self.ursinaClient.lock.release()
-            
+        """
+        makes the function return the content of an event!
+        """
+        self.tempVar = None
+        dataAvailable = threading.Event()
+        
+        @self.event
+        @rename(func.__name__)
+        def receivingLogic(Content):
+            self.ursinaClient.lock.acquire()
+            self.tempVar = Content
+            dataAvailable.set()
+            self.ursinaClient.lock.release()
+        
+        def wrapper(*args):
             dataAvailable.wait()
             tempVar = self.tempVar
             del self.tempVar
-            
+            func(*args)            
             return tempVar
+        
         return wrapper
         
 

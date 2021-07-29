@@ -1,5 +1,6 @@
 import os
 import pickle
+from posproc.networking_old import client
 from posproc.networking.client import Client
 from posproc.key import Key
 from posproc import constants
@@ -72,49 +73,41 @@ class Server(AdvancedServer):
             return None
     
     def Initialize_Events(self):
-        @self.get_connected_client_object
-        def onClientConnected():
-            pass
-        Client = onClientConnected()
-        verify = self.add_this_client_to_user_data_or_do_authentication_if_already_exists(
-            Client)
+        verify = self.add_this_client_to_user_data_or_do_authentication_if_already_exists()
 
-    def add_this_client_to_user_data_or_do_authentication_if_already_exists(self, Client: UrsinaNetworkingConnectedClient):
+    def add_this_client_to_user_data_or_do_authentication_if_already_exists(self):
         """
         Asks the client for it's User object to update the current user data.
         If the user's Public Key already exists in the user data then authentication is done. 
         User object includes: User(username, address, publicAuthKey)
         """
         @self.receiver_event
-        def clientUserObject():
-            pass
-        
-        @self.receiver_event
         def authResponse():
-            pass
-        
-        self.send_message_to_client(Client, 'userObject', '')  # ask for user object
-        client_user = clientUserObject()
-        print("Client USer: ", client_user)
-        
-        self.send_message_to_client(Client, 'authInit','') 
-        
-        
-        message, signature = authResponse()
-        print("Auth response received")
+            print('authresp')
 
+        @self.get_connected_client_object
+        def onClientConnected():
+            pass
+
+        clientObject = onClientConnected()
+        print("ClientObject",clientObject)
+        self.send_message_to_client(clientObject, 'authInit', '')
+        
+        client_user, message, signature = authResponse()
+        print("Auth response received")
+        
         pubKey = self.user_data.user_already_exists(client_user)
         # print("PubKey: ", pubKey)
         
         if pubKey:
             verify = self._auth.verify(message, signature, pubKey)
             if verify:
-                self.user_data.users[pubKey.toPem()].address = Client.address
+                self.user_data.users[pubKey.toPem()].address = clientObject.address
                 print(
-                    f"Authentication with Client @ {Client.address} was successful!")
+                    f"Authentication with Client @ {clientObject.address} was successful!")
             else:
-                print(f"Authentication with Client @ {Client.address} was unsuccessful!")
-                Client.socket.close() #FIXME: Make This cleaner!
+                print(f"Authentication with Client @ {clientObject.address} was unsuccessful!")
+                clientObject.socket.close() #FIXME: Make This cleaner!
             return verify
         else:
             self.update_user_data(client_user)
