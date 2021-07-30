@@ -3,7 +3,8 @@ import pickle
 import secrets
 from posproc.key import Key
 from posproc import constants
-from posproc.networking.uebn import AdvancedClient
+from typing import Any, List
+from posproc.networking.uebn import AdvancedClient, rename
 from ellipticcurve.privateKey import PrivateKey
 from ellipticcurve.publicKey import PublicKey
 from posproc.networking.user_data import User
@@ -32,7 +33,9 @@ class Client(AdvancedClient):
         self.reconciliation_status = {'cascade': 'Not yet started',
                                       'winnow': 'Not yet started',
                                       'ldpc': 'Not yet started',
-                                      'polar': 'Not yet started'}   
+                                      'polar': 'Not yet started'} 
+        
+        self.askParitiesReplyCurrentIndex = 0  
         
     def _get_auth_keys(self):
         """
@@ -116,11 +119,52 @@ class Client(AdvancedClient):
     
     def Initialize_Events(self):
         @self.event
-        def authInit(Content):
-            print('authInit')
-            msg = secrets.token_hex()
-            msg_sign = self._auth.sign(msg)
-            msg_to_send_tuple = (self.user, msg, msg_sign)
-            print("message being sent")
-            self.send_message_to_server('authResponse', msg_to_send_tuple)
-        # self.send_message_to_server('authResponse','duhhhhhh')    
+        def authentication(Content):
+            if Content == 'Initialize':
+                msg = secrets.token_hex()
+                msg_sign = self._auth.sign(msg)
+                msg_to_send_dict = {'User': self.user, 'Message' : msg, 'Signature' : msg_sign}
+                self.ursinaClient.send_message('authenticateClient', msg_to_send_dict)
+            else:
+                print('[Server]: ',Content)
+        
+    
+    def ask_parities(self, blocks: List[Block]):
+        """
+        Sends blocks as bytes to the server and then the server
+        replies with the appropriate parities of the blocks asked.
+
+        Args:
+            blocks (list(Block)): Contains all the blocks whose parity is to be asked.
+
+        Returns:
+            parities (list(int)): Contains parities in the same order as the blocks in blocks.
+        """
+        self.askParitiesReplyCurrentIndex += 1
+        
+        # Only send the indexes for parity.
+        # TODO: make this algo faster it's currently very slow for large blocks.
+        block_indexes_list = [block.get_key_indexes() for block in blocks]
+        # TODO: add tracking of parity messages.
+        
+        # print(f"Block Indexes List Bytes Sent: {len(block_indexes_list_bytes)}")
+
+        # dict_to_send = {'askParitiesIndex':self.askParitiesReplyCurrentIndex, 'blocks_indexes':block_indexes_list}
+        tuple_to_send = self.askParitiesReplyCurrentIndex, block_indexes_list
+        
+        # asking:
+        self.send_message_to_server('askParities', tuple_to_send)
+        
+        # receiving:        
+        name = 'askParitiesReply' + str(self.askParitiesReplyCurrentIndex)
+         
+        # @rename(name)
+        @self.receiver_event
+        def askParitiesReply():
+            pass
+        
+        # parities = eval(name + '()')
+        parities = askParitiesReply()
+        
+        return parities
+        

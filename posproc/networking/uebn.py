@@ -205,6 +205,7 @@ class UrsinaNetworkingConnectedClient():
         self.id = id
         self.name = f"Client {id}"
         self.datas = {}
+        self.authenticated = False
         self.connected = True
 
     def __repr__(self):
@@ -404,7 +405,7 @@ class AdvancedServer:
         self.messages_to_send = {} # stores messages to be sent as { Client_ : (Message_,Content_) }
         self.address = address
         self.shutdown = threading.Event() # Keeps a tab on whether to keep the server running or not?
-        
+
         
     def receiver_event(self, func):
         self.tempVar = None
