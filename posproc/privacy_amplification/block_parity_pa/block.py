@@ -297,4 +297,8 @@ class Block:
         flipped as a result of a single bit error correction.
         """
         self._current_parity = 1 - self._current_parity
-    
+
+    def calculate_parity(self):
+        """
+        Calcultes the paroty of the block
+        """
