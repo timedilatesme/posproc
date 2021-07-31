@@ -231,12 +231,13 @@ class UrsinaNetworkingServer():
             self.receiveThread = threading.Thread(target = self.receive)
             self.receiveThread.start()
 
-            ursina_networking_log("UrsinaNetworkingServer", "__init__", "Server started !")
-            ursina_networking_log("UrsinaNetworkingServer", "__init__", f"Ip   :   {Ip_}")
-            ursina_networking_log("UrsinaNetworkingServer", "__init__", f"Port :   {Port_}")
-
+            # ursina_networking_log("UrsinaNetworkingServer", "__init__", "Server started !")
+            # ursina_networking_log("UrsinaNetworkingServer", "__init__", f"Ip   :   {Ip_}")
+            # ursina_networking_log("UrsinaNetworkingServer", "__init__", f"Port :   {Port_}")
+            
+            print(f'\n QKDServer listening @ {self.socketAddress} \n')
         except Exception as e:
-            ursina_networking_log("UrsinaNetworkingServer", "__init__", f"Cannot create the server : {e}")
+            ursina_networking_log("UrsinaNetworkingServer", "__init__", f"Cannot create the server : {e} \n")
 
     def process_net_events(self):
         self.events_manager.process_net_events()
@@ -342,7 +343,8 @@ class UrsinaNetworkingClient():
                     self.socketAddress = self.clientSocket.getsockname()
                     self.events_manager.push_event(BUILTIN_EVENT_CONNECTION_ESTABLISHED)
 
-                    ursina_networking_log("UrsinaNetworkingClient", "handle", "Client connected successfully !")
+                    #ursina_networking_log("UrsinaNetworkingClient", "handle", "Client connected successfully !")
+                    print(f'\n QKDClient connected to {(Ip_, Port_)} \n')
                     self.connected.set()
                     
                     while not self.shutdown.is_set():

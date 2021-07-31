@@ -18,4 +18,3 @@ FORMAT = "utf-8"
 MAX_KEY_SIZE = 5000
 MAX_DATA_LENGTH = 0xfffff
 DATA_STORAGE = 'posproc/testing/data/' # Stores all the data needed for authentication/user_data.
-data_storage = 'posproc/testing/data/' # Stores all the data needed for authentication/user_data.

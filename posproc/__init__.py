@@ -16,6 +16,7 @@ from posproc.networking.client import Client as QKDClient
 # Basic data structures and functions imports.
 from posproc.key import Key, Random_Key_Generator
 from posproc import constants, utils, qber, authentication
+from posproc.networking.user_data import User,UserData
 
 # Error Correction Algorithms imports.
 from posproc.error_correction.cascade.reconciliation import Reconciliation as CascadeReconciliation

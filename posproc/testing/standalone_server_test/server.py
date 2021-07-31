@@ -68,7 +68,7 @@ class Server(Node):
         # print("UserData (After Server Add): ", self.user_data.users)
         
         if server_type == constants.PUBLIC_SERVER:
-            with open(constants.data_storage + 'server_address.pickle', 'wb') as fh:
+            with open(constants.DATA_STORAGE + 'server_address.pickle', 'wb') as fh:
                 pickle.dump(self.address, fh,protocol=pickle.HIGHEST_PROTOCOL)
                 
         self.threads = [];
@@ -92,7 +92,7 @@ class Server(Node):
         
     
     def save_user_data_as_file(self):
-        datapath = os.path.join(constants.data_storage,'server_' + self.username)
+        datapath = os.path.join(constants.DATA_STORAGE,'server_' + self.username)
         if os.path.exists(datapath) == False:
             os.makedirs(datapath)
         filepath = os.path.join(datapath, 'user_data.pickle')
@@ -101,7 +101,7 @@ class Server(Node):
     
     def check_if_user_data_file_exists(self):
         datapath = os.path.join(
-            constants.data_storage, 'server_' + self.username + '/', 'user_data.pickle')
+            constants.DATA_STORAGE, 'server_' + self.username + '/', 'user_data.pickle')
         if os.path.exists(datapath):  
             with open(datapath, 'rb') as fh:
                 user_data = pickle.load(fh)
@@ -325,7 +325,7 @@ class Server(Node):
             
     def save_current_key_as_text(self, path=None):
         if not path:
-            path = os.path.join(constants.data_storage,
+            path = os.path.join(constants.DATA_STORAGE,
                                 f'{self.username}_Key.txt')
         with open(path, 'w') as fh:
             fh.write(self._current_key.__str__())

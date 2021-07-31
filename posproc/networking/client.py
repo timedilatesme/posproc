@@ -52,7 +52,7 @@ class Client(AdvancedClient):
         self.auth_id, self._auth_key = self._auth._get_key_pair()
 
     def check_if_auth_keys_exist(self) -> tuple[PublicKey, PrivateKey]:
-        dirpath = constants.data_storage + self.username + '_auth_keys/'
+        dirpath = constants.DATA_STORAGE + self.username + '_auth_keys/'
         if os.path.exists(dirpath):
             with open(dirpath + 'privKey.pickle', 'rb') as privKeyFH:
                 privKey = pickle.load(privKeyFH)
@@ -68,7 +68,7 @@ class Client(AdvancedClient):
 
     def save_current_key_as_text(self, path = None):
         if not path:
-            path = os.path.join(constants.data_storage, f'{self.username}_Key.txt')
+            path = os.path.join(constants.DATA_STORAGE, f'{self.username}_Key.txt')
         with open(path, 'w') as fh:
             fh.write(self._current_key.__str__())
 
@@ -79,7 +79,7 @@ class Client(AdvancedClient):
         """
         pubKey, privKey = self._get_auth_keys() # (PubKey, PrivKey)
         
-        dirpath = constants.data_storage + self.username + '_auth_keys/'
+        dirpath = constants.DATA_STORAGE + self.username + '_auth_keys/'
         if os.path.exists(dirpath) == False:
             os.makedirs(dirpath)
         with open(dirpath + 'privKey.pickle' , 'wb') as privKeyFH:

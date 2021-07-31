@@ -12,7 +12,9 @@ from posproc.networking.uebn import AdvancedServer, UrsinaNetworkingConnectedCli
 class Server(AdvancedServer):
     def __init__(self, username: str, current_key: Key,
                  user_data: UserData = None, server_type=constants.LOCAL_SERVER,
-                 port=constants.LOCAL_PORT, auth_keys: tuple[PublicKey, PrivateKey] = None):
+                 port=constants.LOCAL_PORT, auth_keys: tuple[PublicKey, PrivateKey] = None,
+                 authentication_required = True):
+        self.authentication_required = authentication_required
         self.server_type = server_type
         self.port = port
         self._set_the_address_variable()
@@ -35,22 +37,24 @@ class Server(AdvancedServer):
     def Initialize_Events(self):
         @self.event
         def onClientConnected(Client):
-            Client.send_message('authentication', 'Initialize')
-
+            if self.authentication_required:
+                Client.send_message('authentication', 'Initialize')
+            print(f'Client @ {Client.address} is connected! \n')
+            
         @self.event
         def authenticateClient(Client: UrsinaNetworkingConnectedClient, Content):
             verified = self.add_this_client_to_user_data_or_do_authentication_if_already_exists(
                 Client, Content)
             if verified == None:
-                Client.send_message('authentication', 'Welcome to the Server!')
+                Client.send_message('authentication', 'Welcome to the Server! \n')
             elif verified == True:
                 Client.authenticated = True
                 Client.send_message(
-                    'authentication', 'Authentication Successful!')
+                    'authentication', 'Authentication Successful! \n')
             else:
                 Client.authenticated = False
                 Client.send_message(
-                    'authentication', 'Authentication Unsuccessful!')
+                    'authentication', 'Authentication Unsuccessful! \n')
                 # Client.socket.close()
             self.save_user_data_as_file()
 
@@ -128,7 +132,7 @@ class Server(AdvancedServer):
     
     def check_if_user_data_file_exists(self):
         datapath = os.path.join(
-            constants.data_storage, 'server_' + self.username + '/', 'user_data.pickle')
+            constants.DATA_STORAGE, 'server_' + self.username + '/', 'user_data.pickle')
         if os.path.exists(datapath):
             with open(datapath, 'rb') as fh:
                 user_data = pickle.load(fh)
@@ -137,7 +141,7 @@ class Server(AdvancedServer):
             return None
     
     def save_user_data_as_file(self):
-        datapath = os.path.join(constants.data_storage,'server_' + self.username)
+        datapath = os.path.join(constants.DATA_STORAGE,'server_' + self.username)
         if not os.path.exists(datapath):
             os.makedirs(datapath)
         filepath = os.path.join(datapath, 'user_data.pickle')
@@ -161,9 +165,9 @@ class Server(AdvancedServer):
                 self.user_data.users[pubKey.toPem()].address = clientObject.address
                 self.ursinaServer.lock.release()
                 print(
-                    f"Authentication with Client @ {clientObject.address} was successful!")
+                    f"Authentication with Client @ {clientObject.address} was successful! \n")
             else:
-                print(f"Authentication with Client @ {clientObject.address} was unsuccessful!")
+                print(f"Authentication with Client @ {clientObject.address} was unsuccessful! \n")
             return verify
         else:
             self.update_user_data(client_user)
