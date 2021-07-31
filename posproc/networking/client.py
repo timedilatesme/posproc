@@ -1,5 +1,6 @@
 import os
 import pickle
+# FIXME: deprecate use of pickle, use jsonpickle instead!
 import secrets
 from posproc.key import Key
 from posproc import constants
@@ -43,32 +44,12 @@ class Client(AdvancedClient):
         """
         return self.auth_id, self._auth_key
     
+    def Initialize_Events(self):
+        pass
+    
     def _add_authentication_token(self, auth_Keys):
         self._auth = Authentication(auth_Keys=auth_Keys)
-        self.auth_id, self._auth_key = self._auth._get_key_pair()        
-
-
-    def ask_parities(self, blocks: list[Block]) :
-        pass
-    
-    def start_reconciliation(self, reconciliation_algorithm: str):
-        pass
-    
-    def end_reconciliation(self, reconciliation_algorithm: str):
-        pass
-
-    def get_bits_for_qber(self, indexes):
-        pass
-    
-    def ask_server_for_bits_to_estimate_qber(self, indexes: list) -> dict:
-        pass
-
-    def disconnect_from_server(self):
-        pass
-
-    def check_network_speed(self, BytesSize = 1000):
-        pass
-
+        self.auth_id, self._auth_key = self._auth._get_key_pair()
 
     def check_if_auth_keys_exist(self) -> tuple[PublicKey, PrivateKey]:
         dirpath = constants.data_storage + self.username + '_auth_keys/'
@@ -117,7 +98,9 @@ class Client(AdvancedClient):
         # print("Updated Noisy Key",self._current_key._bits)
         return bits
     
-    def Initialize_Events(self):
+    def start_ursina_client(self):
+        super().start_ursina_client()
+        
         @self.event
         def authentication(Content):
             if Content == 'Initialize':
@@ -127,7 +110,6 @@ class Client(AdvancedClient):
                 self.ursinaClient.send_message('authenticateClient', msg_to_send_dict)
             else:
                 print('[Server]: ',Content)
-        
     
     def ask_parities(self, blocks: List[Block]):
         """
@@ -167,4 +149,54 @@ class Client(AdvancedClient):
         parities = askParitiesReply()
         
         return parities
+    
+    def start_reconciliation(self, reconciliation_algorithm: str):
+        """
+        Informs the Server(Alice) that reconciliation has started.
+
+        Args:
+            reconciliation_algorithm (str): Specify which algorithm is being used eg. 'cascade' for cascade algo.
+        """
+        #TODO: Maybe add authentication here!
+        self.reconciliation_status[reconciliation_algorithm] = 'Active'
+        self.send_message_to_server('updateReconciliationStatus', (reconciliation_algorithm,'Active'))
+
+    def end_reconciliation(self, reconciliation_algorithm: str):
+        """
+        Informs the Server(Alice) that reconciliation has ended.
+
+        Args:
+            reconciliation_algorithm (str): Specify which algorithm is being used eg. 'cascade' for cascade algo.
+        """
+        self.reconciliation_status[reconciliation_algorithm] = 'Completed'
+        self.send_message_to_server(
+            'updateReconciliationStatus', (reconciliation_algorithm, 'Completed'))
+    
+    def get_bits_for_qber(self, indexes):
+        bits = self._current_key.get_bits_for_qber_estimation(indexes)
+        # print("Updated Noisy Key",self._current_key._bits)
+        return bits
+    
+    def ask_server_for_bits_to_estimate_qber(self, indexes: list) -> dict:
+        #TODO: add message no. for this also.
         
+        # print("Message Send for QBER: ", msg_to_send)
+
+        # asking:
+        self.send_message_to_server('qberEstimation',indexes)
+        
+        # receiving:
+        @self.receiver_event
+        def qberEstimationReply():
+            pass
+        
+        bits_dict = qberEstimationReply()
+        
+        return bits_dict
+    
+    def ask_server_to_do_privacy_amplification(self):
+        
+        algorithm_for_pa = None # TODO: Decide an algo randomly!
+        
+        # asking:
+        self.send_message_to_server('privacyAmplification', algorithm_for_pa)

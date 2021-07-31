@@ -1,7 +1,5 @@
 import os
 import pickle
-from posproc.networking_old import client
-from posproc.networking.client import Client
 from posproc.key import Key
 from posproc import constants
 from posproc.utils import Utilities
@@ -88,15 +86,23 @@ class Server(AdvancedServer):
         filepath = os.path.join(datapath, 'user_data.pickle')
         with open(filepath, 'wb') as fh:
             pickle.dump(self.user_data, fh)
-    
-    def start_ursina_server(self):
-        super().start_ursina_server()
-
+        
+    def Initialize_Events(self):
         @self.event
         def onClientConnected(Client):
             Client.send_message('authentication', 'Initialize')
-    
-    def Initialize_Events(self):
+            
+        @self.event
+        def authenticateClient(Client,Content):
+            verified = self.add_this_client_to_user_data_or_do_authentication_if_already_exists(Client, Content)
+            if verified == None:
+                Client.send_message('authentication','Welcome to the Server!')
+            elif verified == True:
+                Client.send_message('authentication','Authentication Successful!')
+            else:
+                Client.send_message('authentication','Authentication Unsuccessful!')
+            self.save_user_data_as_file()
+                                
         @self.event
         def askParities(Client, Content):
             #TODO: Store the information leaked into some new object to help in privacy amplification.
@@ -109,21 +115,26 @@ class Server(AdvancedServer):
             # + str(index)
             Client.send_message('askParitiesReply' , parities)
             
+        @self.event
+        def updateReconciliationStatus(Client, Content):
+            algorithmName,status = Content
+            self.reconciliation_status[algorithmName] = status
         
         @self.event
-        def authenticateClient(Client, Content):
-            if type(Content) == dict:
-                verify = self.add_this_client_to_user_data_or_do_authentication_if_already_exists(Client,Content)
-                if verify == None:
-                    Client.send_message('authentication','Welcome to the Server!')
-                elif verify == True:
-                    Client.send_message('authentication','Authentication Successful!')                    
-                else:
-                    Client.send_message('authentication','Authentication Unsuccessful!')
-                
-                self.save_user_data_as_file()                
-            else:
-                Client.send_message('authentication', 'Initialize')        
+        def qberEstimation(Client, Content):
+            indexes = Content
+            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
+            # print("Bits to send to Client: ", bits_dict)
+            Client.send_message('qberEstimationReply',bits_dict)
+        
+        @self.event
+        def privacyAmplification(Client, Content):
+            algorithm_for_pa = Content
+            
+            #TODO: add logic here
+            
+            pass            
+        
                 
     def add_this_client_to_user_data_or_do_authentication_if_already_exists(self,clientObject, auth_data_dict):
         """
