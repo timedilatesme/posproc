@@ -51,7 +51,7 @@ class Client(Node):
         
         if server_address == None:
             # FIXME: change it to something else from None!
-            with open(constants.data_storage + 'server_address.pickle', 'rb') as fh:
+            with open(constants.DATA_STORAGE + 'server_address.pickle', 'rb') as fh:
                 self.server_address = pickle.load(fh)
         else:
             self.server_address = server_address
@@ -95,7 +95,7 @@ class Client(Node):
         # print("Authentication Fn Done!")
     
     def check_if_auth_keys_exist(self) -> tuple[PublicKey, PrivateKey]:
-        dirpath = constants.data_storage + self.username + '_auth_keys/'
+        dirpath = constants.DATA_STORAGE + self.username + '_auth_keys/'
         if os.path.exists(dirpath):
             with open(dirpath + 'privKey.pickle', 'rb') as privKeyFH:
                 privKey = pickle.load(privKeyFH)
@@ -111,7 +111,7 @@ class Client(Node):
     
     def save_current_key_as_text(self, path = None):
         if not path:
-            path = os.path.join(constants.data_storage, f'{self.username}_Key.txt')
+            path = os.path.join(constants.DATA_STORAGE, f'{self.username}_Key.txt')
         with open(path, 'w') as fh:
             fh.write(self._current_key.__str__())
                     
@@ -122,7 +122,7 @@ class Client(Node):
         """
         pubKey, privKey = self._get_auth_keys() # (PubKey, PrivKey)
         
-        dirpath = constants.data_storage + self.username + '_auth_keys/'
+        dirpath = constants.DATA_STORAGE + self.username + '_auth_keys/'
         if os.path.exists(dirpath) == False:
             os.makedirs(dirpath)
         with open(dirpath + 'privKey.pickle' , 'wb') as privKeyFH:

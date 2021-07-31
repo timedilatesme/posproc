@@ -1,10 +1,8 @@
 import os
 import pickle
-from posproc.networking_old import client
-from posproc.networking.client import Client
 from posproc.key import Key
 from posproc import constants
-from posproc.utils import Utilities
+from posproc import utils
 from ellipticcurve.publicKey import PublicKey
 from ellipticcurve.privateKey import PrivateKey
 from posproc.authentication import Authentication
@@ -14,7 +12,9 @@ from posproc.networking.uebn import AdvancedServer, UrsinaNetworkingConnectedCli
 class Server(AdvancedServer):
     def __init__(self, username: str, current_key: Key,
                  user_data: UserData = None, server_type=constants.LOCAL_SERVER,
-                 port=constants.LOCAL_PORT, auth_keys: tuple[PublicKey, PrivateKey] = None):
+                 port=constants.LOCAL_PORT, auth_keys: tuple[PublicKey, PrivateKey] = None,
+                 authentication_required = True):
+        self.authentication_required = authentication_required
         self.server_type = server_type
         self.port = port
         self._set_the_address_variable()
@@ -33,6 +33,65 @@ class Server(AdvancedServer):
         
         self.user = User(username, address=self.address, auth_id=self.auth_id)
         self.user_data.update_user_data(self.user)
+        
+    def Initialize_Events(self):
+        @self.event
+        def onClientConnected(Client):
+            if self.authentication_required:
+                Client.send_message('authentication', 'Initialize')
+            print(f'Client @ {Client.address} is connected! \n')
+            
+        @self.event
+        def authenticateClient(Client: UrsinaNetworkingConnectedClient, Content):
+            verified = self.add_this_client_to_user_data_or_do_authentication_if_already_exists(
+                Client, Content)
+            if verified == None:
+                Client.send_message('authentication', 'Welcome to the Server! \n')
+            elif verified == True:
+                Client.authenticated = True
+                Client.send_message(
+                    'authentication', 'Authentication Successful! \n')
+            else:
+                Client.authenticated = False
+                Client.send_message(
+                    'authentication', 'Authentication Unsuccessful! \n')
+                # Client.socket.close()
+            self.save_user_data_as_file()
+
+        @self.event
+        def askParities(Client, Content):
+            #TODO: Store the information leaked into some new object to help in privacy amplification.
+            index, block_indexes_list = Content
+
+            parities = []
+            for block_indexes in block_indexes_list:
+                parity = self._current_key.get_indexes_parity(block_indexes)
+                parities.append(parity)
+            # + str(index)
+            Client.send_message('askParitiesReply', parities)
+
+        @self.event
+        def updateReconciliationStatus(Client, Content):
+            algorithmName, status = Content
+            self.reconciliation_status[algorithmName] = status
+
+        @self.event
+        def qberEstimation(Client, Content):
+            indexes = Content
+            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
+            # print("Bits to send to Client: ", bits_dict)
+            Client.send_message('qberEstimationReply', bits_dict)
+
+        @self.event
+        def privacyAmplification(Client, Content):
+            algorithm_for_pa = Content
+
+            #TODO: add logic here
+            pass
+        
+        @self.event
+        def shutdownServer(Client, Content):
+            self.stopServer()
 
     def _get_auth_keys(self):
         """
@@ -69,11 +128,11 @@ class Server(AdvancedServer):
         if self.server_type == constants.LOCAL_SERVER:
             self.address = (constants.LOCAL_IP, self.port)
         if self.server_type == constants.PUBLIC_SERVER:
-            self.address = Utilities.start_ngrok_tunnel(self.port)
+            self.address = utils.start_ngrok_tunnel(self.port)
     
     def check_if_user_data_file_exists(self):
         datapath = os.path.join(
-            constants.data_storage, 'server_' + self.username + '/', 'user_data.pickle')
+            constants.DATA_STORAGE, 'server_' + self.username + '/', 'user_data.pickle')
         if os.path.exists(datapath):
             with open(datapath, 'rb') as fh:
                 user_data = pickle.load(fh)
@@ -82,48 +141,12 @@ class Server(AdvancedServer):
             return None
     
     def save_user_data_as_file(self):
-        datapath = os.path.join(constants.data_storage,'server_' + self.username)
-        if os.path.exists(datapath) == False:
+        datapath = os.path.join(constants.DATA_STORAGE,'server_' + self.username)
+        if not os.path.exists(datapath):
             os.makedirs(datapath)
         filepath = os.path.join(datapath, 'user_data.pickle')
         with open(filepath, 'wb') as fh:
             pickle.dump(self.user_data, fh)
-    
-    def start_ursina_server(self):
-        super().start_ursina_server()
-
-        @self.event
-        def onClientConnected(Client):
-            Client.send_message('authentication', 'Initialize')
-    
-    def Initialize_Events(self):
-        @self.event
-        def askParities(Client, Content):
-            #TODO: Store the information leaked into some new object to help in privacy amplification.
-            index,block_indexes_list = Content
-            
-            parities = []
-            for block_indexes in block_indexes_list:
-                parity = self._current_key.get_indexes_parity(block_indexes)
-                parities.append(parity)
-            # + str(index)
-            Client.send_message('askParitiesReply' , parities)
-            
-        
-        @self.event
-        def authenticateClient(Client, Content):
-            if type(Content) == dict:
-                verify = self.add_this_client_to_user_data_or_do_authentication_if_already_exists(Client,Content)
-                if verify == None:
-                    Client.send_message('authentication','Welcome to the Server!')
-                elif verify == True:
-                    Client.send_message('authentication','Authentication Successful!')                    
-                else:
-                    Client.send_message('authentication','Authentication Unsuccessful!')
-                
-                self.save_user_data_as_file()                
-            else:
-                Client.send_message('authentication', 'Initialize')        
                 
     def add_this_client_to_user_data_or_do_authentication_if_already_exists(self,clientObject, auth_data_dict):
         """
@@ -142,10 +165,9 @@ class Server(AdvancedServer):
                 self.user_data.users[pubKey.toPem()].address = clientObject.address
                 self.ursinaServer.lock.release()
                 print(
-                    f"Authentication with Client @ {clientObject.address} was successful!")
+                    f"Authentication with Client @ {clientObject.address} was successful! \n")
             else:
-                print(f"Authentication with Client @ {clientObject.address} was unsuccessful!")
-                clientObject.socket.close() #FIXME: Make This cleaner!
+                print(f"Authentication with Client @ {clientObject.address} was unsuccessful! \n")
             return verify
         else:
             self.update_user_data(client_user)
