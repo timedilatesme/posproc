@@ -1,6 +1,6 @@
 # python -m posproc.privacy_amplification.algorithms.testing
 
-from posproc.privacy_amplification.algorithms.algo import apply_hash_alorithms
+from posproc.privacy_amplification.algorithms.universal_hashing import apply_hash_alorithms
 
 
 c = apply_hash_alorithms("1010100010111100111111")
