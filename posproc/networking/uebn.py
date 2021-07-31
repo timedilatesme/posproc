@@ -26,12 +26,13 @@ FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TOR
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
+from os import name
+import zlib
 import socket
 import threading
-from typing import Any, Tuple, List, Dict
-import jsonpickle
-import zlib
-import traceback
+from typing import Tuple
+from posproc import constants
+from posproc.utils import dumps, loads, rename
 
 HEADERSIZE = 10
 MESSAGE_LENGTH = 10
@@ -46,21 +47,7 @@ BUILTIN_EVENT_CLIENT_DISCONNECTED   = "onClientDisconnected"
 STATE_HEADER    = "STATE_HEADER"
 STATE_PAYLOAD   = "STATE_PAYLOAD"
 
-FORMAT = 'utf-8'
-
-def dumps(Object : Any) -> bytes:
-    dataBytes = jsonpickle.dumps(Object).encode(FORMAT)
-    return dataBytes
-
-def loads(dataBytes: bytes) -> Any:
-    Object = jsonpickle.loads(dataBytes.decode(FORMAT))
-    return Object
-
-def rename(newName):
-    def decorator(f):
-        f.__name__ = newName
-        return f
-    return decorator
+FORMAT = constants.FORMAT
 
 def ursina_networking_log(Class_, Context_, Message_):
 
@@ -97,14 +84,14 @@ class UrsinaNetworkingEvents():
 
     def __init__(self, lock):
         self.events = []
-        self.static_events = []
+        # self.static_events = []
         self.event_table = {}
         self.lock = lock
 
     def push_event(self, name, *args):
         self.lock.acquire()
-        if name.startswith('static_'):
-            self.static_events.append((name,args))
+        # if name.startswith('static_'):
+        #     self.static_events.append((name,args))
         self.events.append((name, args))
         self.lock.release()
 
@@ -128,7 +115,7 @@ class UrsinaNetworkingEvents():
         #     print("self.event_table: ", self.event_table)
         
         self.events.clear()
-        self.events.extend(self.static_events)
+        # self.events.extend(self.static_events)
         
         self.lock.release()                
 
@@ -206,6 +193,7 @@ class UrsinaNetworkingConnectedClient():
         self.name = f"Client {id}"
         self.datas = {}
         self.authenticated = False
+        self.isNewClient = True
         self.connected = True
 
     def __repr__(self):
@@ -556,4 +544,4 @@ class AdvancedClient:
     def stopClient(self):
         self.ursinaClient.shutdown.set()
         self.shutdown.set()
-        self.ursinaClient.clientSocket.close()
+        self.ursinaClient.clientSocket.close()    

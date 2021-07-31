@@ -10,7 +10,8 @@ client.start_sending_messages_thread()
 client.start_events_processing_thread()
 client.Initialize_Events()
 
-start = time.perf_counter()
+
+# start = time.perf_counter()
 # print('Bob Orig Key: ', bob_key)
 # recon = Reconciliation('original', client, bob_key, 0.1)
 # reconedKey = recon.reconcile()

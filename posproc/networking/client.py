@@ -101,6 +101,7 @@ class Client(AdvancedClient):
     def start_ursina_client(self):
         super().start_ursina_client()
         
+        # ready up the authentication protocol just after client starts! 
         @self.event
         def authentication(Content):
             if Content == 'Initialize':
@@ -110,6 +111,8 @@ class Client(AdvancedClient):
                 self.ursinaClient.send_message('authenticateClient', msg_to_send_dict)
             else:
                 print('[Server]: ',Content)
+                if 'Unsuccessful' in Content:
+                    self.stopClient()
     
     def ask_parities(self, blocks: List[Block]):
         """

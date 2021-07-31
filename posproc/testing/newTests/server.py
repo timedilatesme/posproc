@@ -10,5 +10,6 @@ server.start_ursina_server()
 server.start_sending_messages_thread()
 server.start_events_processing_thread()
 server.Initialize_Events()
+# server.stopServer()
 
 # print(alice_key)
