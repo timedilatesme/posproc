@@ -100,15 +100,14 @@ class UrsinaNetworkingEvents():
         for event in self.events:
             Func = event[0] #name of func
             Args = event[1] 
-            # try:
-
-            for events_ in self.event_table:
-                print("EVENT TABLE:",self.event_table)
-                for event_ in self.event_table[ events_ ]:
-                    if Func in event_.__name__:
-                        event_(*Args)
-            # except Exception as e:
-            #     ursina_networking_log("UrsinaNetworkingEvents", "process_net_events", f"Unable to correctly call '{Func}' : '{e}'")
+            try:
+                for events_ in self.event_table:
+                    # print("EVENT TABLE:",self.event_table)
+                    for event_ in self.event_table[ events_ ]:
+                        if Func in event_.__name__:
+                            event_(*Args)
+            except Exception as e:
+                ursina_networking_log("UrsinaNetworkingEvents", "process_net_events", f"Unable to correctly call '{Func}' : '{e}'")
         
         # for staticEvent in self.static_events:
         #     if staticEvent in self.events:
@@ -395,7 +394,8 @@ class AdvancedServer:
         self.messages_to_send = {} # stores messages to be sent as { Client_ : (Message_,Content_) }
         self.address = address
         self.shutdown = threading.Event() # Keeps a tab on whether to keep the server running or not?
-
+        self.lock = threading.Lock()
+        self.events_manager = UrsinaNetworkingEvents(self.lock)
         
     def receiver_event(self, func):
         self.tempVar = None

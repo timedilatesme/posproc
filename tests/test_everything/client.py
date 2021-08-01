@@ -21,7 +21,7 @@ bob.Initialize_Events()
 initial_qber = qber.qber_estimation(size, bob, fraction=fraction_of_bits_for_qber_estm, seed = seed)
 
 print('Initial QBER: ',initial_qber)
-'''
+
 start = time.perf_counter()
 recon = CascadeReconciliation(algorithm, bob, bob._current_key, initial_qber)
 bob._current_key = recon.reconcile()
@@ -31,7 +31,7 @@ reconciled_qber = qber.qber_estimation(
 
 print('Reconciled QBER: ', reconciled_qber)
 
-
+'''
 bob.ask_server_to_do_privacy_amplification(final_key_bytes_size=8)
 print('PA KEY: ',bob._current_key)
 
@@ -45,4 +45,4 @@ end = time.perf_counter()
 
 print('Finished in :', (end-start), 's')'''
 
-bob.stopClient()
+# bob.stopClient()
