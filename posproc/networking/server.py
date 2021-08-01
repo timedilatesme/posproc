@@ -10,7 +10,7 @@ from posproc.networking.user_data import User, UserData
 from posproc.networking.uebn import AdvancedServer, UrsinaNetworkingConnectedClient, UrsinaNetworkingServer
     
 class Server(AdvancedServer):
-    def __init__(self, username: str, current_key: Key,
+    def __init__(self, username: str, current_key: Key = None,
                  user_data: UserData = None, server_type=constants.LOCAL_SERVER,
                  port=constants.LOCAL_PORT, auth_keys: tuple[PublicKey, PrivateKey] = None,
                  authentication_required = True):

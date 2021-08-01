@@ -13,7 +13,7 @@ from posproc.error_correction.cascade.block import Block
 from posproc.authentication import Authentication
 
 class Client(AdvancedClient):
-    def __init__(self, username: str, current_key: Key, auth_keys: tuple[PublicKey, PrivateKey] = None,
+    def __init__(self, username: str, current_key: Key = None, auth_keys: tuple[PublicKey, PrivateKey] = None,
                  server_address = (constants.LOCAL_IP, constants.LOCAL_PORT)):
         super().__init__(server_address)
         
