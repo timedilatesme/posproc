@@ -45,6 +45,10 @@ alice.start_events_processing_thread()
 # Initialize all the protocols for authentication, error correction, privacy amplification.
 alice.Initialize_Events()
 
+# Cleanly stop the server after everything is done!
+# For our case this means that after the authentication of one client is done then the server is closed.
+alice.stopServer()
+
 ```
 ### Creating the client
 ```python
@@ -62,6 +66,9 @@ bob.start_events_processing_thread()
 
 # Initialize all the protocols for authentication, error correction, privacy amplification.
 bob.Initialize_Events()
+
+# Cleanly stop the client after everything is done!
+bob.stopClient()
 ```
 
 The above two files needs to be executed in different terminals. By default this will start a local server on the LOCAL_PORT defined in [constants](constants). If the necessary user data is not already stored in the current directory then on first connection it will be created and saved in the file path specified by [DATA_STORAGE](constants). And when this client connects again, then authentication will be done using data at server's end.
