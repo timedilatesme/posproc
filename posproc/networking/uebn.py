@@ -234,8 +234,6 @@ class UrsinaNetworkingServer():
             # ursina_networking_log("UrsinaNetworkingServer", "__init__", "Server started !")
             # ursina_networking_log("UrsinaNetworkingServer", "__init__", f"Ip   :   {Ip_}")
             # ursina_networking_log("UrsinaNetworkingServer", "__init__", f"Port :   {Port_}")
-            
-            print(f'\n QKDServer listening @ {self.socketAddress} \n')
         except Exception as e:
             ursina_networking_log("UrsinaNetworkingServer", "__init__", f"Cannot create the server : {e} \n")
 

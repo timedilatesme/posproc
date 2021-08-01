@@ -34,6 +34,12 @@ class Server(AdvancedServer):
         self.user = User(username, address=self.address, auth_id=self.auth_id)
         self.user_data.update_user_data(self.user)
         
+        # The status of different algorithms for Error Correction.
+        self.reconciliation_status = {'cascade': 'Not yet started',
+                                      'winnow': 'Not yet started',
+                                      'ldpc': 'Not yet started',
+                                      'polar': 'Not yet started'}
+        
     def Initialize_Events(self):
         @self.event
         def onClientConnected(Client):
@@ -90,8 +96,8 @@ class Server(AdvancedServer):
             pass
         
         @self.event
-        def shutdownServer(Client, Content):
-            self.stopServer()
+        def onClientDisconnected(Client):
+            print(f'Client @ {Client.address} is disconnected! \n')
 
     def _get_auth_keys(self):
         """
@@ -129,6 +135,13 @@ class Server(AdvancedServer):
             self.address = (constants.LOCAL_IP, self.port)
         if self.server_type == constants.PUBLIC_SERVER:
             self.address = utils.start_ngrok_tunnel(self.port)
+    
+    def start_ursina_server(self):
+        self.ursinaServer = UrsinaNetworkingServer('127.0.0.1',self.port)
+        self.events_manager = self.ursinaServer.events_manager
+        self.event = self.events_manager.event
+        self.socket = self.ursinaServer.serverSocket
+        print(f'\n QKDServer listening @ {self.address} \n')
     
     def check_if_user_data_file_exists(self):
         datapath = os.path.join(

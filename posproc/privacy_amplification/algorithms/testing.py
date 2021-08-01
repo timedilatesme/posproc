@@ -14,7 +14,6 @@ for algo in c.HASHING_ALGORITHMS.keys():
     result[algo] = final_key
 
 print("FINAL KEYS ARE:",result)
-    
 
 
 print(c.div_fn(4))
