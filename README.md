@@ -1,15 +1,3 @@
-# posproc
-This repository contains the code for an implementation of post processing in python and then using all those algorithms in an easy to use Software!
-
-
-Dependencies:
-
-hashlib(pip install hashlib)
-
-pyngrok(pip install pyngrok) : For port forwarding and adding the functionality of remote QKD.
-
-starbank-ecdsa (pip install starkbank-ecdsa) :For authentication.
-
 # PosProc
 Easy to use QKD (Quantum Key Distribution) library for post processing.
 * Contains implemetation of Cascade and other error correction algorithms (More will be added in future).
@@ -33,9 +21,47 @@ Easy to use QKD (Quantum Key Distribution) library for post processing.
 
 ### Simple Installation
 1. Clone this repo to your PC (*use github desktop, it's much more convenient.*).
-2. Then in the directory of this repo run the file named [install.bat](install.bat).
+2. Then in the directory of this repo run the file [install.bat](install.bat).
 
 ### Developer Installation
 1. Clone this repo to your PC (*use github desktop, it's much more convenient.*).
-2. Then in the directory of this repo run the file named [install_develop.bat](install.bat).
-  
+2. Then in the directory of this repo run the file [install_develop.bat](install_develop.bat).
+
+## Simple Authentication Example
+### Creating the server
+```python
+from posproc import*
+
+# Create the server
+alice = QKDServer('Alice')
+
+# Start the server socket
+alice.start_ursina_server()
+
+# Important calls for event based networking
+alice.start_sending_messages_thread()
+alice.start_events_processing_thread()
+
+# Initialize all the protocols for authentication, error correction, privacy amplification.
+alice.Initialize_Events()
+
+```
+### Creating the client
+```python
+from posproc import*
+
+# Create the client
+bob = QKDClient('Bob')
+
+# Start the client socket
+bob.start_ursina_client()
+
+# Important calls for event based networking
+bob.start_sending_messages_thread()
+bob.start_events_processing_thread()
+
+# Initialize all the protocols for authentication, error correction, privacy amplification.
+bob.Initialize_Events()
+```
+
+The above two files needs to be executed in different terminals. By default this will start a local server on the LOCAL_PORT defined in [constants](constants).
