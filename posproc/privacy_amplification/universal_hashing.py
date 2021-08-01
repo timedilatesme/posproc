@@ -1,19 +1,24 @@
+'''
+Original Algorithms Paper: https://www.researchgate.net/publication/263887574_Privacy_Amplification_in_Quantum_Cryptography_BB84_using_Combined_Univarsal2-Truly_Random_Hashing
+'''
 import hashlib
 from bitstring import BitArray
 import random
+
+from posproc.key import Key, Random_Key_Generator
 # python -m posproc.privacy_amplification.algorithms.algo
 
 #constants
 encoding = 'utf-8'
-seed = 10
 
 # MAIN CLASS FOR PRIVACY AMPLIFICATION (UNIVERSAL HASHING)
 
 class HashingAlgorithm:
+    _random = random.Random()
     """
     Hashing Algorithms to be used in Privacy amplification
     """
-    def __init__(self,reconciled_key: str):
+    def __init__(self, reconciled_key: str, seed = None):
         """
         Initialize the reconciled_key,duplicate,its bytes form, privacy amplified key(pa_key) and creaation of cypt instance -->see chilkat
 
@@ -25,7 +30,8 @@ class HashingAlgorithm:
         self.raw_key_bytes = bytes(reconciled_key,encoding)
         self.pa_key = None
         self.hash_function = None
-        
+        self.seed = seed
+        self.set_random_seed(seed)
 
         # set of hashing functions available till now in self.HASHING_ALGORITHMS #TODO add more given in paper
         self.HASHING_ALGORITHMS = {"sha1":self.sha1,
@@ -35,14 +41,16 @@ class HashingAlgorithm:
                                     "sha512":self.sha512,
                                     "md5":self.md5,
                                     "md4":self.md4,
-                                    "shake_128":self.shake_128,
-                                    "shake_256":self.shake_256,
                                     "blake2s":self.blake2s,
                                     "blake2b":self.blake2b,
                                     "sha3_224":self.sha3_224,
                                     "sha3_256":self.sha3_256,
                                     "sha3_384":self.sha3_384,
                                     "sha3_512":self.sha3_512}
+    
+    @staticmethod
+    def set_random_seed(seed):
+        HashingAlgorithm._random = random.Random(seed)
     
     #general conversion function needed everywhere
 
@@ -143,7 +151,7 @@ class HashingAlgorithm:
         """
         self.hash_function = hashlib.shake_128()
         self.hash_function.update(self.raw_key_bytes)
-        self.pa_key = self.hash_function.hexdisgest(size)
+        self.pa_key = self.hash_function.hexdigest(size)
         self.pa_key = self.con_hexstr_to_bin(self.pa_key)
         return self.pa_key
 
@@ -285,16 +293,15 @@ class HashingAlgorithm:
         """
         if algo:
             try:
-                if algo in self.HASHING_ALGORITHMS.keys():
-                    print("Algorithm used is:",self.HASHING_ALGORITHMS[algo].__name__)
-                    return self.HASHING_ALGORITHMS[algo]()
+                if algo in self.HASHING_ALGORITHMS:
+                    # print("Algorithm used is:",self.HASHING_ALGORITHMS[algo].__name__)
+                    return (algo,self.HASHING_ALGORITHMS[algo]())
             except:
-                print(f"Sorry,we are not using {algo}. Try any from the list below: {self.HASHING_ALGORITHMS.keys}")
+                print(f"Sorry,we are not using {algo}. Try any from the list below: {self.HASHING_ALGORITHMS.keys()}")
         else:
-
-            algo = random.choice(list(self.HASHING_ALGORITHMS.keys()))
-            print("Algorithm used is:",algo)
-            return self.HASHING_ALGORITHMS[algo]()
+            algo = self._random.choice(list(self.HASHING_ALGORITHMS.keys()))
+            # print("Algorithm used is:",algo)
+            return (algo,self.HASHING_ALGORITHMS[algo]())
 
     def permutation(self):
         """
@@ -305,7 +312,7 @@ class HashingAlgorithm:
             [str]: [permuted key]
         """
         raw_key_list = list(self.raw_key)
-        random.Random(seed).shuffle(raw_key_list)
+        random.Random(self.seed).shuffle(raw_key_list)
         pa_key_list = raw_key_list
         self.pa_key = ''.join(map(str,pa_key_list))
         return self.pa_key
@@ -403,3 +410,55 @@ class HashingAlgorithm:
         self.raw_key = self.raw_key_duplicate
         return self.pa_key
 
+def MODEL_1(reconciled_key: Key, final_key_bytes_size: int, algorithm = None, seed = None):
+    """
+    ...
+
+    Args:
+        reconciled_key (Key): [description]
+        final_key_bytes_size (int): [description]
+        algorithm ([type], optional): [description]. Defaults to None.
+        seed ([type], optional): [description]. Defaults to None.
+
+    Returns:
+        [type]: [description]
+    """
+    reconciled_key_str = str(reconciled_key)
+    hashAlgorithm = HashingAlgorithm(reconciled_key_str, seed = seed)
+    algo_name,final_key = hashAlgorithm.digest_hash_fn(algo=algorithm)
+    hashAlgorithm.raw_key = final_key
+    final_key = hashAlgorithm.shake_128(final_key_bytes_size)
+    final_key_Object = Key(key_as_str = final_key)
+    return algo_name, final_key_Object
+
+if __name__ == '__main__':
+    seed = 10
+    key = Random_Key_Generator(100, seed)
+    
+    algo,finalKey = MODEL_1(key, 3,seed = seed)
+    
+    print('Algo: ',algo)
+    print('Final Key', len(finalKey))
+    
+    # from posproc.privacy_amplification.universal_hashing import HashingAlgorithm
+
+
+    # c = HashingAlgorithm("1010100010111100111111")
+    # size = 100
+    # result = {}
+    # for algo in c.HASHING_ALGORITHMS.keys():
+    #     try:
+    #         final_key = c.HASHING_ALGORITHMS[algo]()
+    #     except:
+    #         final_key = c.HASHING_ALGORITHMS[algo](size)
+    #     result[algo] = final_key
+
+    # print("FINAL KEYS ARE:", result)
+
+
+    # print(c.div_fn(4))
+    # print(c.mod_fn(4))
+    # print(c.perm_mod_fn(4))
+    # print(c.perm_div_fn(4))
+    # print(c.hash_div_fn(4))
+    # print(c.hash_mod_fn(4))

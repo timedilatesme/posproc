@@ -11,6 +11,7 @@ from ellipticcurve.publicKey import PublicKey
 from posproc.networking.user_data import User
 from posproc.error_correction.cascade.block import Block
 from posproc.authentication import Authentication
+from posproc.privacy_amplification.universal_hashing import MODEL_1
 
 class Client(AdvancedClient):
     def __init__(self, username: str, current_key: Key = None, auth_keys: tuple[PublicKey, PrivateKey] = None,
@@ -36,7 +37,8 @@ class Client(AdvancedClient):
                                       'ldpc': 'Not yet started',
                                       'polar': 'Not yet started'} 
         
-        self.askParitiesReplyCurrentIndex = 0  
+        self.askParitiesReplyCurrentIndex = 0
+        self.qberEstimationCurrentIndex = 0  
         
     def _get_auth_keys(self):
         """
@@ -185,24 +187,39 @@ class Client(AdvancedClient):
     
     def ask_server_for_bits_to_estimate_qber(self, indexes: list) -> dict:
         #TODO: add message no. for this also.
+        self.qberEstimationCurrentIndex += 1 
         
         # print("Message Send for QBER: ", msg_to_send)
 
         # asking:
-        self.send_message_to_server('qberEstimation',indexes)
+        self.send_message_to_server('qberEstimation' + str(self.qberEstimationCurrentIndex),(self.qberEstimationCurrentIndex, indexes))
         
         # receiving:
+        name = 'qberEstimationReply' + str(self.qberEstimationCurrentIndex)
+        
         @self.receiver_event
-        def qberEstimationReply():
+        def qberEstimationReply1():
             pass
         
-        bits_dict = qberEstimationReply()
+        @self.receiver_event
+        def qberEstimationReply2():
+            pass
+        
+        @self.receiver_event
+        def qberEstimationReply3():
+            pass
+        
+        @self.receiver_event
+        def qberEstimationReply4():
+            pass      
+        
+                
+        bits_dict = eval(name + '()')
         
         return bits_dict
     
-    def ask_server_to_do_privacy_amplification(self):
-        
-        algorithm_for_pa = None # TODO: Decide an algo randomly!
+    def ask_server_to_do_privacy_amplification(self, final_key_bytes_size = 64):
+        algo_name, self._current_key = MODEL_1(self._current_key, final_key_bytes_size) 
         
         # asking:
-        self.send_message_to_server('privacyAmplification', algorithm_for_pa)
+        self.send_message_to_server('privacyAmplification', (algo_name, final_key_bytes_size))

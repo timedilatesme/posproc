@@ -22,11 +22,11 @@ def start_ngrok_tunnel(port):
     
 
 def dumps(Object: Any, format = constants.FORMAT) -> bytes:
-    dataBytes = jsonpickle.dumps(Object).encode(format)
+    dataBytes = jsonpickle.dumps(Object, keys=True).encode(format)
     return dataBytes
 
 def loads(dataBytes: bytes, format = constants.FORMAT) -> Any:
-    Object = jsonpickle.loads(dataBytes.decode(format))
+    Object = jsonpickle.loads(dataBytes.decode(format), keys=True)
     return Object
 
 # def dump(Object: Any, path = constants.DATA_STORAGE, format=constants.FORMAT) -> bytes:

@@ -1,6 +1,7 @@
-import random
+from posproc import*
 
-def qber_estimation(key_size, active_client, fraction = 0.1, seed = None):
+
+def qber_estimation(key_size, active_client : QKDClient, fraction = 0.1, seed = None):
     """
     Estimates the qber between the keys of Server(Alice) and Client(Bob).
 

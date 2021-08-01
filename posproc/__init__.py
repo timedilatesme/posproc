@@ -20,3 +20,6 @@ from posproc.networking.user_data import User,UserData
 
 # Error Correction Algorithms imports.
 from posproc.error_correction.cascade.reconciliation import Reconciliation as CascadeReconciliation
+
+# Privacy amplification imports.
+from posproc.privacy_amplification import*

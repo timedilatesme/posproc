@@ -8,6 +8,7 @@ from ellipticcurve.privateKey import PrivateKey
 from posproc.authentication import Authentication
 from posproc.networking.user_data import User, UserData
 from posproc.networking.uebn import AdvancedServer, UrsinaNetworkingConnectedClient, UrsinaNetworkingServer
+from posproc.privacy_amplification.universal_hashing import MODEL_1
     
 class Server(AdvancedServer):
     def __init__(self, username: str, current_key: Key = None,
@@ -80,25 +81,51 @@ class Server(AdvancedServer):
         def updateReconciliationStatus(Client, Content):
             algorithmName, status = Content
             self.reconciliation_status[algorithmName] = status
-
-        @self.event
-        def qberEstimation(Client, Content):
-            indexes = Content
-            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
-            # print("Bits to send to Client: ", bits_dict)
-            Client.send_message('qberEstimationReply', bits_dict)
-
+            
+        self.qber_estimation_logic()
+        
         @self.event
         def privacyAmplification(Client, Content):
-            algorithm_for_pa = Content
-
-            #TODO: add logic here
-            pass
-        
+            algo_name, final_key_bytes_size = Content
+            self._current_key = MODEL_1(self._current_key, final_key_bytes_size, algorithm=algo_name)[1]
+            print('PA KEY: ', self._current_key)
         @self.event
         def onClientDisconnected(Client):
             print(f'Client @ {Client.address} is disconnected! \n')
+            
+    def qber_estimation_logic(self):
+        @self.event
+        def qberEstimation1(Client, Content):
+            msg_index, indexes = Content
+            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
+            msg_name = 'qberEstimationReply' + str(msg_index)
+            # print("Bits to send to Client: ", bits_dict)
+            Client.send_message(msg_name, bits_dict)
 
+        @self.event
+        def qberEstimation2(Client, Content):
+            msg_index, indexes = Content
+            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
+            msg_name = 'qberEstimationReply' + str(msg_index)
+            # print("Bits to send to Client: ", bits_dict)
+            Client.send_message(msg_name, bits_dict)
+        
+        @self.event
+        def qberEstimation3(Client, Content):
+            msg_index, indexes = Content
+            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
+            msg_name = 'qberEstimationReply' + str(msg_index)
+            # print("Bits to send to Client: ", bits_dict)
+            Client.send_message(msg_name, bits_dict)
+            
+        @self.event
+        def qberEstimation4(Client, Content):
+            msg_index, indexes = Content
+            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
+            msg_name = 'qberEstimationReply' + str(msg_index)
+            # print("Bits to send to Client: ", bits_dict)
+            Client.send_message(msg_name, bits_dict)
+        
     def _get_auth_keys(self):
         """
         Public Key, Private Key
