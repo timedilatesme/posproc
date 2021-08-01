@@ -45,10 +45,6 @@ alice.start_events_processing_thread()
 # Initialize all the protocols for authentication, error correction, privacy amplification.
 alice.Initialize_Events()
 
-# Cleanly stop the server after everything is done!
-# For our case this means that after the authentication of one client is done then the server is closed.
-alice.stopServer()
-
 ```
 ### Creating the client
 ```python
@@ -68,6 +64,7 @@ bob.start_events_processing_thread()
 bob.Initialize_Events()
 
 # Cleanly stop the client after everything is done!
+time.sleep(0.1) # For waiting until everything is done
 bob.stopClient()
 ```
 
