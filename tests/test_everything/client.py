@@ -18,11 +18,10 @@ bob.start_events_processing_thread()
 bob.Initialize_Events()
 
 
-
 initial_qber = qber.qber_estimation(size, bob, fraction=fraction_of_bits_for_qber_estm, seed = seed)
 
 print('Initial QBER: ',initial_qber)
-
+'''
 start = time.perf_counter()
 recon = CascadeReconciliation(algorithm, bob, bob._current_key, initial_qber)
 bob._current_key = recon.reconcile()
@@ -44,6 +43,6 @@ print('Priv Ampl. QBER: ', pa_qber)
 end = time.perf_counter()
 
 
-print('Finished in :', (end-start), 's')
+print('Finished in :', (end-start), 's')'''
 
 bob.stopClient()

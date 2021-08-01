@@ -47,6 +47,7 @@ class Client(AdvancedClient):
         return self.auth_id, self._auth_key
     
     def Initialize_Events(self):
+
         # @self.event
         # def onConnectionLost(Content):
         #     print('Disconnected from the server! \n')
@@ -105,7 +106,7 @@ class Client(AdvancedClient):
     
     def start_ursina_client(self):
         super().start_ursina_client()
-        
+        self.ursinaClient.lock.acquire()
         # ready up the authentication protocol just after client starts! 
         @self.event
         def authentication(Content):
@@ -118,7 +119,8 @@ class Client(AdvancedClient):
                 print('[Server]: ',Content)
                 if 'Unsuccessful' in Content:
                     self.stopClient()
-    
+        self.ursinaClient.lock.release()
+
     def ask_parities(self, blocks: List[Block]):
         """
         Sends blocks as bytes to the server and then the server

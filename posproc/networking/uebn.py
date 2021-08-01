@@ -100,13 +100,15 @@ class UrsinaNetworkingEvents():
         for event in self.events:
             Func = event[0] #name of func
             Args = event[1] 
-            try:
-                for events_ in self.event_table:
-                    for event_ in self.event_table[ events_ ]:
-                        if Func in event_.__name__:
-                            event_(*Args)
-            except Exception as e:
-                ursina_networking_log("UrsinaNetworkingEvents", "process_net_events", f"Unable to correctly call '{Func}' : '{e}'")
+            # try:
+
+            for events_ in self.event_table:
+                print("EVENT TABLE:",self.event_table)
+                for event_ in self.event_table[ events_ ]:
+                    if Func in event_.__name__:
+                        event_(*Args)
+            # except Exception as e:
+            #     ursina_networking_log("UrsinaNetworkingEvents", "process_net_events", f"Unable to correctly call '{Func}' : '{e}'")
         
         # for staticEvent in self.static_events:
         #     if staticEvent in self.events:
@@ -398,7 +400,7 @@ class AdvancedServer:
     def receiver_event(self, func):
         self.tempVar = None
         dataAvailable = threading.Event()
-
+        self.ursinaServer.lock.acquire()
         @self.event
         @rename(func.__name__)
         def receivingLogic(Client, Content):
@@ -407,6 +409,8 @@ class AdvancedServer:
             dataAvailable.set()
             self.ursinaServer.lock.release()
         
+        self.ursinaServer.lock.release()
+
         def wrapper(*args):
             dataAvailable.wait()
             tempVar = self.tempVar
@@ -415,7 +419,8 @@ class AdvancedServer:
             return tempVar
         
         return wrapper
-    
+
+
     def get_connected_client_object(self, func):
 
         self.clientObject = None
@@ -488,7 +493,7 @@ class AdvancedClient:
         """
         self.tempVar = None
         dataAvailable = threading.Event()
-        
+        self.ursinaClient.lock.acquire()
         @self.event
         @rename(func.__name__)
         def receivingLogic(Content):
@@ -496,7 +501,7 @@ class AdvancedClient:
             self.tempVar = Content
             dataAvailable.set()
             self.ursinaClient.lock.release()
-        
+        self.ursinaClient.lock.release()
         def wrapper(*args):
             dataAvailable.wait()
             tempVar = self.tempVar

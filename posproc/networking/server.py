@@ -42,6 +42,7 @@ class Server(AdvancedServer):
                                       'polar': 'Not yet started'}
         
     def Initialize_Events(self):
+        self.ursinaServer.lock.acquire()
         @self.event
         def onClientConnected(Client):
             if self.authentication_required:
@@ -92,6 +93,8 @@ class Server(AdvancedServer):
         @self.event
         def onClientDisconnected(Client):
             print(f'Client @ {Client.address} is disconnected! \n')
+        
+        self.ursinaServer.lock.release()
             
     def qber_estimation_logic(self):
         @self.event
