@@ -25,8 +25,7 @@ class HashingAlgorithm:
         self.raw_key_bytes = bytes(reconciled_key,encoding)
         self.pa_key = None
         self.hash_function = None
-        self.crypt = chilkat.CkCrypt2()
-        self.crypt.put_EncodingMode("hex")
+        
 
         # set of hashing functions available till now in self.HASHING_ALGORITHMS #TODO add more given in paper
         self.HASHING_ALGORITHMS = {"sha1":self.sha1,
@@ -36,10 +35,6 @@ class HashingAlgorithm:
                                     "sha512":self.sha512,
                                     "md5":self.md5,
                                     "md4":self.md4,
-                                    "ripemd128":self.ripemd128,
-                                    "ripemd160":self.ripemd160,
-                                    "ripemd256":self.ripemd256,
-                                    "ripemd320":self.ripemd320,
                                     "shake_128":self.shake_128,
                                     "shake_256":self.shake_256,
                                     "blake2s":self.blake2s,
@@ -136,55 +131,6 @@ class HashingAlgorithm:
         self.pa_key = self.con_hexstr_to_bin(self.pa_key)
         return self.pa_key
 
-    def ripemd128(self):
-        """
-        Standard RIPEMD128 algorithm used from chilket library
-
-        Returns:
-            [str]: [pa_key]
-        """
-        self.crypt.put_HashAlgorithm("ripemd128")
-        self.pa_key = self.crypt.hashStringENC(self.raw_key)
-        self.pa_key = self.con_hexstr_to_bin(self.pa_key)
-        return (self.pa_key)
-
-    def ripemd160(self):
-        """
-        Standard RIPEMD160 algorithm used from chilket library
-
-        Returns:
-            [str]: [pa_key]
-        """
-        self.crypt.put_HashAlgorithm("ripemd160")
-        self.pa_key = self.crypt.hashStringENC(self.raw_key)
-        self.pa_key = self.con_hexstr_to_bin(self.pa_key)
-        return (self.pa_key)
-
-    def ripemd256(self):
-        """
-        Standard RIPEMD256 algorithm used from chilket library
-
-        Returns:
-            [str]: [pa_key]
-        """
-        self.crypt.put_HashAlgorithm("ripemd256")
-        self.pa_key = self.crypt.hashStringENC(self.raw_key)
-        self.pa_key = self.con_hexstr_to_bin(self.pa_key)
-        return self.pa_key
-
-
-    def ripemd320(self):
-        """
-        Standard RIPEMD256 algorithm used from chilket library
-
-        Returns:
-            [str]: [pa_key]
-        """
-        self.crypt.put_HashAlgorithm("ripemd320")
-        self.pa_key = self.crypt.hashStringENC(self.raw_key)
-        self.pa_key = self.con_hexstr_to_bin(self.pa_key)
-        return self.pa_key
-
     def shake_128(self,size):
         """
         Standard SHAKE_128 algorithm used from hashlib library
@@ -197,7 +143,7 @@ class HashingAlgorithm:
         """
         self.hash_function = hashlib.shake_128()
         self.hash_function.update(self.raw_key_bytes)
-        self.pa_key = self.hash_function.hexdigest(size)
+        self.pa_key = self.hash_function.hexdisgest(size)
         self.pa_key = self.con_hexstr_to_bin(self.pa_key)
         return self.pa_key
 
