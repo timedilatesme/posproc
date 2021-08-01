@@ -35,7 +35,9 @@ class Client(AdvancedClient):
         self.reconciliation_status = {'cascade': 'Not yet started',
                                       'winnow': 'Not yet started',
                                       'ldpc': 'Not yet started',
-                                      'polar': 'Not yet started'} 
+                                      'polar': 'Not yet started'}
+        
+        
         
         self.askParitiesReplyCurrentIndex = 0
         self.qberEstimationCurrentIndex = 0  
@@ -47,10 +49,13 @@ class Client(AdvancedClient):
         return self.auth_id, self._auth_key
     
     def Initialize_Events(self):
+<<<<<<< Updated upstream
 
         # @self.event
         # def onConnectionLost(Content):
         #     print('Disconnected from the server! \n')
+=======
+>>>>>>> Stashed changes
         pass
     
     def _add_authentication_token(self, auth_Keys):
