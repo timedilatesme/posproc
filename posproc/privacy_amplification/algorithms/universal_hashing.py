@@ -1,7 +1,5 @@
 import hashlib
-
 from bitstring import BitArray
-import chilkat
 import random
 # python -m posproc.privacy_amplification.algorithms.algo
 
@@ -11,16 +9,16 @@ seed = 10
 
 # MAIN CLASS FOR PRIVACY AMPLIFICATION (UNIVERSAL HASHING)
 
-class apply_hash_alorithms:
+class HashingAlgorithm:
     """
     Hashing Algorithms to be used in Privacy amplification
     """
-    def __init__(self,reconciled_key):
+    def __init__(self,reconciled_key: str):
         """
-        Initialize the reconciled_key,duplicate,its bytes form, priavcy amplified key(pa_key) and creaation of cypt instance -->see chilkat
+        Initialize the reconciled_key,duplicate,its bytes form, privacy amplified key(pa_key) and creaation of cypt instance -->see chilkat
 
         Args:
-            reconciled_key ([str]): [error corrected key after reconcilation]
+            reconciled_key ([str]): [error corrected key after reconciliation]
         """
         self.raw_key = reconciled_key
         self.raw_key_duplicate = reconciled_key
