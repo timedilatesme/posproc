@@ -273,7 +273,7 @@ class Key:
             bits_for_qber (dict):  dict containing the bits value for qber estimation.
         """
         bits_for_qber = {}
-        print("BITS:",self._bits)
+        # print("BITS:",self._bits)
         for index in indexes:
             
             bits_for_qber[index] = self._bits[index]

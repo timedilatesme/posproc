@@ -2,10 +2,11 @@ import os
 import pickle
 # FIXME: deprecate use of pickle, use jsonpickle instead!
 import secrets
+import threading
 from posproc.key import Key
 from posproc import constants
 from typing import Any, List
-from posproc.networking.uebn import AdvancedClient, rename
+from posproc.networking.uebn import AdvancedClient, console_output, rename
 from ellipticcurve.privateKey import PrivateKey
 from ellipticcurve.publicKey import PublicKey
 from posproc.networking.user_data import User
@@ -30,7 +31,7 @@ class Client(AdvancedClient):
         self.user = User(username, address=None,
                          auth_id = self.auth_id)
         
-        self.authenticating = True
+        self.authenticated = threading.Event()
 
         self.reconciliation_status = {'cascade': 'Not yet started',
                                       'winnow': 'Not yet started',
@@ -39,8 +40,7 @@ class Client(AdvancedClient):
         
         
         
-        self.askParitiesReplyCurrentIndex = 0
-        self.qberEstimationCurrentIndex = 0  
+        self.synchronization_events = {} # Helps in synchronization
         
     def _get_auth_keys(self):
         """
@@ -49,10 +49,21 @@ class Client(AdvancedClient):
         return self.auth_id, self._auth_key
     
     def Initialize_Events(self):
-        # @self.event
-        # def onConnectionLost(Content):
-        #     print('Disconnected from the server! \n')
-        pass
+        @self.event
+        def authentication(Content):
+            if Content == 'Initialize':
+                msg = secrets.token_hex()
+                msg_sign = self._auth.sign(msg)
+                msg_to_send_dict = {'User': self.user,
+                                    'Message': msg, 'Signature': msg_sign}
+                self.send_message_to_server(
+                    'authenticateClient', msg_to_send_dict)
+            else:
+                console_output(f'[QKDServer]: {Content}')
+                if 'Unsuccessful' in Content:
+                    self.stopClient()
+                elif 'Successful' in Content:
+                    self.authenticated.set()
     
     def _add_authentication_token(self, auth_Keys):
         self._auth = Authentication(auth_Keys=auth_Keys)
@@ -105,22 +116,13 @@ class Client(AdvancedClient):
         # print("Updated Noisy Key",self._current_key._bits)
         return bits
     
-    def start_ursina_client(self):
-        super().start_ursina_client()
-        self.ursinaClient.lock.acquire()
-        # ready up the authentication protocol just after client starts! 
-        @self.event
-        def authentication(Content):
-            if Content == 'Initialize':
-                msg = secrets.token_hex()
-                msg_sign = self._auth.sign(msg)
-                msg_to_send_dict = {'User': self.user, 'Message' : msg, 'Signature' : msg_sign}
-                self.ursinaClient.send_message('authenticateClient', msg_to_send_dict)
-            else:
-                print('[Server]: ',Content)
-                if 'Unsuccessful' in Content:
-                    self.stopClient()
-        self.ursinaClient.lock.release()
+    def update_synchronization_events_and_wait(self, name):
+        if name not in self.synchronization_events:
+            self.lock.acquire()
+            self.synchronization_events[name] = threading.Event()
+            self.lock.release()
+        else:
+            self.synchronization_events[name].wait()
 
     def ask_parities(self, blocks: List[Block]):
         """
@@ -133,8 +135,10 @@ class Client(AdvancedClient):
         Returns:
             parities (list(int)): Contains parities in the same order as the blocks in blocks.
         """
-        self.askParitiesReplyCurrentIndex += 1
+        self.authenticated.wait()
         
+        self.update_synchronization_events_and_wait('ask_parities')
+            
         # Only send the indexes for parity.
         # TODO: make this algo faster it's currently very slow for large blocks.
         block_indexes_list = [block.get_key_indexes() for block in blocks]
@@ -143,21 +147,20 @@ class Client(AdvancedClient):
         # print(f"Block Indexes List Bytes Sent: {len(block_indexes_list_bytes)}")
 
         # dict_to_send = {'askParitiesIndex':self.askParitiesReplyCurrentIndex, 'blocks_indexes':block_indexes_list}
-        tuple_to_send = self.askParitiesReplyCurrentIndex, block_indexes_list
+        # tuple_to_send = self.askParitiesReplyCurrentIndex, block_indexes_list
         
         # asking:
-        self.send_message_to_server('askParities', tuple_to_send)
+        self.send_message_to_server('askParities', block_indexes_list)
         
-        # receiving:        
-        name = 'askParitiesReply' + str(self.askParitiesReplyCurrentIndex)
-         
-        # @rename(name)
+        # receiving:
         @self.receiver_event
         def askParitiesReply():
             pass
         
         # parities = eval(name + '()')
         parities = askParitiesReply()
+        
+        self.synchronization_events['ask_parities'].set()
         
         return parities
     
@@ -168,6 +171,7 @@ class Client(AdvancedClient):
         Args:
             reconciliation_algorithm (str): Specify which algorithm is being used eg. 'cascade' for cascade algo.
         """
+        self.authenticated.wait()
         #TODO: Maybe add authentication here!
         self.reconciliation_status[reconciliation_algorithm] = 'Active'
         self.send_message_to_server('updateReconciliationStatus', (reconciliation_algorithm,'Active'))
@@ -179,6 +183,7 @@ class Client(AdvancedClient):
         Args:
             reconciliation_algorithm (str): Specify which algorithm is being used eg. 'cascade' for cascade algo.
         """
+        self.authenticated.wait()
         self.reconciliation_status[reconciliation_algorithm] = 'Completed'
         self.send_message_to_server(
             'updateReconciliationStatus', (reconciliation_algorithm, 'Completed'))
@@ -189,39 +194,30 @@ class Client(AdvancedClient):
         return bits
     
     def ask_server_for_bits_to_estimate_qber(self, indexes: list) -> dict:
-        #TODO: add message no. for this also.
-        self.qberEstimationCurrentIndex += 1 
+        # #TODO: add message no. for this also.
+        # self.qberEstimationCurrentIndex += 1 
         
         # print("Message Send for QBER: ", msg_to_send)
 
+        self.authenticated.wait()
+        self.update_synchronization_events_and_wait('qberEstimation')
         # asking:
-        self.send_message_to_server('qberEstimation' + str(self.qberEstimationCurrentIndex),(self.qberEstimationCurrentIndex, indexes))
+        self.send_message_to_server('qberEstimation', indexes)
         
-        # receiving:
-        name = 'qberEstimationReply' + str(self.qberEstimationCurrentIndex)
-        
+        # receiving:        
         @self.receiver_event
-        def qberEstimationReply1():
+        def qberEstimationReply():
             pass
-        
-        @self.receiver_event
-        def qberEstimationReply2():
-            pass
-        
-        @self.receiver_event
-        def qberEstimationReply3():
-            pass
-        
-        @self.receiver_event
-        def qberEstimationReply4():
-            pass      
-        
                 
-        bits_dict = eval(name + '()')
+        bits_dict = qberEstimationReply()
+        
+        self.synchronization_events['qberEstimation'].set()
         
         return bits_dict
     
     def ask_server_to_do_privacy_amplification(self, final_key_bytes_size = 64):
+        self.authenticated.wait()
+        
         algo_name, self._current_key = MODEL_1(self._current_key, final_key_bytes_size) 
         
         # asking:

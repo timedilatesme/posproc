@@ -1,5 +1,6 @@
 import os
 import pickle
+import threading
 from posproc.key import Key
 from posproc import constants
 from posproc import utils
@@ -7,7 +8,7 @@ from ellipticcurve.publicKey import PublicKey
 from ellipticcurve.privateKey import PrivateKey
 from posproc.authentication import Authentication
 from posproc.networking.user_data import User, UserData
-from posproc.networking.uebn import AdvancedServer, UrsinaNetworkingConnectedClient, UrsinaNetworkingServer
+from posproc.networking.uebn import AdvancedServer, UrsinaNetworkingConnectedClient, console_output, networking_log
 from posproc.privacy_amplification.universal_hashing import MODEL_1
     
 class Server(AdvancedServer):
@@ -15,6 +16,7 @@ class Server(AdvancedServer):
                  user_data: UserData = None, server_type=constants.LOCAL_SERVER,
                  port=constants.LOCAL_PORT, auth_keys: tuple[PublicKey, PrivateKey] = None,
                  authentication_required = True):
+        
         self.authentication_required = authentication_required
         self.server_type = server_type
         self.port = port
@@ -41,13 +43,22 @@ class Server(AdvancedServer):
                                       'ldpc': 'Not yet started',
                                       'polar': 'Not yet started'}
         
+        self.synchronization_events = {}
+        
+    def update_synchronization_events_and_wait(self, name):
+        if name not in self.synchronization_events:
+            self.lock.acquire()
+            self.synchronization_events[name] = threading.Event()            
+            self.lock.release()
+        else:
+            self.synchronization_events[name].wait()
+    
     def Initialize_Events(self):
-        self.ursinaServer.lock.acquire()
         @self.event
         def onClientConnected(Client):
             if self.authentication_required:
                 Client.send_message('authentication', 'Initialize')
-            print(f'Client @ {Client.address} is connected! \n')
+            console_output(f'Client @ {Client.address} is connected!')
             
         @self.event
         def authenticateClient(Client: UrsinaNetworkingConnectedClient, Content):
@@ -56,7 +67,7 @@ class Server(AdvancedServer):
             if verified == None:
                 Client.send_message('authentication', 'Welcome to the Server! \n')
             elif verified == True:
-                Client.authenticated = True
+                Client.authenticated.set()
                 Client.send_message(
                     'authentication', 'Authentication Successful! \n')
             else:
@@ -67,9 +78,11 @@ class Server(AdvancedServer):
             self.save_user_data_as_file()
 
         @self.event
-        def askParities(Client, Content):
+        def askParities(Client: UrsinaNetworkingConnectedClient, Content):
+            Client.authenticated.wait()
             #TODO: Store the information leaked into some new object to help in privacy amplification.
-            index, block_indexes_list = Content
+            self.update_synchronization_events_and_wait('askParities')
+            block_indexes_list = Content
 
             parities = []
             for block_indexes in block_indexes_list:
@@ -77,57 +90,37 @@ class Server(AdvancedServer):
                 parities.append(parity)
             # + str(index)
             Client.send_message('askParitiesReply', parities)
+            self.synchronization_events['askParities'].set()
 
         @self.event
-        def updateReconciliationStatus(Client, Content):
+        def updateReconciliationStatus(Client: UrsinaNetworkingConnectedClient, Content):
+            Client.authenticated.wait()
             algorithmName, status = Content
             self.reconciliation_status[algorithmName] = status
             
-        self.qber_estimation_logic()
+        @self.event
+        def qberEstimation(Client: UrsinaNetworkingConnectedClient, Content):
+            Client.authenticated.wait()
+            networking_log('Server', 'qberEstimation', Content)
+            networking_log('Server','Current Key',self._current_key)
+            self.update_synchronization_events_and_wait('qberEstimation')
+            indexes = Content
+            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
+            # print("Bits to send to Client: ", bits_dict)
+            Client.send_message('qberEstimationReply', bits_dict)
+            self.synchronization_events['qberEstimation'].set()
         
         @self.event
-        def privacyAmplification(Client, Content):
+        def privacyAmplification(Client: UrsinaNetworkingConnectedClient, Content):
+            Client.authenticated.wait()
             algo_name, final_key_bytes_size = Content
             self._current_key = MODEL_1(self._current_key, final_key_bytes_size, algorithm=algo_name)[1]
             print('PA KEY: ', self._current_key)
+            
         @self.event
-        def onClientDisconnected(Client):
+        def onClientDisconnected(Client: UrsinaNetworkingConnectedClient):
+            Client.authenticated.wait()
             print(f'Client @ {Client.address} is disconnected! \n')
-        
-        self.ursinaServer.lock.release()
-            
-    def qber_estimation_logic(self):
-        @self.event
-        def qberEstimation1(Client, Content):
-            msg_index, indexes = Content
-            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
-            msg_name = 'qberEstimationReply' + str(msg_index)
-            # print("Bits to send to Client: ", bits_dict)
-            Client.send_message(msg_name, bits_dict)
-
-        @self.event
-        def qberEstimation2(Client, Content):
-            msg_index, indexes = Content
-            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
-            msg_name = 'qberEstimationReply' + str(msg_index)
-            # print("Bits to send to Client: ", bits_dict)
-            Client.send_message(msg_name, bits_dict)
-        
-        @self.event
-        def qberEstimation3(Client, Content):
-            msg_index, indexes = Content
-            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
-            msg_name = 'qberEstimationReply' + str(msg_index)
-            # print("Bits to send to Client: ", bits_dict)
-            Client.send_message(msg_name, bits_dict)
-            
-        @self.event
-        def qberEstimation4(Client, Content):
-            msg_index, indexes = Content
-            bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
-            msg_name = 'qberEstimationReply' + str(msg_index)
-            # print("Bits to send to Client: ", bits_dict)
-            Client.send_message(msg_name, bits_dict)
         
     def _get_auth_keys(self):
         """
@@ -165,14 +158,7 @@ class Server(AdvancedServer):
             self.address = (constants.LOCAL_IP, self.port)
         if self.server_type == constants.PUBLIC_SERVER:
             self.address = utils.start_ngrok_tunnel(self.port)
-    
-    def start_ursina_server(self):
-        self.ursinaServer = UrsinaNetworkingServer('127.0.0.1',self.port)
-        self.events_manager = self.ursinaServer.events_manager
-        self.event = self.events_manager.event
-        self.socket = self.ursinaServer.serverSocket
-        print(f'\n QKDServer listening @ {self.address} \n')
-    
+                
     def check_if_user_data_file_exists(self):
         datapath = os.path.join(
             constants.DATA_STORAGE, 'server_' + self.username + '/', 'user_data.pickle')
@@ -204,13 +190,11 @@ class Server(AdvancedServer):
         if pubKey:
             verify = self._auth.verify(message, signature, pubKey)
             if verify:
-                self.ursinaServer.lock.acquire()
                 self.user_data.users[pubKey.toPem()].address = clientObject.address
-                self.ursinaServer.lock.release()
-                print(
-                    f"Authentication with Client @ {clientObject.address} was successful! \n")
+                console_output(
+                    f"Authentication with Client @ {clientObject.address} was successful!")
             else:
-                print(f"Authentication with Client @ {clientObject.address} was unsuccessful! \n")
+                console_output(f"Authentication with Client @ {clientObject.address} was unsuccessful!")
             return verify
         else:
             self.update_user_data(client_user)
