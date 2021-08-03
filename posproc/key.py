@@ -1,6 +1,6 @@
 import copy
 import random
-
+import time
 class Key:
     _random = random.Random()
     """
@@ -242,7 +242,7 @@ class Key:
         Args:
             indexes (list): indexes of bits to be discarded.
         """
-        indexes_remaining = list(range(self._size))
+        '''indexes_remaining = list(range(self._size))
         #print("Index_rem",indexes_remaining)
         #print("Indexes",indexes)
         for index in indexes:
@@ -257,9 +257,15 @@ class Key:
         new_bits = {}
         for index,n in zip(indexes_remaining,range(self._size)):
             new_bits[n] = self._bits[index]
-        self._bits = new_bits
+        self._bits = new_bits'''
         # print(f"New Bits: {self._bits}")
-        
+        for index in indexes:
+            self._bits.pop(index)
+        lst = self._bits.values()
+        self._bits = dict(enumerate(lst, start=0))
+        self._size = self._size - len(indexes)
+
+    
         
     def get_bits_for_qber_estimation(self, indexes: list) -> dict:
         """
@@ -272,12 +278,16 @@ class Key:
         Returns:
             bits_for_qber (dict):  dict containing the bits value for qber estimation.
         """
+        t1 = time.perf_counter()
         bits_for_qber = {}
         # print("BITS:",self._bits)
+        
         for index in indexes:
             
             bits_for_qber[index] = self._bits[index]
         self.discard_bits(indexes)
+        t2 = time.perf_counter()
+        print("GET BITS FOR QBER ESTIMATION:",t2 - t1)
         return bits_for_qber
     
 
