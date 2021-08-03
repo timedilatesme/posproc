@@ -261,7 +261,9 @@ class Key:
         # print(f"New Bits: {self._bits}")
         for index in indexes:
             self._bits.pop(index)
+        # print('Dict of Key',self._bits)
         lst = self._bits.values()
+        # print('List of Key', lst)
         self._bits = dict(enumerate(lst, start=0))
         self._size = self._size - len(indexes)
 
@@ -287,7 +289,7 @@ class Key:
             bits_for_qber[index] = self._bits[index]
         self.discard_bits(indexes)
         t2 = time.perf_counter()
-        print("GET BITS FOR QBER ESTIMATION:",t2 - t1)
+        # print("GET BITS FOR QBER ESTIMATION:",t2 - t1)
         return bits_for_qber
     
 

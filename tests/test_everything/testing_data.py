@@ -1,6 +1,6 @@
 from posproc import*
 
-size = 100000
+size = 50000
 seed = 5
 algorithm = 'biconf'
 copy_method = 'exact'
