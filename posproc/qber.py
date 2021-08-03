@@ -1,7 +1,7 @@
 from posproc import*
 
 
-def qber_estimation(key_size, active_client : QKDClient, fraction = 0.1, seed = None):
+def qber_estimation(active_client : QKDClient, fraction = 0.1, seed = None):
     """
     Estimates the qber between the keys of Server(Alice) and Client(Bob).
 
@@ -15,15 +15,16 @@ def qber_estimation(key_size, active_client : QKDClient, fraction = 0.1, seed = 
     """
     # Initialize the seed state.
     random.seed(seed)
-    # Generate random indexes to be used for qber estimation.   
+    # Generate random indexes to be used for qber estimation.
+    key_size = active_client._current_key._size
+       
     indexes = random.sample(range(key_size),int(fraction*key_size))
     
     sample_length = len(indexes)
     # print(f"Indexes: {indexes}")
 
     # Get the bit values that bob and alice have. 
-    raw_key_a = active_client.ask_server_for_bits_to_estimate_qber(indexes)
-    
+    raw_key_a = active_client.ask_server_for_bits_to_estimate_qber(indexes)    
     raw_key_b = active_client.get_bits_for_qber(indexes)
     # print(f"raw_key_a: {raw_key_a}")
     # print(f"raw_key_b: {raw_key_b}")

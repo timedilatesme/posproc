@@ -40,7 +40,7 @@ class Client(AdvancedClient):
         
         
         
-        self.synchronization_events = {} # Helps in synchronization
+        # self.synchronization_events = {} # Helps in synchronization
         
     def _get_auth_keys(self):
         """
@@ -116,13 +116,13 @@ class Client(AdvancedClient):
         # print("Updated Noisy Key",self._current_key._bits)
         return bits
     
-    def update_synchronization_events_and_wait(self, name):
-        if name not in self.synchronization_events:
-            self.lock.acquire()
-            self.synchronization_events[name] = threading.Event()
-            self.lock.release()
-        else:
-            self.synchronization_events[name].wait()
+    # def update_synchronization_events_and_wait(self, name):
+    #     if name not in self.synchronization_events:
+    #         self.lock.acquire()
+    #         self.synchronization_events[name] = threading.Event()
+    #         self.lock.release()
+    #     else:
+    #         self.synchronization_events[name].wait()
 
     def ask_parities(self, blocks: List[Block]):
         """
@@ -136,8 +136,6 @@ class Client(AdvancedClient):
             parities (list(int)): Contains parities in the same order as the blocks in blocks.
         """
         self.authenticated.wait()
-        
-        self.update_synchronization_events_and_wait('ask_parities')
             
         # Only send the indexes for parity.
         # TODO: make this algo faster it's currently very slow for large blocks.
@@ -159,8 +157,6 @@ class Client(AdvancedClient):
         
         # parities = eval(name + '()')
         parities = askParitiesReply()
-        
-        self.synchronization_events['ask_parities'].set()
         
         return parities
     
@@ -200,7 +196,6 @@ class Client(AdvancedClient):
         # print("Message Send for QBER: ", msg_to_send)
 
         self.authenticated.wait()
-        self.update_synchronization_events_and_wait('qberEstimation')
         # asking:
         self.send_message_to_server('qberEstimation', indexes)
         
@@ -210,8 +205,6 @@ class Client(AdvancedClient):
             pass
                 
         bits_dict = qberEstimationReply()
-        
-        self.synchronization_events['qberEstimation'].set()
         
         return bits_dict
     

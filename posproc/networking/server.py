@@ -42,16 +42,6 @@ class Server(AdvancedServer):
                                       'winnow': 'Not yet started',
                                       'ldpc': 'Not yet started',
                                       'polar': 'Not yet started'}
-        
-        self.synchronization_events = {}
-        
-    def update_synchronization_events_and_wait(self, name):
-        if name not in self.synchronization_events:
-            self.lock.acquire()
-            self.synchronization_events[name] = threading.Event()            
-            self.lock.release()
-        else:
-            self.synchronization_events[name].wait()
     
     def Initialize_Events(self):
         @self.event
@@ -81,7 +71,6 @@ class Server(AdvancedServer):
         def askParities(Client: UrsinaNetworkingConnectedClient, Content):
             Client.authenticated.wait()
             #TODO: Store the information leaked into some new object to help in privacy amplification.
-            self.update_synchronization_events_and_wait('askParities')
             block_indexes_list = Content
 
             parities = []
@@ -90,7 +79,6 @@ class Server(AdvancedServer):
                 parities.append(parity)
             # + str(index)
             Client.send_message('askParitiesReply', parities)
-            self.synchronization_events['askParities'].set()
 
         @self.event
         def updateReconciliationStatus(Client: UrsinaNetworkingConnectedClient, Content):
@@ -101,21 +89,20 @@ class Server(AdvancedServer):
         @self.event
         def qberEstimation(Client: UrsinaNetworkingConnectedClient, Content):
             Client.authenticated.wait()
-            networking_log('Server', 'qberEstimation', Content)
-            networking_log('Server','Current Key',self._current_key)
-            self.update_synchronization_events_and_wait('qberEstimation')
+            # networking_log('Server', 'qberEstimation', Content)
+            # networking_log('Server','Current Key',self._current_key)
+            
             indexes = Content
             bits_dict = self._current_key.get_bits_for_qber_estimation(indexes)
             # print("Bits to send to Client: ", bits_dict)
             Client.send_message('qberEstimationReply', bits_dict)
-            self.synchronization_events['qberEstimation'].set()
         
         @self.event
         def privacyAmplification(Client: UrsinaNetworkingConnectedClient, Content):
             Client.authenticated.wait()
             algo_name, final_key_bytes_size = Content
             self._current_key = MODEL_1(self._current_key, final_key_bytes_size, algorithm=algo_name)[1]
-            print('PA KEY: ', self._current_key)
+            # print('PA KEY: ', self._current_key)
             
         @self.event
         def onClientDisconnected(Client: UrsinaNetworkingConnectedClient):

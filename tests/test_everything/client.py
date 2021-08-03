@@ -4,45 +4,52 @@ from testing_data import bob_key, algorithm, noise_bob, size, fraction_of_bits_f
 
 # python client.py
 
-# Create the client
+
 bob = QKDClient('Bob', current_key = bob_key)
-
-# Initialize all the protocols for authentication, error correction, privacy amplification.
 bob.Initialize_Events()
-
-# Start the client socket
 bob.start_ursina_client()
-
-# Important calls for event based networking
 bob.start_events_processing_thread()
+print('Initial Key Size: ', bob._current_key._size)
 
-initial_qber = qber.qber_estimation(size, bob, fraction=fraction_of_bits_for_qber_estm, seed = seed)
+# print('Initial Key: ',bob._current_key)
 
+totalTime = time.perf_counter()
+
+qber1Time = time.perf_counter()
+initial_qber = qber.qber_estimation(bob, fraction=fraction_of_bits_for_qber_estm, seed = seed)
 print('Initial QBER: ',initial_qber)
+qber1Time = time.perf_counter() - qber1Time
+print('Initial QBER Time: ', qber1Time, 's\n')
 
-# start = time.perf_counter()
-# recon = CascadeReconciliation(algorithm, bob, bob._current_key, initial_qber)
-# bob._current_key = recon.reconcile()
+reconTime = time.perf_counter()
+recon = CascadeReconciliation(algorithm, bob, bob._current_key, noise_bob)
+bob._current_key = recon.reconcile()
+reconTime = time.perf_counter() - reconTime
+print('Reconciliation Time', (reconTime), 's \n')
+# print('Reconciled Key: ',bob._current_key)
 
-# print(bob._current_key)
-
-reconciled_qber = qber.qber_estimation(
-    size, bob, fraction=fraction_of_bits_for_qber_estm, seed=seed)
-
+qber2Time = time.perf_counter()
+reconciled_qber = qber.qber_estimation(bob, fraction=fraction_of_bits_for_qber_estm, seed=seed)
+qber2Time = time.perf_counter() - qber2Time
 print('Reconciled QBER: ', reconciled_qber)
+print('Reconciled QBER Time: ',qber2Time,'s \n')
 
-
-# bob.ask_server_to_do_privacy_amplification(final_key_bytes_size=8)
+paTime = time.perf_counter()
+bob.ask_server_to_do_privacy_amplification(final_key_bytes_size=8)
 # print('PA KEY: ',bob._current_key)
+paTime = time.perf_counter() - paTime
+print('Priv. Amplification Time: ', paTime, 's \n')
 
-# pa_qber = qber.qber_estimation(
-#     size, bob, fraction=fraction_of_bits_for_qber_estm, seed=seed)
+qber3Time = time.perf_counter()
+pa_qber = qber.qber_estimation(bob, fraction=fraction_of_bits_for_qber_estm, seed=seed)
+qber3Time = time.perf_counter() - qber3Time
+print('Privacy Amplified QBER: ', pa_qber)
+print('Privacy Amplified QBER Time: ', qber3Time,'s\n')
 
-# print('Priv Ampl. QBER: ', pa_qber)
+print('Final Key Size: ', bob._current_key._size)
 
-# end = time.perf_counter()
+totalTime = time.perf_counter() - totalTime
 
+print('Finished in :', totalTime, 's')
 
-# print('Finished in :', (end-start), 's')
-
-# bob.stopClient()
+bob.stopClient()

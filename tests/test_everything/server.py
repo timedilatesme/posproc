@@ -6,6 +6,8 @@ from testing_data import alice_key
 # Create the server
 alice = QKDServer('Alice', current_key=alice_key)
 
+# print(alice_key)
+
 alice.Initialize_Events()
 
 # Start the server socket
