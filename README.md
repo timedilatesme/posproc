@@ -35,15 +35,14 @@ from posproc import*
 # Create the server
 alice = QKDServer('Alice')
 
+# Initialize all the protocols for authentication, error correction, privacy amplification.
+alice.Initialize_Events()
+
 # Start the server socket
 alice.start_ursina_server()
 
-# Important calls for event based networking
-alice.start_sending_messages_thread()
+# Important call for event based networking
 alice.start_events_processing_thread()
-
-# Initialize all the protocols for authentication, error correction, privacy amplification.
-alice.Initialize_Events()
 
 ```
 ### Creating the client
@@ -56,12 +55,11 @@ bob = QKDClient('Bob')
 # Start the client socket
 bob.start_ursina_client()
 
-# Important calls for event based networking
-bob.start_sending_messages_thread()
-bob.start_events_processing_thread()
-
 # Initialize all the protocols for authentication, error correction, privacy amplification.
 bob.Initialize_Events()
+
+# Important call for event based networking
+bob.start_events_processing_thread()
 
 # Cleanly stop the client after everything is done!
 time.sleep(0.1) # For waiting until everything is done
