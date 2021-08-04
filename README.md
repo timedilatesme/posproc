@@ -68,4 +68,4 @@ time.sleep(0.1) # For waiting until everything is done
 bob.stopClient()
 ```
 
-The above two files needs to be executed in different terminals. By default this will start a local server on the LOCAL_PORT defined in [constants](posproc/constants). If the necessary user data is not already stored in the current directory then on first connection it will be created and saved in the file path specified by [DATA_STORAGE](posproc/constants). And when this client connects again, then authentication will be done using data at server's end.
+The above two files needs to be executed in different terminals. By default this will start a local server on the LOCAL_PORT defined in [constants](posproc/constants.py). If the necessary user data is not already stored in the current directory then on first connection it will be created and saved in the file path specified by [DATA_STORAGE](posproc/constants.py). And when this client connects again, then authentication will be done using data at server's end.
