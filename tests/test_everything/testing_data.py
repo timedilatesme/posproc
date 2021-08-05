@@ -1,8 +1,8 @@
 from posproc import*
 
-size = 50000
-seed = 5
-algorithm = 'biconf'
+size = 100000
+seed = 5000
+algorithm = 'original'
 copy_method = 'exact'
 fraction_of_bits_for_qber_estm = 0.1
 noise_bob = 0.1

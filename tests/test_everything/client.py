@@ -35,7 +35,7 @@ print('Reconciled QBER: ', reconciled_qber)
 print('Reconciled QBER Time: ',qber2Time,'s \n')
 
 paTime = time.perf_counter()
-bob.ask_server_to_do_privacy_amplification(final_key_bytes_size=8)
+bob.ask_server_to_do_privacy_amplification(final_key_bytes_size = 128)
 # print('PA KEY: ',bob._current_key)
 paTime = time.perf_counter() - paTime
 print('Priv. Amplification Time: ', paTime, 's \n')
