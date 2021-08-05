@@ -5,6 +5,7 @@ __pycache__/
 *$py.class
 Real_Data_Testing/
 real_data_test/
+.vscode/
 
 # C extensions
 *.so
