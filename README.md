@@ -1,5 +1,6 @@
 # PosProc
 Easy to use QKD (Quantum Key Distribution) library for post processing.
+* Requires Python >= v3.9.5
 * Contains implemetation of Cascade and other error correction algorithms (More will be added in future).
 * Based on an event based networking engine.
 * Includes almost all hashing algorithms for privacy amplification.
