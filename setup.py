@@ -5,6 +5,7 @@ with open("README.md", "r", encoding="UTF-8") as f:
 
 setup(
     name='posproc',
+    python_requires='>=3.9.5',
     description='QKD post-processing software based on event based networking.',
     long_description=long_desc,
     long_description_content_type="text/markdown",
@@ -17,10 +18,13 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
+        'colorama',
+        'pyngrok',
+        'bitstring',
         'jsonpickle',
         'starkbank-ecdsa',
     ],
-    dependency_links = [
-        'https://github.com/starkbank/ecdsa-python.git'
-    ],
+    # dependency_links = [
+    #     'https://github.com/starkbank/ecdsa-python.git'
+    # ],
 )

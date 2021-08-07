@@ -1,1 +1,2 @@
-python -m client > results.txt
+python -m client
+pause

@@ -1,5 +1,4 @@
 from ellipticcurve.publicKey import PublicKey
-import numpy as np
 class User:
     """
     A Mock Implementation of a User with it's attributes.

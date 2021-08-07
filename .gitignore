@@ -1,6 +1,5 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.egg-info/
 *.tmp
 *.py[cod]
 *$py.class

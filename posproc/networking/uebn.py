@@ -34,6 +34,7 @@ import threading
 from typing import Any, List, Tuple
 from posproc import constants
 from posproc.utils import dumps, loads, rename
+from termcolor import colored
 HEADERSIZE = 10
 MESSAGE_LENGTH = 10
 BUFFERSIZE = 4096*2
@@ -51,11 +52,14 @@ FORMAT = constants.FORMAT
 
 
 def networking_log(Class_, Context_, Message_):
-
-    print(f"[{Class_} / {Context_}] {Message_}")
+    class_ = colored(Class_, 'cyan')
+    context_ = colored(Context_, 'magenta')
+    message_ = colored(Message_, 'white')
+    print(f"[{class_} / {context_}] {message_}")
     
 def console_output(Message,*args):
-    print(f'\n >>> {Message}\n',*args)
+    toPrint = '\n ' + colored('>>>','red') + f' {Message}\n'
+    print(toPrint,*args)
 
 def ursina_networking_decompress_file(Datas_):
 
@@ -375,9 +379,9 @@ class SocketServer:
         """
         Cleanly stop the server and complete all remaining threads!
         """
-        self.shutdown.set()
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
+        self.shutdown.set()
         
 
 class SocketClient:
@@ -467,9 +471,9 @@ class SocketClient:
         """
         Cleanly stop the client and complete all remaining threads!
         """
-        self.shutdown.set()
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
+        self.shutdown.set()
 
 
 class AdvancedServer:
@@ -530,5 +534,5 @@ class AdvancedClient:
         self.ursinaClient.send_message(Message_, Content_)
 
     def stopClient(self):
-        self.shutdown.set()
         self.ursinaClient.stop()
+        self.shutdown.set()

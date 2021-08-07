@@ -1,10 +1,11 @@
+from copy import deepcopy
 from posproc import*
 constants.DATA_STORAGE = 'data/'
 from testing_data import alice_key
 
-
+alice_key_org = deepcopy(alice_key)
 # Create the server
-alice = QKDServer('Alice', current_key=alice_key)
+alice = QKDServer('Alice', current_key=alice_key_org)
 
 # print(alice_key)
 
@@ -18,8 +19,8 @@ alice.start_events_processing_thread()
 
 # @alice.event
 # def onClientDisconnected(Client):
-#     # alice._current_key = alice_key
-#     alice.stopServer()
+#     alice._current_key = alice_key
+#     # alice.stopServer()
 
 # Initialize all the protocols for authentication, error correction, privacy amplification.
 
