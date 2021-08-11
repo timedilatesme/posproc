@@ -1,7 +1,6 @@
 from posproc import*
 constants.DATA_STORAGE = 'data/'
 from testing_data import bob_key, algorithm, noise_bob, size, fraction_of_bits_for_qber_estm,seed
-from server import alice
 # python client.py
 
 with open('results/bob_key.txt', 'w') as f:
@@ -42,6 +41,11 @@ bob.ask_server_to_do_privacy_amplification(final_key_bytes_size = 128)
 paTime = time.perf_counter() - paTime
 print('Priv. Amplification Time: ', paTime, 's \n')
 
+bob_final_key_str = str(bob._current_key)
+
+with open('results/bob_final_key.txt', 'w') as f:
+    f.write(bob_final_key_str)
+
 qber3Time = time.perf_counter()
 pa_qber = qber.qber_estimation(bob, fraction=fraction_of_bits_for_qber_estm, seed=seed)
 qber3Time = time.perf_counter() - qber3Time
@@ -55,15 +59,6 @@ totalTime = time.perf_counter() - totalTime
 print('Finished in :', totalTime, 's')
 
 
-bob_final_key_str = str(bob._current_key)
-
-with open('results/bob_final_key.txt', 'w') as f:
-    f.write(bob_final_key_str)
 
 
-alice_final_key_str = str(alice._current_key)
-
-with open('results/alice_final_key.txt', 'w') as f:
-    f.write(alice_final_key_str)
-    
 bob.stopClient()

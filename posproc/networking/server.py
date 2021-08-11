@@ -102,6 +102,12 @@ class Server(AdvancedServer):
             Client.authenticated.wait()
             algo_name, final_key_bytes_size = Content
             self._current_key = MODEL_1(self._current_key, final_key_bytes_size, algorithm=algo_name)[1]
+            alice_final_key_str = str(self._current_key)
+
+            with open('results/alice_final_key.txt', 'w') as f:
+                f.write(alice_final_key_str)
+
+
             # print('PA KEY: ', self._current_key)
             
         @self.event
