@@ -4,6 +4,8 @@ from testing_data import bob_key, algorithm, noise_bob, size, fraction_of_bits_f
 
 # python client.py
 
+with open('results/bob_key.txt', 'w') as f:
+    f.write(str(bob_key))
 
 bob = QKDClient('Bob', current_key = bob_key)
 bob.Initialize_Events()

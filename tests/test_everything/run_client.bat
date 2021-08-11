@@ -1,2 +1,2 @@
-python -m client
+python -m client > results/results.txt
 pause

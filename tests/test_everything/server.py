@@ -4,6 +4,10 @@ constants.DATA_STORAGE = 'data/'
 from testing_data import alice_key
 
 alice_key_org = deepcopy(alice_key)
+
+with open('results/alice_key.txt', 'w') as f:
+    f.write(str(alice_key))
+
 # Create the server
 alice = QKDServer('Alice', current_key=alice_key_org)
 
