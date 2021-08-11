@@ -1,7 +1,7 @@
 from posproc import*
 constants.DATA_STORAGE = 'data/'
 from testing_data import bob_key, algorithm, noise_bob, size, fraction_of_bits_for_qber_estm,seed
-
+from server import alice
 # python client.py
 
 with open('results/bob_key.txt', 'w') as f:
@@ -54,4 +54,16 @@ totalTime = time.perf_counter() - totalTime
 
 print('Finished in :', totalTime, 's')
 
+
+bob_final_key_str = str(bob._current_key)
+
+with open('results/bob_final_key.txt', 'w') as f:
+    f.write(bob_final_key_str)
+
+
+alice_final_key_str = str(alice._current_key)
+
+with open('results/alice_final_key.txt', 'w') as f:
+    f.write(alice_final_key_str)
+    
 bob.stopClient()

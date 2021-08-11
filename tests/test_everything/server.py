@@ -21,6 +21,8 @@ alice.start_ursina_server()
 # Important calls for event based networking
 alice.start_events_processing_thread()
 
+
+
 # @alice.event
 # def onClientDisconnected(Client):
 #     alice._current_key = alice_key
