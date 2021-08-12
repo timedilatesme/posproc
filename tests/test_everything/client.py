@@ -1,10 +1,13 @@
 from posproc import*
 constants.DATA_STORAGE = 'data/'
-from testing_data import bob_key, algorithm, noise_bob, size, fraction_of_bits_for_qber_estm,seed
+from testing_data import algorithm, noise_bob, size, fraction_of_bits_for_qber_estm,seed
 # python client.py
 
-with open('results/bob_key.txt', 'w') as f:
-    f.write(str(bob_key))
+with open('Bob.txt') as fh:
+    bob_key = Key( key_as_str= fh.read())
+
+# with open('results/bob_key.txt', 'w') as f:
+#     f.write(str(bob_key))
 
 bob = QKDClient('Bob', current_key = bob_key)
 bob.Initialize_Events()
@@ -36,7 +39,7 @@ print('Reconciled QBER: ', reconciled_qber)
 print('Reconciled QBER Time: ',qber2Time,'s \n')
 
 paTime = time.perf_counter()
-bob.ask_server_to_do_privacy_amplification(final_key_bytes_size = 128)
+bob.ask_server_to_do_privacy_amplification(final_key_bytes_size = 500)
 # print('PA KEY: ',bob._current_key)
 paTime = time.perf_counter() - paTime
 print('Priv. Amplification Time: ', paTime, 's \n')
