@@ -5,7 +5,7 @@ seed = 5000
 algorithm = 'original'
 copy_method = 'exact'
 fraction_of_bits_for_qber_estm = 0.1
-noise_bob = 0.1
+noise_bob = 0.5
 noise_eve = 1
 
 alice_key = Random_Key_Generator(size,seed)

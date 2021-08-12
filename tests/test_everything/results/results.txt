@@ -7,20 +7,20 @@ Initial Key Size:  40859
 
 
 Initial QBER:  0.4910648714810282
-Initial QBER Time:  0.25284109999999993 s
+Initial QBER Time:  0.23809020000000003 s
 
-Reconciliation Time 28.9862474 s 
+Reconciliation Time 7.8304258 s 
 
 Reconciled QBER:  0.0
-Reconciled QBER Time:  0.1612677999999974 s 
+Reconciled QBER Time:  0.2226153999999987 s 
 
-Priv. Amplification Time:  0.07320179999999965 s 
+Priv. Amplification Time:  0.07147999999999932 s 
 
 Privacy Amplified QBER:  0.0
-Privacy Amplified QBER Time:  0.04664849999999987 s
+Privacy Amplified QBER Time:  0.0464822999999992 s
 
 Final Key Size:  3600
-Finished in : 29.580005200000002 s
+Finished in : 8.473054 s
 
  [31m>>>[0m You are disconnected from the Server!
 
