@@ -7,20 +7,18 @@ Initial Key Size:  40859
 
 
 Initial QBER:  0.4910648714810282
-Initial QBER Time:  0.23809020000000003 s
+Initial QBER Time:  0.4436047000000001 s
 
-Reconciliation Time 7.8304258 s 
+Reconciliation Time 10.5223694 s 
 
 Reconciled QBER:  0.0
-Reconciled QBER Time:  0.2226153999999987 s 
+Reconciled QBER Time:  0.28597180000000044 s 
 
-Priv. Amplification Time:  0.07147999999999932 s 
+Priv. Amplification Time:  0.08476620000000068 s 
 
 Privacy Amplified QBER:  0.0
-Privacy Amplified QBER Time:  0.0464822999999992 s
+Privacy Amplified QBER Time:  0.047624499999999514 s
 
 Final Key Size:  3600
-Finished in : 8.473054 s
-
- [31m>>>[0m You are disconnected from the Server!
-
+Finished in : 11.4642172 s
+[[36mSocketClient[0m / [35mhandle[0m] [37munknown error : [WinError 10038] An operation was attempted on something that is not a socket[0m

@@ -61,7 +61,4 @@ totalTime = time.perf_counter() - totalTime
 
 print('Finished in :', totalTime, 's')
 
-
-
-
 bob.stopClient()
