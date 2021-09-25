@@ -1,13 +1,11 @@
 from posproc import*
 constants.DATA_STORAGE = 'data/'
-from testing_data import algorithm, noise_bob, size, fraction_of_bits_for_qber_estm,seed
+from testing_data import algorithm, noise_bob, size, fraction_of_bits_for_qber_estm,seed, bob_key
 # python client.py
 
-with open('Bob.txt') as fh:
-    bob_key = Key( key_as_str= fh.read())
+# with open('Bob.txt') as fh:
+#     bob_key = Key( key_as_str= fh.read())
 
-# with open('results/bob_key.txt', 'w') as f:
-#     f.write(str(bob_key))
 
 bob = QKDClient('Bob', current_key = bob_key)
 bob.Initialize_Events()

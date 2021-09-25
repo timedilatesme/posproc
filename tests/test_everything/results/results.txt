@@ -1,24 +1,26 @@
 
  [31m>>>[0m QKDClient connected to ('127.0.0.1', 9999)
 
-Initial Key Size:  40859
+Initial Key Size:  100000
 
  [31m>>>[0m [QKDServer]: Authentication Successful! 
 
 
-Initial QBER:  0.4910648714810282
-Initial QBER Time:  0.4436047000000001 s
+Initial QBER:  0.5017
+Initial QBER Time:  0.5879925000000001 s
 
-Reconciliation Time 10.5223694 s 
+Reconciliation Time 15.033892 s 
 
 Reconciled QBER:  0.0
-Reconciled QBER Time:  0.28597180000000044 s 
+Reconciled QBER Time:  0.25937449999999984 s 
 
-Priv. Amplification Time:  0.08476620000000068 s 
+Priv. Amplification Time:  0.09966220000000092 s 
 
 Privacy Amplified QBER:  0.0
-Privacy Amplified QBER Time:  0.047624499999999514 s
+Privacy Amplified QBER Time:  0.0483760999999987 s
 
 Final Key Size:  3600
-Finished in : 11.4642172 s
-[[36mSocketClient[0m / [35mhandle[0m] [37munknown error : [WinError 10038] An operation was attempted on something that is not a socket[0m
+Finished in : 16.0911835 s
+
+ [31m>>>[0m You are disconnected from the Server!
+
