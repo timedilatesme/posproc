@@ -379,7 +379,8 @@ class SocketServer:
         """
         Cleanly stop the server and complete all remaining threads!
         """
-        self.socket.shutdown(socket.SHUT_RDWR)
+        
+        # self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
         self.shutdown.set()
         
@@ -471,7 +472,7 @@ class SocketClient:
         """
         Cleanly stop the client and complete all remaining threads!
         """
-        self.socket.shutdown(socket.SHUT_RDWR)
+        # self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
         self.shutdown.set()
 

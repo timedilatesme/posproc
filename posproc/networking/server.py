@@ -10,6 +10,7 @@ from posproc.authentication import Authentication
 from posproc.networking.user_data import User, UserData
 from posproc.networking.uebn import AdvancedServer, UrsinaNetworkingConnectedClient, console_output, networking_log
 from posproc.privacy_amplification.universal_hashing import MODEL_1
+from numba import njit
     
 class Server(AdvancedServer):
     def __init__(self, username: str, current_key: Key = None,
@@ -104,8 +105,8 @@ class Server(AdvancedServer):
             self._current_key = MODEL_1(self._current_key, final_key_bytes_size, algorithm=algo_name)[1]
             alice_final_key_str = str(self._current_key)
 
-            with open('results/alice_final_key.txt', 'w') as f:
-                f.write(alice_final_key_str)
+            # with open('results/alice_final_key.txt', 'w') as f:
+            #     f.write(alice_final_key_str)
 
 
             # print('PA KEY: ', self._current_key)

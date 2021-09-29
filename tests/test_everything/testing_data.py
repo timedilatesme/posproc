@@ -1,11 +1,11 @@
 from posproc import*
 
-size = 100000
+size = 100_000
 seed = 5000
-algorithm = 'original'
+algorithm = 'biconf'
 copy_method = 'exact'
 fraction_of_bits_for_qber_estm = 0.1
-noise_bob = 0.5
+noise_bob = 0.05
 noise_eve = 1
 
 alice_key = Random_Key_Generator(size,seed)
