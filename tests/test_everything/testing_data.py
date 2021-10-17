@@ -1,8 +1,8 @@
 from posproc import*
 
-size = 200_000
+size = 10_000
 seed = 5000
-algorithm = 'biconf'
+algorithm = 'yanetal'
 copy_method = 'exact'
 fraction_of_bits_for_qber_estm = 0.1
 noise_bob = 0.5
