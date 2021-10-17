@@ -1,0 +1,24 @@
+
+ [31m>>>[0m QKDClient connected to ('127.0.0.1', 9999)
+
+Initial Key Size:  10000
+
+ [31m>>>[0m [QKDServer]: Authentication Successful! 
+
+
+Initial QBER:  0.093
+Initial QBER Time:  0.1558682 s
+
+Reconciliation Time 1.8941791000000001 s 
+
+Reconciled QBER:  0.0
+Reconciled QBER Time:  0.062498900000000024 s 
+
+Priv. Amplification Time:  0.030459000000000014 s 
+
+Privacy Amplified QBER:  0.0
+Privacy Amplified QBER Time:  0.04727649999999972 s
+
+Final Key Size:  3600
+Finished in : 2.2521617000000003 s
+[[36mSocketClient[0m / [35mhandle[0m] [37mconnectionError : [WinError 10053] An established connection was aborted by the software in your host machine[0m

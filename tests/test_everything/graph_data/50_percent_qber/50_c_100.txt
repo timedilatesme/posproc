@@ -1,0 +1,26 @@
+
+ [31m>>>[0m QKDClient connected to ('127.0.0.1', 9999)
+
+Initial Key Size:  100000
+
+ [31m>>>[0m [QKDServer]: Authentication Successful! 
+
+
+Initial QBER:  0.5017
+Initial QBER Time:  0.44892409999999994 s
+
+Reconciliation Time 12.461243999999999 s 
+
+Reconciled QBER:  0.0
+Reconciled QBER Time:  0.3395348000000009 s 
+
+Priv. Amplification Time:  0.08527489999999993 s 
+
+Privacy Amplified QBER:  0.0
+Privacy Amplified QBER Time:  0.04862059999999957 s
+
+Final Key Size:  3600
+Finished in : 13.4614488 s
+
+ [31m>>>[0m You are disconnected from the Server!
+
