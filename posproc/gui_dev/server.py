@@ -1,5 +1,6 @@
 import PySimpleGUI as sg
 from posproc import*
+import clipboard
 
 # METHODS :
 def check_valid_key_box_input(key_str):
@@ -25,6 +26,8 @@ SUBMIT_BUTTON_EVENT = '-submit_button'
 START_LISTENING_BUTTON_EVENT = '-start_listening_button-'
 RESET_BUTTON_EVENT = '-reset_button-'
 EXIT_BUTTON_EVENT = 'Exit'
+CONSOLE_EVENT = '-console-'
+COPY_CLIPBOARD_EVENT = '-copy_clipboard-'
 
 # tooltips
 INITIAL_KEY_TOOLTIP = "Please Choose the Method for providing the sifted Raw Key"
@@ -50,27 +53,37 @@ parameter_tab_layout = [
     [sg.Text('')],
     [sg.Button('Submit',key = SUBMIT_BUTTON_EVENT),
      sg.Button('Start Listening',key = START_LISTENING_BUTTON_EVENT,disabled=True)],
-    [sg.Button('Reset', key = RESET_BUTTON_EVENT), sg.Button('Exit',  key=EXIT_BUTTON_EVENT)]
+    [sg.Button('Reset', key = RESET_BUTTON_EVENT), sg.Button('Exit',  key=EXIT_BUTTON_EVENT)],
+    [sg.Multiline('Hello', key=CONSOLE_EVENT,enable_events=True)]
+
 ]
 
 result_tab_layout = [
     [sg.Text('Initial Sifted Key',justification='r'),
      sg.InputText('gfxfg',readonly=True)],
-    [sg.Text('abcd')],
+    [sg.Text('Privacy Amplified Key'),
+    sg.InputText('', readonly=True)],
+    [sg.Text('Privacy Amplified Key Length'),
+    sg.InputText('',readonly=True)],
+    [sg.Text('Reconciliation Time'),
+    sg.InputText('',readonly=True)],
+    [sg.Text('Total QKD Time'),
+    sg.InputText('',readonly=True)],
+    [sg.Text('Save Alice\'s Final Key'), sg.SaveAs(), sg.Button('Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)]
+
 ]
 
 
 tabs = [
-    [sg.Tab('Parameters', parameter_tab_layout),
-     sg.Tab('Results', result_tab_layout)],
+    [sg.Tab('Parameters', parameter_tab_layout, element_justification='c'),
+     sg.Tab('Results', result_tab_layout,element_justification='c')],
 ]
 
-tabgrp = [[sg.TabGroup(tabs)]]
+tabgrp = [[sg.TabGroup(tabs,)]]
 
-window = sg.Window("QKD Server",tabgrp,element_justification= 'c')
+window = sg.Window("QKD Server",tabgrp)
 
 alice = QKDServer('Alice')
-Key
 
 while True:
     event, values = window.read()
@@ -116,7 +129,9 @@ while True:
     if event == RESET_BUTTON_EVENT:
         alice.stopServer()
         window.Element(START_LISTENING_BUTTON_EVENT).Update(disabled=True)
-
+    
+    if event == COPY_CLIPBOARD_EVENT:
+        clipboard.copy(alice.get_key().__str__())
 window.close()
 
 
