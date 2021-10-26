@@ -39,6 +39,18 @@ CONSOLE_EVENT = '-console-'
 COPY_CLIPBOARD_EVENT = '-copy_clipboard-'
 OUTPUT_KEY_BOX_EVENT = '-output_key_box-'
 
+RECONCILIATION_TIME_OUTPUT_EVENT = '-reconciliation_time_output-'
+QKD_TIME_OUPUT_EVENT = '-qkd_time_output-'
+FINAL_KEY_LENGTH_OUTPUT = '-final_key_length-'
+QBER_OUTPUT_EVENT = '-qber_output-'
+FRACTION_OUTPUT_EVENT = '-fraction_output-'
+PA_ALGORITHM_EVENT = '-pa_algorithm-'
+RECONCILIATION_ALGORITHM_EVENT = '-reconciliation_algorithm-'
+ASK_PARITY_BLOCKS_AND_BITS_EVENT = '-ask_parity_blocks_and_bits-'
+REALISTIC_EFFICIENCY_EVENT = '-realistic_efficiency-'
+UNREALISTIC_EFFICIENCY_EVENT ='-unrealistic_efficiency-'
+
+
 # tooltips
 INITIAL_KEY_TOOLTIP = "Please Choose the Method for providing the sifted Raw Key"
 
@@ -47,6 +59,8 @@ error = False
 
 # RADIO ID
 INPUT_KEY_RADIO_ID = '-input_key_radio_id-'
+TIME_OUTPUT_EVENT = '-time_output_-'
+
 
 
 # layouts
@@ -67,23 +81,31 @@ parameter_tab_layout = [
      sg.Button('Reset', key = RESET_BUTTON_EVENT), sg.Button('Exit',  key=EXIT_BUTTON_EVENT)],
 ]
 
+
+QKD_stats_frame_layout = [
+                            [sg.Text("Final Key Length:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=FINAL_KEY_LENGTH_OUTPUT)],
+                            [sg.Text("Time for:"), sg.Radio('Reconciliation',group_id=TIME_OUTPUT_EVENT,key = RECONCILIATION_TIME_OUTPUT_EVENT,enable_events=True),
+                            sg.Radio('QKD',group_id=TIME_OUTPUT_EVENT,key = QKD_TIME_OUPUT_EVENT,enable_events=True),sg.InputText('',readonly=True,size=(5,1))],
+                            [sg.Text("QBER:",justification='l'), sg.InputText('',readonly=True,size=(5,1),key= QBER_OUTPUT_EVENT),sg.Text('         ') ,sg.Text("Fraction Used"), sg.InputText('',readonly=True,size=(5,1),key=FRACTION_OUTPUT_EVENT)],
+                            [sg.Text("Algorithm for Privacy Amplification:",justification='l'),sg.InputText('',readonly=True,size=(10,1),key=PA_ALGORITHM_EVENT)]
+                        ]
+
+reconciliation_stats_frame_layout = [
+                            [sg.Text("Reconciliation Algorithm:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=RECONCILIATION_ALGORITHM_EVENT)],
+                            [sg.Text("Parity Blocks Messages & Bits:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=ASK_PARITY_BLOCKS_AND_BITS_EVENT)],
+                            [sg.Text("Unrealistic Efficiency:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key = UNREALISTIC_EFFICIENCY_EVENT)],
+                            [sg.Text("Realistic Efficiency:",justification='l'),sg.InputText('',readonly=True,size=(10,1),justification='r',key=REALISTIC_EFFICIENCY_EVENT)]
+                            ]
+
+                
 result_tab_layout = [
-    [sg.Text('Initial Sifted Key:',justification='r'),
-     sg.InputText('gfxfg',readonly=True)],
-    [sg.Text('Privacy Amplified Key:'),
-    sg.InputText('', readonly=True)],
-    [sg.Text('Privacy Amplified Key Length:'),
-    sg.InputText('',readonly=True)],
-    [sg.Text('Calculated QBER:'),
-    sg.InputText('',readonly=True)],
-    [sg.Text('Reconciliation Time:'),
-    sg.InputText('',readonly=True)],
-    [sg.Text('Total QKD Time:'),
-    sg.InputText('',readonly=True)],
-    [sg.Text('Save the Final Key:', justification='c'),
-     sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(),
-     sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)]
-]
+                [sg.Frame('QKD Stats',QKD_stats_frame_layout, font= 'Arial', title_color='lightblue',element_justification='l'), sg.Frame('Reconciliation Stats',reconciliation_stats_frame_layout, font = 'Any 12', title_color='lightblue',element_justification='r')],
+                [sg.Text('Save the Final Key:', justification='c'),
+                sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(),
+                sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)]
+                ]
+
+
 
 
 tabs = [
@@ -169,5 +191,11 @@ while True:
         if values[OUTPUT_KEY_BOX_EVENT] != '':    
             with open(values[OUTPUT_KEY_BOX_EVENT], 'w') as fh:
                 fh.write(alice.get_key().__str__())
+
+    if event == QKD_TIME_OUPUT_EVENT:
+        pass
+    if event == RECONCILIATION_TIME_OUTPUT_EVENT:
+        pass
+
 
 window.close()
