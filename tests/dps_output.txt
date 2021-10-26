@@ -1,0 +1,30 @@
+	"""
+	
+	>>> QKDClient connected to ('127.0.0.1', 9999)
+
+	Initial Key Size:  40859
+	Reconciliation Algorithm: Original Cascade
+
+	>>> [QKDServer]: Authentication Successful! 
+
+
+	Initial QBER:  0.4910648714810282
+	Initial QBER Time:  0.3698526999999999 s
+
+	Key Size after QBER 1:  36774
+	Reconciliation Time 6.892777999999999 s 
+
+	Key Size after Recon:  36774
+	Reconciled QBER:  0.0
+	Reconciled QBER Time:  0.17333799999999933 s  
+
+	Key Size after QBER 2:  33097
+	Priv. Amplification Time:  0.047864300000000526 s
+
+	Privacy Amplified QBER:  0.0
+	Privacy Amplified QBER Time:  0.04835040000000035 s
+
+	Final Key Size:  3600
+	Finished in : 7.8578659 s 
+
+	"""

@@ -2,7 +2,7 @@ from posproc import*
 
 size = 10_000
 seed = 5000
-algorithm = 'yanetal'
+algorithm = 'original'
 copy_method = 'exact'
 fraction_of_bits_for_qber_estm = 0.1
 noise_bob = 0.5
