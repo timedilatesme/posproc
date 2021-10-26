@@ -19,6 +19,8 @@ EXIT_BUTTON_EVENT = 'Exit'
 # tooltips
 INITIAL_KEY_TOOLTIP = "Please Choose the Method for providing the sifted Raw Key"
 
+#bool
+error = False
 
 # RADIO ID
 INPUT_KEY_RADIO_ID = '-input_key_radio_id-'
@@ -56,6 +58,7 @@ parameter_tab_layout = [
 window = sg.Window("QKD Server",parameter_tab_layout,element_justification= 'c')
 
 alice = QKDServer('Alice')
+Key
 
 while True:
     event, values = window.read()
@@ -78,7 +81,17 @@ while True:
     
     if event == SUBMIT_BUTTON_EVENT:
         if window.Element(INPUT_KEY_TYPE_STR_EVENT).get():
-            alice.set_key(values[INPUT_KEY_BOX_EVENT])
+            key_str = values[INPUT_KEY_BOX_EVENT]
+            for i in key_str:
+                if i == '0' or i =='1':
+                    pass
+                else:
+                    sg.popup('Please Enter in Binary Format')
+                    error = True
+                    break
+            if not error:
+                alice.set_key(alice_key=Key(key_as_str=key_str))
+            
         elif window.Element(INPUT_KEY_TYPE_RANDOM_EVENT).get():
             pass
         elif window.Element(INPUT_KEY_TYPE_FILE_EVENT).get():

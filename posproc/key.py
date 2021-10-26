@@ -328,3 +328,13 @@ def Random_Key_Generator(size,seed):
     """
     Key.set_random_seed(seed)
     return Key.create_random_key(size)
+
+# def create_random_key_pairs(size,seed):
+#     Key.set_random_seed(seed)
+#     key1 = Key.create_random_key(size)
+#     key2 = key1.copy()
+#     return 
+
+if __name__ == '__main__':
+    seed = 5
+    print(Random_Key_Generator(5,seed))
