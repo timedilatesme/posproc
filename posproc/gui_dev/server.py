@@ -1,6 +1,16 @@
 import PySimpleGUI as sg
 from posproc import*
 
+# METHODS :
+def check_valid_key_box_input(key_str):
+    t = set(key_str)
+    if t in (set('01'),set('0'),set('1')):
+        return True
+    else:
+        return False
+
+
+
 # EVENTS
 SIFTED_KEY_EVENT = '-sifted_key-'
 INPUT_KEY_TYPE_STR_EVENT = '-input_key_type_1-'
@@ -30,7 +40,7 @@ INPUT_KEY_RADIO_ID = '-input_key_radio_id-'
 parameter_tab_layout = [
     [sg.Text('Initial Key Type :',justification='r'),
      sg.Radio(' Input Key', INPUT_KEY_RADIO_ID, key=INPUT_KEY_TYPE_STR_EVENT,enable_events=True),
-     sg.Radio(' Random Key', INPUT_KEY_RADIO_ID, key=INPUT_KEY_TYPE_RANDOM_EVENT,enable_events=True),
+    #  sg.Radio(' Random Key', INPUT_KEY_RADIO_ID, key=INPUT_KEY_TYPE_RANDOM_EVENT,enable_events=True),
      sg.Radio(' Browse Key', INPUT_KEY_RADIO_ID, key=INPUT_KEY_TYPE_FILE_EVENT, enable_events=True)],
     [sg.Text('Input the Key',  key=INPUT_KEY_TEXT_EVENT,justification='c'),
      sg.Input(key=INPUT_KEY_BOX_EVENT, justification='c'),
@@ -43,19 +53,21 @@ parameter_tab_layout = [
     [sg.Button('Reset', key = RESET_BUTTON_EVENT), sg.Button('Exit',  key=EXIT_BUTTON_EVENT)]
 ]
 
-# result_tab_layout = [
-#     [sg.Text('Initial Sifted Key'), 
-#      sg.Text('111', background_color='#F0F0F0', key=)],
-#     [sg.Text('')],
-# ]
+result_tab_layout = [
+    [sg.Text('Initial Sifted Key',justification='r'),
+     sg.InputText('gfxfg',readonly=True)],
+    [sg.Text('abcd')],
+]
 
 
-# tabgrp = [
-#     [sg.TabGroup('Parameters', parameter_tab_layout),
-#      sg.TabGroup('Results', result_tab_layout)],
-# ]
+tabs = [
+    [sg.Tab('Parameters', parameter_tab_layout),
+     sg.Tab('Results', result_tab_layout)],
+]
 
-window = sg.Window("QKD Server",parameter_tab_layout,element_justification= 'c')
+tabgrp = [[sg.TabGroup(tabs)]]
+
+window = sg.Window("QKD Server",tabgrp,element_justification= 'c')
 
 alice = QKDServer('Alice')
 Key
@@ -71,9 +83,9 @@ while True:
         window.Element(INPUT_FILE_EVENT).Update(disabled=True)
         window.Element(INPUT_KEY_TEXT_EVENT).Update('Input the Key')
     
-    if event == INPUT_KEY_TYPE_RANDOM_EVENT:
-        window.Element(INPUT_FILE_EVENT).Update(disabled=True)
-        window.Element(INPUT_KEY_TEXT_EVENT).Update('Enter Key Length')
+    # if event == INPUT_KEY_TYPE_RANDOM_EVENT:
+    #     window.Element(INPUT_FILE_EVENT).Update(disabled=True)
+    #     window.Element(INPUT_KEY_TEXT_EVENT).Update('Enter Key Length')
     
     if event == INPUT_KEY_TYPE_FILE_EVENT:
         window.Element(INPUT_FILE_EVENT).Update(disabled=False)
@@ -82,18 +94,13 @@ while True:
     if event == SUBMIT_BUTTON_EVENT:
         if window.Element(INPUT_KEY_TYPE_STR_EVENT).get():
             key_str = values[INPUT_KEY_BOX_EVENT]
-            for i in key_str:
-                if i == '0' or i =='1':
-                    pass
-                else:
-                    sg.popup('Please Enter in Binary Format')
-                    error = True
-                    break
-            if not error:
-                alice.set_key(alice_key=Key(key_as_str=key_str))
+            if check_valid_key_box_input(key_str):
+                alice.set_key(Key(key_as_str=key_str))
+            else:
+                sg.popup('Please Enter Key in Binary Format')
             
-        elif window.Element(INPUT_KEY_TYPE_RANDOM_EVENT).get():
-            pass
+        # elif window.Element(INPUT_KEY_TYPE_RANDOM_EVENT).get():
+        #     pass
         elif window.Element(INPUT_KEY_TYPE_FILE_EVENT).get():
             key_path = values[INPUT_KEY_BOX_EVENT]
             with open(key_path) as fh:
@@ -111,3 +118,5 @@ while True:
         window.Element(START_LISTENING_BUTTON_EVENT).Update(disabled=True)
 
 window.close()
+
+
