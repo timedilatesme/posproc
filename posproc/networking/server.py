@@ -44,6 +44,12 @@ class Server(AdvancedServer):
                                       'ldpc': 'Not yet started',
                                       'polar': 'Not yet started'}
     
+    def set_key(self, key: Key):
+        self._current_key = key
+    
+    def get_key(self):
+        return self._current_key
+    
     def Initialize_Events(self):
         @self.event
         def onClientConnected(Client):
