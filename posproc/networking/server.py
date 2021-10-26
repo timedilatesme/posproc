@@ -193,4 +193,9 @@ class Server(AdvancedServer):
         else:
             self.update_user_data(client_user)
             # print("User Data after Client Add: ", self.user_data)
-            return None    
+            return None 
+    
+    def start_listening(self):
+        self.Initialize_Events()
+        self.start_ursina_server()
+        self.start_events_processing_thread()

@@ -1,1 +1,1 @@
-python -m client > graph_data/50_b_200.txt
+python -m client

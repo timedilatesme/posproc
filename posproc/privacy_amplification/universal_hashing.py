@@ -410,6 +410,12 @@ class HashingAlgorithm:
         self.raw_key = self.raw_key_duplicate
         return self.pa_key
 
+def str_to_xor(key):
+    s = 0
+    for i in key:
+        s += int(i)
+    return str(s//2)
+
 def MODEL_1(reconciled_key: Key, final_key_bytes_size: int, algorithm = None, seed = None):
     """
     ...
@@ -427,7 +433,10 @@ def MODEL_1(reconciled_key: Key, final_key_bytes_size: int, algorithm = None, se
     hashAlgorithm = HashingAlgorithm(reconciled_key_str, seed = seed)
     algo_name,final_key = hashAlgorithm.digest_hash_fn(algo=algorithm)
     hashAlgorithm.raw_key = final_key
-    final_key = hashAlgorithm.shake_128(final_key_bytes_size)
+    unfinal_key = hashAlgorithm.shake_128(final_key_bytes_size)
+    final_key = ''
+    for i in range(final_key_bytes_size):
+        final_key += str_to_xor(unfinal_key[i*8:(i+1)*8])
     final_key_Object = Key(key_as_str = final_key)
     return algo_name, final_key_Object
 
@@ -438,7 +447,7 @@ if __name__ == '__main__':
     algo,finalKey = MODEL_1(key, 3,seed = seed)
     
     print('Algo: ',algo)
-    print('Final Key', len(finalKey))
+    print('Final Key', finalKey._size)
     
     # from posproc.privacy_amplification.universal_hashing import HashingAlgorithm
 

@@ -17,4 +17,4 @@ HEADER = 10 # this is the maximum number of bytes to be send to send info about 
 FORMAT = "utf-8"
 MAX_KEY_SIZE = 5000
 MAX_DATA_LENGTH = 0xfffff
-DATA_STORAGE = 'posproc/testing/data/' # Stores all the data needed for authentication/user_data.
+DATA_STORAGE = 'data/' # Stores all the data needed for authentication/user_data.
