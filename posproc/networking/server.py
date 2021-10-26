@@ -24,7 +24,6 @@ class Server(AdvancedServer):
         self._set_the_address_variable()
         
         super().__init__(self.address)
-
         
         self.username = username
         

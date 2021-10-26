@@ -9,7 +9,16 @@ def check_valid_key_box_input(key_str):
         return True
     else:
         return False
+    
+def gui_console_print(text:str,window: sg.Window):
+    current_text_console = window.Element(CONSOLE_EVENT).Get()
+    window.Element(CONSOLE_EVENT).Update(
+        current_text_console + text)
 
+# Theming
+sg.theme('DarkAmber')
+CONSOLE_TEXT_COLOR = '#00ffff'
+CONSOLE_BACKGROUND_COLOR = '#000000'
 
 
 # EVENTS
@@ -28,6 +37,7 @@ RESET_BUTTON_EVENT = '-reset_button-'
 EXIT_BUTTON_EVENT = 'Exit'
 CONSOLE_EVENT = '-console-'
 COPY_CLIPBOARD_EVENT = '-copy_clipboard-'
+OUTPUT_KEY_BOX_EVENT = '-output_key_box-'
 
 # tooltips
 INITIAL_KEY_TOOLTIP = "Please Choose the Method for providing the sifted Raw Key"
@@ -38,6 +48,7 @@ error = False
 # RADIO ID
 INPUT_KEY_RADIO_ID = '-input_key_radio_id-'
 
+
 # layouts
 
 parameter_tab_layout = [
@@ -46,31 +57,32 @@ parameter_tab_layout = [
     #  sg.Radio(' Random Key', INPUT_KEY_RADIO_ID, key=INPUT_KEY_TYPE_RANDOM_EVENT,enable_events=True),
      sg.Radio(' Browse Key', INPUT_KEY_RADIO_ID, key=INPUT_KEY_TYPE_FILE_EVENT, enable_events=True)],
     [sg.Text('Input the Key',  key=INPUT_KEY_TEXT_EVENT,justification='c'),
-     sg.Input(key=INPUT_KEY_BOX_EVENT, justification='c'),
+     sg.Input(key=INPUT_KEY_BOX_EVENT, justification='c', disabled=True),
      sg.FileBrowse(disabled=True, key=INPUT_FILE_EVENT)],
     [sg.Text('IP',justification='c'), sg.Input(constants.LOCAL_IP,key=INPUT_IP_EVENT,size = (15,1),justification='c'),
      sg.Text('Port',justification='c'), sg.Input(constants.LOCAL_PORT,key=INPUT_PORT_EVENT,size = (8,1),justification='c')],
     [sg.Text('')],
     [sg.Button('Submit',key = SUBMIT_BUTTON_EVENT),
-     sg.Button('Start Listening',key = START_LISTENING_BUTTON_EVENT,disabled=True)],
-    [sg.Button('Reset', key = RESET_BUTTON_EVENT), sg.Button('Exit',  key=EXIT_BUTTON_EVENT)],
-    [sg.Multiline('Hello', key=CONSOLE_EVENT,enable_events=True)]
-
+     sg.Button('Start Listening',key = START_LISTENING_BUTTON_EVENT,disabled=True),
+     sg.Button('Reset', key = RESET_BUTTON_EVENT), sg.Button('Exit',  key=EXIT_BUTTON_EVENT)],
 ]
 
 result_tab_layout = [
-    [sg.Text('Initial Sifted Key',justification='r'),
+    [sg.Text('Initial Sifted Key:',justification='r'),
      sg.InputText('gfxfg',readonly=True)],
-    [sg.Text('Privacy Amplified Key'),
+    [sg.Text('Privacy Amplified Key:'),
     sg.InputText('', readonly=True)],
-    [sg.Text('Privacy Amplified Key Length'),
+    [sg.Text('Privacy Amplified Key Length:'),
     sg.InputText('',readonly=True)],
-    [sg.Text('Reconciliation Time'),
+    [sg.Text('Calculated QBER:'),
     sg.InputText('',readonly=True)],
-    [sg.Text('Total QKD Time'),
+    [sg.Text('Reconciliation Time:'),
     sg.InputText('',readonly=True)],
-    [sg.Text('Save Alice\'s Final Key'), sg.SaveAs(), sg.Button('Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)]
-
+    [sg.Text('Total QKD Time:'),
+    sg.InputText('',readonly=True)],
+    [sg.Text('Save the Final Key:', justification='c'),
+     sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(),
+     sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)]
 ]
 
 
@@ -79,11 +91,21 @@ tabs = [
      sg.Tab('Results', result_tab_layout,element_justification='c')],
 ]
 
-tabgrp = [[sg.TabGroup(tabs,)]]
+tabgrp = [[sg.TabGroup(tabs,)],
+          [sg.Multiline("Welcome to QKD Server!", key=CONSOLE_EVENT, enable_events=True,
+                        size=(100, 10), background_color=CONSOLE_BACKGROUND_COLOR,
+                        text_color=CONSOLE_TEXT_COLOR, no_scrollbar=True)],
+          ]
 
 window = sg.Window("QKD Server",tabgrp)
 
 alice = QKDServer('Alice')
+
+# console print
+def gui_console_print(text: str, window: sg.Window = window):
+    current_text_console = window.Element(CONSOLE_EVENT).Get()
+    window.Element(CONSOLE_EVENT).Update(
+        current_text_console + '\n' +text)
 
 while True:
     event, values = window.read()
@@ -95,7 +117,7 @@ while True:
     if event == INPUT_KEY_TYPE_STR_EVENT:
         window.Element(INPUT_FILE_EVENT).Update(disabled=True)
         window.Element(INPUT_KEY_TEXT_EVENT).Update('Input the Key')
-    
+        window.Element(INPUT_KEY_BOX_EVENT).Update(disabled = False)
     # if event == INPUT_KEY_TYPE_RANDOM_EVENT:
     #     window.Element(INPUT_FILE_EVENT).Update(disabled=True)
     #     window.Element(INPUT_KEY_TEXT_EVENT).Update('Enter Key Length')
@@ -103,15 +125,17 @@ while True:
     if event == INPUT_KEY_TYPE_FILE_EVENT:
         window.Element(INPUT_FILE_EVENT).Update(disabled=False)
         window.Element(INPUT_KEY_TEXT_EVENT).Update('Browse Key')
+        window.Element(INPUT_KEY_BOX_EVENT).Update(disabled=False)
     
     if event == SUBMIT_BUTTON_EVENT:
+        error = False
         if window.Element(INPUT_KEY_TYPE_STR_EVENT).get():
             key_str = values[INPUT_KEY_BOX_EVENT]
             if check_valid_key_box_input(key_str):
                 alice.set_key(Key(key_as_str=key_str))
             else:
                 sg.popup('Please Enter Key in Binary Format')
-            
+                error = True
         # elif window.Element(INPUT_KEY_TYPE_RANDOM_EVENT).get():
         #     pass
         elif window.Element(INPUT_KEY_TYPE_FILE_EVENT).get():
@@ -119,19 +143,31 @@ while True:
             with open(key_path) as fh:
                 alice_key_f = Key(key_as_str=fh.read())
             alice.set_key(alice_key_f)
-        
-        alice.address = (values[INPUT_IP_EVENT], int(values[INPUT_PORT_EVENT]))
-        window.Element(START_LISTENING_BUTTON_EVENT).Update(disabled=False)
+            
+        if not error:
+            alice.address = (values[INPUT_IP_EVENT],
+                             int(values[INPUT_PORT_EVENT]))
+            window.Element(START_LISTENING_BUTTON_EVENT).Update(disabled=False)
+            gui_console_print('>>> Initial Key Set')
     if event == START_LISTENING_BUTTON_EVENT:
         alice.start_listening()
-        print(alice.get_key())
-    
+        @alice.event
+        def onClientConnected(Client):
+            if alice.authentication_required:
+                Client.send_message('authentication', 'Initialize')
+            console_output(f'>>> Client @ {Client.address} is connected!')
+            gui_console_print(f'>>> Client @ {Client.address} is connected!')
+        gui_console_print('>>> Listening on {}'.format(alice.address))
+        
     if event == RESET_BUTTON_EVENT:
         alice.stopServer()
         window.Element(START_LISTENING_BUTTON_EVENT).Update(disabled=True)
+        window.Element(CONSOLE_EVENT).Update("Welcome to QKD Server!")
     
     if event == COPY_CLIPBOARD_EVENT:
         clipboard.copy(alice.get_key().__str__())
+        if values[OUTPUT_KEY_BOX_EVENT] != '':    
+            with open(values[OUTPUT_KEY_BOX_EVENT], 'w') as fh:
+                fh.write(alice.get_key().__str__())
+
 window.close()
-
-

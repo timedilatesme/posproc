@@ -1,10 +1,22 @@
-from ctypes import alignment
 import PySimpleGUI as sg
 
-layout = [
-    [sg.Text('This is a Text Element', )],
-]
+layout = [[
+    sg.InputText(key='File to Save', default_text='filename',
+                 enable_events=True),
+    sg.InputText(key='Save As', do_not_clear=False,
+                 enable_events=True, visible=False),
+    sg.FileSaveAs(initial_folder='/tmp')
+]]
+window = sg.Window('', layout)
 
-window = sg.Window('Window Title', layout, size=(400, 400),element_justification = 'down')
+while True:
+    event, values = window.Read()
+    print("event:", event, "values: ", values)
+    if event is None or event == 'Exit':
+        break
+    elif event == 'Save As':
+        filename = values['Save As']
+        if filename:
+            window['File to Save'].update(value=filename)
 
-event, values = window.read()
+window.close()
