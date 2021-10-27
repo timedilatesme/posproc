@@ -75,7 +75,7 @@ parameter_tab_layout = [
      sg.FileBrowse(disabled=True, key=INPUT_FILE_EVENT)],
     [sg.Text('IP',justification='c'), sg.Input(constants.LOCAL_IP,key=INPUT_IP_EVENT,size = (15,1),justification='c'),
      sg.Text('Port',justification='c'), sg.Input(constants.LOCAL_PORT,key=INPUT_PORT_EVENT,size = (8,1),justification='c')],
-    [sg.Text('')],
+    [sg.Text('',size=(1,4))],
     [sg.Button('Submit',key = SUBMIT_BUTTON_EVENT),
      sg.Button('Start Listening',key = START_LISTENING_BUTTON_EVENT,disabled=True),
      sg.Button('Reset', key = RESET_BUTTON_EVENT), sg.Button('Exit',  key=EXIT_BUTTON_EVENT)],
@@ -99,7 +99,8 @@ reconciliation_stats_frame_layout = [
 
                 
 result_tab_layout = [
-                [sg.Frame('QKD Stats',QKD_stats_frame_layout, font= 'Arial', title_color='lightblue',element_justification='l'), sg.Frame('Reconciliation Stats',reconciliation_stats_frame_layout, font = 'Any 12', title_color='lightblue',element_justification='r')],
+                [sg.Frame('QKD Stats',QKD_stats_frame_layout, font= 'Arial', title_color='lightblue',element_justification='l'), sg.Frame('Reconciliation Stats',reconciliation_stats_frame_layout, font = 'Arial', title_color='lightblue',element_justification='r')],
+                [sg.Text('')],
                 [sg.Text('Save the Final Key:', justification='c'),
                 sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(),
                 sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)]
@@ -182,7 +183,8 @@ while True:
         gui_console_print('>>> Listening on {}'.format(alice.address))
         
     if event == RESET_BUTTON_EVENT:
-        alice.stopServer()
+        if hasattr(alice,'ursinaServer'):
+            alice.stopServer()
         window.Element(START_LISTENING_BUTTON_EVENT).Update(disabled=True)
         window.Element(CONSOLE_EVENT).Update("Welcome to QKD Server!")
     

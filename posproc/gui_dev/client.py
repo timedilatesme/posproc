@@ -114,8 +114,10 @@ parameter_frame_layout = [  [sg.T('Initialize the required parameters')],
                         ]
 
 opening_tab_layout = [
+                        [sg.Text('')],
                         [sg.Frame('Key Initialization',initialization_frame_layout,font= 'Arial', title_color='lightblue',element_justification='c'), 
-                        sg.Frame('Parameter Initialization ',parameter_frame_layout, font = 'Any 12', title_color='lightblue',element_justification='c')],
+                        sg.Frame('Parameter Initialization ',parameter_frame_layout, font = 'Arial', title_color='lightblue',element_justification='c')],
+                        [sg.Text('')],
                         [sg.Button('Submit',key = SUBMIT_BUTTON_EVENT),
                         sg.Button('Connect',key = START_CONNECTING_BUTTON_EVENT,disabled=True),
                         sg.Button('Reset', key = RESET_BUTTON_EVENT), sg.Button('Exit',  key=EXIT_BUTTON_EVENT)]
@@ -140,8 +142,9 @@ reconciliation_stats_frame_layout = [
                 
 result_tab_layout = [
                 [sg.Text('')],   
-                [sg.Frame('QKD Stats',QKD_stats_frame_layout, font= 'Arial', title_color='lightblue',element_justification='l'), sg.Frame('Reconciliation Stats',reconciliation_stats_frame_layout, font = 'Any 12', title_color='lightblue',element_justification='r')],
-                 
+                [sg.Frame('QKD Stats',QKD_stats_frame_layout, font= 'Arial', title_color='lightblue',element_justification='l'), 
+                 sg.Frame('Reconciliation Stats',reconciliation_stats_frame_layout, font = 'Arial', title_color='lightblue',element_justification='r')],
+                [sg.Text('')],                 
                 [sg.Text('Save the Final Key:', justification='c'),
                 sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(),
                 sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)]
@@ -161,9 +164,9 @@ tabgrp = [[sg.TabGroup(tabs,)],
                         text_color=CONSOLE_TEXT_COLOR, no_scrollbar=True)],
           ]
 
-window = sg.Window("QKD Server",tabgrp)
+window = sg.Window("QKD Client",tabgrp)
 
-alice = QKDServer('Alice')
+bob = QKDClient('Bob')
 
 # console print
 def gui_console_print(text: str, window: sg.Window = window):
@@ -196,7 +199,7 @@ while True:
         if window.Element(INPUT_KEY_TYPE_STR_EVENT).get():
             key_str = values[INPUT_KEY_BOX_EVENT]
             if check_valid_key_box_input(key_str):
-                alice.set_key(Key(key_as_str=key_str))
+                bob.set_key(Key(key_as_str=key_str))
             else:
                 sg.popup('Please Enter Key in Binary Format')
                 error = True
@@ -206,33 +209,30 @@ while True:
             key_path = values[INPUT_KEY_BOX_EVENT]
             with open(key_path) as fh:
                 alice_key_f = Key(key_as_str=fh.read())
-            alice.set_key(alice_key_f)
+            bob.set_key(alice_key_f)
             
         if not error:
-            alice.address = (values[INPUT_IP_EVENT],
+            bob.address = (values[INPUT_IP_EVENT],
                              int(values[INPUT_PORT_EVENT]))
             window.Element(START_CONNECTING_BUTTON_EVENT).Update(disabled=False)
             gui_console_print('>>> Initial Key Set')
     if event == START_CONNECTING_BUTTON_EVENT:
-        alice.start_listening()
-        @alice.event
-        def onClientConnected(Client):
-            if alice.authentication_required:
-                Client.send_message('authentication', 'Initialize')
-            console_output(f'>>> Client @ {Client.address} is connected!')
-            gui_console_print(f'>>> Client @ {Client.address} is connected!')
-        gui_console_print('>>> Listening on {}'.format(alice.address))
+        bob.start_listening()
+        gui_console_print(f'>>> Connection Established with Server @ {bob.ursinaClient.socket.getpeername()}')
         
     if event == RESET_BUTTON_EVENT:
-        alice.stopServer()
+        if hasattr(bob, 'ursinaClient'):
+            bob.stopClient()
+            gui_console_print(
+                f'>>> Disconnected from the Server @ {bob.ursinaClient.socket.getpeername()}')
         window.Element(START_CONNECTING_BUTTON_EVENT).Update(disabled=True)
-        window.Element(CONSOLE_EVENT).Update("Welcome to QKD Server!")
+        window.Element(CONSOLE_EVENT).Update("Welcome to QKD Client!")
     
     if event == COPY_CLIPBOARD_EVENT:
-        clipboard.copy(alice.get_key().__str__())
+        clipboard.copy(bob.get_key().__str__())
         if values[OUTPUT_KEY_BOX_EVENT] != '':    
             with open(values[OUTPUT_KEY_BOX_EVENT], 'w') as fh:
-                fh.write(alice.get_key().__str__())
+                fh.write(bob.get_key().__str__())
 
     if event == QKD_TIME_OUPUT_EVENT:
         pass

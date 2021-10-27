@@ -220,3 +220,9 @@ class Client(AdvancedClient):
         self.Initialize_Events()
         self.start_ursina_client()
         self.start_events_processing_thread()
+    
+    def get_key(self):
+        return self._current_key
+    
+    def set_key(self, key):
+        self._current_key = key
