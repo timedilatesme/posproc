@@ -2,6 +2,7 @@ from pyngrok import ngrok
 import socket, pickle, jsonpickle
 from typing import Any
 from posproc import constants
+import PySimpleGUI as sg
 
 def start_ngrok_tunnel(port):
     """
@@ -38,6 +39,12 @@ def loads(dataBytes: bytes, format = constants.FORMAT) -> Any:
 #     Object = jsonpickle.loads(dataBytes.decode(format))
 #     return Object
 
+
+CONSOLE_EVENT = '-console-'
+def gui_console_print(text: str, window: sg.Window):
+    current_text_console = window.Element(CONSOLE_EVENT).Get()
+    window.Element(CONSOLE_EVENT).Update(
+        current_text_console +'\n >>> ' +text)
 
 def rename(newName):
     def decorator(f):

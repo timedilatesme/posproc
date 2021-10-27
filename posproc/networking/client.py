@@ -6,17 +6,20 @@ import threading
 from posproc.key import Key
 from posproc import constants
 from typing import Any, List
-from posproc.networking.uebn import AdvancedClient, console_output, rename
+from posproc.networking.uebn import AdvancedClient
 from ellipticcurve.privateKey import PrivateKey
 from ellipticcurve.publicKey import PublicKey
 from posproc.networking.user_data import User
 from posproc.error_correction.cascade.block import Block
 from posproc.authentication import Authentication
 from posproc.privacy_amplification.universal_hashing import MODEL_1
+from posproc.networking.uebn import console_output as terminal_print
+from posproc.utils import gui_console_print
+import PySimpleGUI as sg
 
 class Client(AdvancedClient):
     def __init__(self, username: str, current_key: Key = None, auth_keys: tuple[PublicKey, PrivateKey] = None,
-                 server_address = (constants.LOCAL_IP, constants.LOCAL_PORT)):
+                 server_address = (constants.LOCAL_IP, constants.LOCAL_PORT),gui_window :sg.Window = None):
         super().__init__(server_address)
         
         self.username = username
@@ -41,7 +44,17 @@ class Client(AdvancedClient):
         
         
         # self.synchronization_events = {} # Helps in synchronization
-        
+
+        # GUI init
+        self.gui_window = gui_window
+    
+    def console_output(self, message, *args):
+        if self.gui_window:
+            gui_console_print(message, self.gui_window)
+            terminal_print(message, *args)
+        else:
+            terminal_print(message, *args)
+    
     def _get_auth_keys(self):
         """
         Public Key, Private Key
@@ -59,7 +72,7 @@ class Client(AdvancedClient):
                 self.send_message_to_server(
                     'authenticateClient', msg_to_send_dict)
             else:
-                console_output(f'[QKDServer]: {Content}')
+                self.console_output(f'[QKDServer]: {Content}')
                 if 'Unsuccessful' in Content:
                     self.stopClient()
                 elif 'Successful' in Content:
@@ -216,7 +229,7 @@ class Client(AdvancedClient):
         # asking:
         self.send_message_to_server('privacyAmplification', (algo_name, final_key_bytes_size))
         
-    def start_listening(self):
+    def start_connecting(self):
         self.Initialize_Events()
         self.start_ursina_client()
         self.start_events_processing_thread()

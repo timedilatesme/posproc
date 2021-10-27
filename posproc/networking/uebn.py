@@ -28,6 +28,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 """
 
 from os import name
+import PySimpleGUI as sg
 import zlib
 import socket
 import threading
@@ -35,6 +36,7 @@ from typing import Any, List, Tuple
 from posproc import constants
 from posproc.utils import dumps, loads, rename
 from termcolor import colored
+from posproc.utils import gui_console_print
 HEADERSIZE = 10
 MESSAGE_LENGTH = 10
 BUFFERSIZE = 4096*2
@@ -60,6 +62,8 @@ def networking_log(Class_, Context_, Message_):
 def console_output(Message,*args):
     toPrint = '\n ' + colored('>>>','red') + f' {Message}\n'
     print(toPrint,*args)
+
+terminal_print = console_output
 
 def ursina_networking_decompress_file(Datas_):
 
@@ -286,7 +290,8 @@ class UrsinaNetworkingConnectedClient():
 class SocketServer:
     def __init__(self, Ip_: str, Port_: int, 
                  events_manager: UrsinaNetworkingEvents, 
-                 clients : List[UrsinaNetworkingConnectedClient]):
+                 clients : List[UrsinaNetworkingConnectedClient],
+                 gui_window:sg.Window = None):
         
         self.shutdown = threading.Event()
         self.socketAddress = (Ip_, Port_)
@@ -303,6 +308,16 @@ class SocketServer:
         except Exception as e:
             networking_log(
                 "SocketServer", "__init__", f"Cannot create the server : {e}")
+        
+        # GUI init
+        self.gui_window = gui_window
+
+    def console_output(self, message, *args):
+        if self.gui_window:
+            gui_console_print(message, self.gui_window)
+            terminal_print(message, *args)
+        else:
+            terminal_print(message, *args)
 
     def get_client_id(self, Client_):
         for Client in self.clients:
@@ -387,7 +402,8 @@ class SocketServer:
 
 class SocketClient:
 
-    def __init__(self, Ip_: str, Port_: int, events_manager: UrsinaNetworkingEvents):
+    def __init__(self, Ip_: str, Port_: int, events_manager: UrsinaNetworkingEvents,
+                 gui_window: sg.Window = None):
 
         try:
             self.shutdown = threading.Event()            
@@ -402,6 +418,16 @@ class SocketClient:
         except Exception as e:
             networking_log(
                 "SocketClient", "__init__", f"Cannot connect to the server : {e}")
+        
+        # GUI init
+        self.gui_window = gui_window
+
+    def console_output(self, message, *args):
+        if self.gui_window:
+            gui_console_print(message, self.gui_window)
+            terminal_print(message, *args)
+        else:
+            terminal_print(message, *args)
 
     def process_net_events(self):
         self.events_manager.process_net_events()
@@ -431,7 +457,7 @@ class SocketClient:
                         self.network_buffer.datagrams = []
                     except ConnectionError as e:
                         if self.shutdown.is_set():
-                            console_output('You are disconnected from the Server!')
+                            self.console_output('You are disconnected from the Server!')
                         else:
                             self.events_manager.push_event(
                                 name = BUILTIN_EVENT_CONNECTION_ERROR, Reason = e)
@@ -440,7 +466,7 @@ class SocketClient:
                             break
                     except Exception as e:
                         if self.shutdown.is_set():
-                            console_output('You are disconnected from the Server!')
+                            self.console_output('You are disconnected from the Server!')
                         else:
                             networking_log(
                                 "SocketClient", "handle", f"unknown error : {e}")
@@ -489,9 +515,9 @@ class AdvancedServer:
         self.clients = []       
 
     def start_ursina_server(self):
-        self.ursinaServer = SocketServer(*self.address, events_manager=self.events_manager,clients=self.clients)
+        self.ursinaServer = SocketServer(*self.address, events_manager=self.events_manager,clients=self.clients,gui_window=self.gui_window)
         self.socket = self.ursinaServer.socket
-        console_output(f'QKDServer listening @ {self.address}.')
+        self.console_output(f'QKDServer listening @ {self.address}.')
     
     def start_events_processing_thread(self):
         def process_net_events():
@@ -519,10 +545,11 @@ class AdvancedClient:
         self.receiver_event = self.events_manager.receiver_event
 
     def start_ursina_client(self):
-        self.ursinaClient = SocketClient(*self.server_address,events_manager = self.events_manager)
+        self.ursinaClient = SocketClient(
+            *self.server_address, events_manager=self.events_manager, gui_window=self.gui_window)
         self.ursinaClient.connected.wait()
         self.address = self.ursinaClient.socketAddress
-        console_output(f'QKDClient connected to {self.server_address}')
+        self.console_output(f'Connection established with Server @ {self.ursinaClient.socket.getpeername()}')
 
     def start_events_processing_thread(self):
         def process_net_events():

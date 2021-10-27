@@ -8,15 +8,17 @@ from ellipticcurve.publicKey import PublicKey
 from ellipticcurve.privateKey import PrivateKey
 from posproc.authentication import Authentication
 from posproc.networking.user_data import User, UserData
-from posproc.networking.uebn import AdvancedServer, UrsinaNetworkingConnectedClient, console_output, networking_log
+from posproc.networking.uebn import AdvancedServer, UrsinaNetworkingConnectedClient, networking_log
 from posproc.privacy_amplification.universal_hashing import MODEL_1
-from numba import njit
+import PySimpleGUI as sg
+from posproc.utils import gui_console_print
+from posproc.networking.uebn import console_output as terminal_print
     
 class Server(AdvancedServer):
     def __init__(self, username: str, current_key: Key = None,
                  user_data: UserData = None, server_type=constants.LOCAL_SERVER,
                  port=constants.LOCAL_PORT, auth_keys: tuple[PublicKey, PrivateKey] = None,
-                 authentication_required = True):
+                 authentication_required = True, gui_window:sg.Window=None):
         
         self.authentication_required = authentication_required
         self.server_type = server_type
@@ -42,6 +44,17 @@ class Server(AdvancedServer):
                                       'winnow': 'Not yet started',
                                       'ldpc': 'Not yet started',
                                       'polar': 'Not yet started'}
+        
+        # GUI init
+        self.gui_window = gui_window
+            
+    def console_output(self, message, *args):
+        if self.gui_window:
+            gui_console_print(message, self.gui_window)
+            terminal_print(message, *args)
+        else:
+            terminal_print(message, *args)     
+    
     
     def set_key(self, key: Key):
         self._current_key = key
@@ -54,7 +67,7 @@ class Server(AdvancedServer):
         def onClientConnected(Client):
             if self.authentication_required:
                 Client.send_message('authentication', 'Initialize')
-            console_output(f'Client @ {Client.address} is connected!')
+            self.console_output(f'Client @ {Client.address} is connected!')
             
         @self.event
         def authenticateClient(Client: UrsinaNetworkingConnectedClient, Content):
@@ -119,8 +132,7 @@ class Server(AdvancedServer):
         @self.event
         def onClientDisconnected(Client: UrsinaNetworkingConnectedClient):
             Client.authenticated.wait()
-            print(f'Client @ {Client.address} is disconnected! \n')
-        
+            self.console_output(f'Client @ {Client.address} is disconnected!')
     def _get_auth_keys(self):
         """
         Public Key, Private Key
@@ -190,10 +202,10 @@ class Server(AdvancedServer):
             verify = self._auth.verify(message, signature, pubKey)
             if verify:
                 self.user_data.users[pubKey.toPem()].address = clientObject.address
-                console_output(
+                self.console_output(
                     f"Authentication with Client @ {clientObject.address} was successful!")
             else:
-                console_output(f"Authentication with Client @ {clientObject.address} was unsuccessful!")
+                self.console_output(f"Authentication with Client @ {clientObject.address} was unsuccessful!")
             return verify
         else:
             self.update_user_data(client_user)
@@ -204,3 +216,4 @@ class Server(AdvancedServer):
         self.Initialize_Events()
         self.start_ursina_server()
         self.start_events_processing_thread()
+        
