@@ -65,7 +65,7 @@ LIST_ERROR_CORECTION_ALGOS = ['CASCADE','BICONF','YANETAL']
 LIST_PRIVACY_AMPLIFACTION_ALGOS = ['RANDOM','SHA','BLAKE','MD']
 BACKEND_EC_ALGO_NAMES = {'CASCADE':'original','BICONF':'biconf','YANETAL':'yanetal'}
 
-# Default QKD Variables
+# Default QKD Variables (Layout Defaults)
 QBER_THRESHOLD = 0.1
 FRACTION_FOR_QBER_ESTM = 0.1
 FINAL_KEY_SIZE = 256 #bits
@@ -183,11 +183,11 @@ def handle_submit_button(event, values):
                 disabled=False)
             bob.console_output('Initial Key Set!')
         
-            QBER_THRESHOLD = float(values[INPUT_QBER_THRESHOLD_EVENT])
-            FRACTION_FOR_QBER_ESTM = float(values[INPUT_QBER_FRACTION_EVENT])
-            EC_ALGORITHM = values[INPUT_ERROR_CORRECTION_ALGORITHM_EVENT]
-            PA_ALGORITHM = values[INPUT_PRIVACY_AMPLIFICATION_ALGORITHM_EVENT]
-            FINAL_KEY_SIZE = int(values[INPUT_FINAL_KEY_SIZE_EVENT])
+            bob.qber_threshold = float(values[INPUT_QBER_THRESHOLD_EVENT])
+            bob.fraction_for_qber_estm = float(values[INPUT_QBER_FRACTION_EVENT])
+            bob.ec_algorithm = values[INPUT_ERROR_CORRECTION_ALGORITHM_EVENT]
+            bob.pa_algorithm = values[INPUT_PRIVACY_AMPLIFICATION_ALGORITHM_EVENT]
+            bob.final_key_size = int(values[INPUT_FINAL_KEY_SIZE_EVENT])
             bob.console_output('Input Parameters Set!')
                        
 def handle_key_inputs(event, values):
@@ -236,7 +236,31 @@ def handle_post_processing_button(event, values):
     if event == START_POST_PROCESSING_EVENT:
         totalTime = time.perf_counter()
         
-        # Implement!!!
+        bob.console_output('QBER_th' + str(bob.qber_threshold))
+        
+        # QBER Estimation
+        initial_qber = qber.qber_estimation(
+            bob, bob.fraction_for_qber_estm, seed=None)
+        bob.console_output('Initial QBER: ', initial_qber)
+        bob.console_output(
+            'Key Size after QBER Estimation: ', bob.get_key()._size)
+
+        # Reconciliation
+        reconTime = time.perf_counter()
+        recon = CascadeReconciliation(BACKEND_EC_ALGO_NAMES[bob.ec_algorithm], bob,
+                                      bob._current_key,
+                                      initial_qber)
+        bob._current_key = recon.reconcile()
+        reconTime = time.perf_counter() - reconTime
+        bob.console_output('Reconciliation Time', (reconTime), 's \n')
+        bob.console_output('Key Size after Recon: ', bob.get_key()._size)
+
+        # Privacy Amplification
+        paTime = time.perf_counter()
+        bob.ask_server_to_do_privacy_amplification(
+            final_key_bytes_size=bob.final_key_size,algorithm=None)
+        paTime = time.perf_counter() - paTime
+        bob.console_output('Priv. Amplification Time: ', paTime, 's \n')
         
         window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(bob.get_key()._size)
                 

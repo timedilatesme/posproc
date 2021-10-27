@@ -221,10 +221,10 @@ class Client(AdvancedClient):
         
         return bits_dict
     
-    def ask_server_to_do_privacy_amplification(self, final_key_bytes_size = 64):
+    def ask_server_to_do_privacy_amplification(self, final_key_bytes_size = 64,algorithm = None):
         self.authenticated.wait()
         
-        algo_name, self._current_key = MODEL_1(self._current_key, final_key_bytes_size) 
+        algo_name, self._current_key = MODEL_1(self._current_key, final_key_bytes_size,algorithm = algorithm) 
         
         # asking:
         self.send_message_to_server('privacyAmplification', (algo_name, final_key_bytes_size))
