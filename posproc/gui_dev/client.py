@@ -1,3 +1,4 @@
+import threading
 import PySimpleGUI as sg
 from posproc import*
 import clipboard
@@ -232,38 +233,38 @@ def handle_connecting_button(event, values):
         bob.start_connecting()        
         window.Element(START_POST_PROCESSING_EVENT).Update(disabled=False)
 
-def handle_post_processing_button(event, values):
-    if event == START_POST_PROCESSING_EVENT:
-        totalTime = time.perf_counter()
-        
-        bob.console_output('QBER_th' + str(bob.qber_threshold))
-        
-        # QBER Estimation
-        initial_qber = qber.qber_estimation(
-            bob, bob.fraction_for_qber_estm, seed=None)
-        bob.console_output('Initial QBER: ', initial_qber)
-        bob.console_output(
-            'Key Size after QBER Estimation: ', bob.get_key()._size)
+def handle_post_processing_button():
+    totalTime = time.perf_counter()
+    
+    bob.console_output('QBER_th' + str(bob.qber_threshold))
+    
+    # QBER Estimation
+    initial_qber = qber.qber_estimation(
+        bob, bob.fraction_for_qber_estm, seed=None)
+    bob.console_output('Initial QBER: ', initial_qber)
+    bob.console_output(
+        'Key Size after QBER Estimation: ', bob.get_key()._size)
 
-        # Reconciliation
-        reconTime = time.perf_counter()
-        recon = CascadeReconciliation(BACKEND_EC_ALGO_NAMES[bob.ec_algorithm], bob,
-                                      bob._current_key,
-                                      initial_qber)
-        bob._current_key = recon.reconcile()
-        reconTime = time.perf_counter() - reconTime
-        bob.console_output('Reconciliation Time', (reconTime), 's \n')
-        bob.console_output('Key Size after Recon: ', bob.get_key()._size)
+    # Reconciliation
+    reconTime = time.perf_counter()
+    recon = CascadeReconciliation(BACKEND_EC_ALGO_NAMES[bob.ec_algorithm], bob,
+                                    bob._current_key,
+                                    initial_qber)
+    bob._current_key = recon.reconcile()
+    reconTime = time.perf_counter() - reconTime
+    bob.console_output('Reconciliation Time', (reconTime), 's \n')
+    bob.console_output('Key Size after Recon: ', bob.get_key()._size)
 
-        # Privacy Amplification
-        paTime = time.perf_counter()
-        bob.ask_server_to_do_privacy_amplification(
-            final_key_bytes_size=bob.final_key_size,algorithm=None)
-        paTime = time.perf_counter() - paTime
-        bob.console_output('Priv. Amplification Time: ', paTime, 's \n')
-        
-        window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(bob.get_key()._size)
-                
+    # Privacy Amplification
+    paTime = time.perf_counter()
+    bob.ask_server_to_do_privacy_amplification(
+        final_key_bytes_size=bob.final_key_size,algorithm=None)
+    paTime = time.perf_counter() - paTime
+    bob.console_output('Priv. Amplification Time: ', paTime, 's \n')
+    
+    window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(bob.get_key()._size)
+
+
 
 while True:
     event, values = window.read()
@@ -279,13 +280,12 @@ while True:
     handle_copy_final_key_to_clipboard(event, values)
     handle_reset_button(event, values)
     handle_connecting_button(event, values)
-    handle_post_processing_button(event, values)
-    
-
+    if event == START_POST_PROCESSING_EVENT:
+        thread = threading.Thread(target=handle_post_processing_button)
+        thread.start()
     if event == QKD_TIME_OUPUT_EVENT:
         pass
     if event == RECONCILIATION_TIME_OUTPUT_EVENT:
         pass
-
 
 window.close()

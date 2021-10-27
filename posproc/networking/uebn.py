@@ -116,20 +116,20 @@ class UrsinaNetworkingEvents():
         for event in Events:
             Func = event[0]  # name of func
             Kwargs = event[1]
-            try:
-                for events_ in EventTable:
-                    # print("EVENT TABLE:",self.event_table)
-                    for event_ in EventTable[events_]:
-                        if Func in event_.__name__:
-                            if Func in self.received_data:
-                                self.received_data[Func]['Content'] = Kwargs['Content']
-                                self.received_data[Func]['threadEvent'].set()
-                            else:
-                                event_(**Kwargs)
+            # try:
+            for events_ in EventTable:
+                # print("EVENT TABLE:",self.event_table)
+                for event_ in EventTable[events_]:
+                    if Func in event_.__name__:
+                        if Func in self.received_data:
+                            self.received_data[Func]['Content'] = Kwargs['Content']
+                            self.received_data[Func]['threadEvent'].set()
+                        else:
+                            event_(**Kwargs)
                         
-            except Exception as e:
-                networking_log(
-                    "UrsinaNetworkingEvents", "process_net_events", f"Unable to correctly call '{Func}' : '{e}'")
+            # except Exception as e:
+            #     networking_log(
+            #         "UrsinaNetworkingEvents", "process_net_events", f"Unable to correctly call '{Func}' : '{e}'")
 
         self.events.clear()
 
@@ -185,19 +185,12 @@ class UrsinaNetworkingEvents():
         
         def wrapper(*args):
                 
-            dataAvailable = self.received_data[func.__name__]['threadEvent']
-            dataAvailable.wait()
-            
-            del dataAvailable 
+            self.received_data[func.__name__]['threadEvent'].wait()
             
             self.lock.acquire()
-            removed_dict = self.received_data.pop(func.__name__)
+            data = self.received_data.pop(func.__name__)['Content']
             self.lock.release()
-            
-            data = removed_dict['Content']
-            
-            del removed_dict
-            
+               
             func(*args)
             return  data
         return wrapper
