@@ -414,7 +414,7 @@ def str_to_xor(key):
     s = 0
     for i in key:
         s += int(i)
-    return str(s//2)
+    return str(s%2)
 
 def MODEL_1(reconciled_key: Key, final_key_bytes_size: int, algorithm = None, seed = None):
     """

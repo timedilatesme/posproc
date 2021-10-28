@@ -60,7 +60,7 @@ def networking_log(Class_, Context_, Message_):
     print(f"[{class_} / {context_}] {message_}")
     
 def console_output(Message,*args):
-    toPrint = '\n ' + colored('>>>','red') + f' {Message}\n'
+    toPrint = '\n ' + '>>>' + f' {Message}\n'
     print(toPrint,*args)
 
 terminal_print = console_output
