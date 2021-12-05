@@ -281,8 +281,7 @@ while True:
     handle_reset_button(event, values)
     handle_connecting_button(event, values)
     if event == START_POST_PROCESSING_EVENT:
-        thread = threading.Thread(target=handle_post_processing_button)
-        thread.start()
+        handle_post_processing_button()
     if event == QKD_TIME_OUPUT_EVENT:
         pass
     if event == RECONCILIATION_TIME_OUTPUT_EVENT:

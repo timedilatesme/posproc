@@ -26,6 +26,7 @@ def qber_estimation(active_client : QKDClient, fraction = 0.1, seed = None):
     # # print("QBER STEP 1 TIME:",t1_end-t1_start)
     # Get the bit values that bob and alice have. 
     # t2_start = time.perf_counter()
+    active_client.console_output(f"Estimating qber between Alice and Bob.\n")
     raw_key_a = active_client.ask_server_for_bits_to_estimate_qber(indexes)    
     # t2_end = time.perf_counter()
     # # print("QBER STEP 2 TIME:",t2_end-t2_start)
