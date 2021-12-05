@@ -1,9 +1,8 @@
-import multiprocessing
 import subprocess
 import PySimpleGUI as sg
 from posproc import*
 import clipboard
-
+import tempfile
 
 
 # METHODS :
@@ -102,8 +101,8 @@ opening_tab_layout = [  [sg.Text('')],
                         [sg.Text('')],
                         [sg.Button('Submit',key = SUBMIT_BUTTON_EVENT),
                         # sg.Button('Connect',key = START_CONNECTING_BUTTON_EVENT,disabled=True),
-                        sg.Button('Connect and Start Post Processing',key = START_POST_PROCESSING_EVENT,disabled = True)],
-                        # sg.Button('Reset', key = RESET_BUTTON_EVENT), sg.Button('Exit',  key=EXIT_BUTTON_EVENT)]
+                        sg.Button('Connect and Start Post Processing',key = START_POST_PROCESSING_EVENT,disabled = True),
+                        sg.Button('Reset', key = RESET_BUTTON_EVENT), sg.Button('Exit',  key=EXIT_BUTTON_EVENT)]
                     ]
 
 QKD_stats_frame_layout = [
@@ -140,11 +139,15 @@ tabs = [
 
 tabgrp = [[sg.TabGroup(tabs,)],
           [sg.Multiline("Welcome to QKD Client!", key=CONSOLE_EVENT, enable_events=True,
-                        size=(122, 10), background_color=CONSOLE_BACKGROUND_COLOR,
+                        size=(128, 10), background_color=CONSOLE_BACKGROUND_COLOR,
                         text_color=CONSOLE_TEXT_COLOR, no_scrollbar=True)],
           ]
 
 window = sg.Window("QKD Client",tabgrp)
+
+# TEMPORARY FILE TO STORE PARAMETERS DATA
+with tempfile.TemporaryFile(mode='wb',suffix='.txt') as tmpfile:
+    parameters_data_path = tmpfile.name
 
 # EVENT HANDLING METHODS
 def handle_submit_button(event, values):
@@ -187,10 +190,10 @@ def handle_submit_button(event, values):
                                     "ec_algorithm":ec_algorithm,"pa_algorithm":pa_algorithm,
                                     "final_key_size":final_key_size}
             #TODO: make this using temporary files
-            utils.dump(final_data_to_pickle, "client_submitted_data.txt")
+            utils.dump(final_data_to_pickle, parameters_data_path)
             window.Element(START_POST_PROCESSING_EVENT).Update(disabled=False)
                        
-def handle_key_inputs(event, values):
+def handle_key_inputs(event):
     if event == INPUT_KEY_TYPE_STR_EVENT:
         window.Element(INPUT_FILE_EVENT).Update(disabled=True)
         window.Element(INPUT_KEY_TEXT_EVENT).Update('Input the Key')
@@ -211,21 +214,34 @@ def handle_copy_final_key_to_clipboard(event, values):
             with open(values[OUTPUT_KEY_BOX_EVENT], 'w') as fh:
                 fh.write(bob.get_key().__str__())
 
+
+def handle_reset_button(event):
+    if event == RESET_BUTTON_EVENT:
+        window.Element(CONSOLE_EVENT).Update("Welcome to QKD Client!")
+        window.Element(START_POST_PROCESSING_EVENT).Update(disabled=True)
+        with open(parameters_data_path,'r+') as fh:
+            fh.seek(0)
+            fh.truncate()
+
 def handle_post_processing_button(event):
     if event == START_POST_PROCESSING_EVENT:
-        subprocess.run('python -m client_backend')
+        subprocess.run('python client_backend.py ' + parameters_data_path)
+        final_data = utils.load(parameters_data_path)
+        
 
 while True:
     event, values = window.read()
     
     #Event Conditioning
     if event in (sg.WIN_CLOSED, 'Exit'):
+        os.remove(parameters_data_path)
         break    
     
     handle_submit_button(event, values)
-    handle_key_inputs(event, values)
+    handle_key_inputs(event)
     handle_copy_final_key_to_clipboard(event, values)
     handle_post_processing_button(event)
+    handle_reset_button(event)
     
     if event == QKD_TIME_OUPUT_EVENT:
         pass

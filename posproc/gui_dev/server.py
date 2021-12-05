@@ -123,6 +123,12 @@ window = sg.Window("QKD Server",tabgrp)
 
 alice = QKDServer('Alice', gui_window=window)
 
+final_data_to_display = None
+@alice.event
+def final_data_to_display_on_gui(Client, Content):
+    final_data_to_display = Content
+    print(final_data_to_display)
+
 # EVENT HANDLING METHODS
 def handle_submit_button(event,values):
     if event == SUBMIT_BUTTON_EVENT:

@@ -229,6 +229,8 @@ class Client(AdvancedClient):
         # asking:
         self.send_message_to_server('privacyAmplification', (algo_name, final_key_bytes_size))
         
+        return algo_name
+        
     def start_connecting(self):
         self.Initialize_Events()
         self.start_ursina_client()

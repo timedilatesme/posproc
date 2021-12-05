@@ -1,12 +1,14 @@
 from posproc import*
 # access data
-parameters = utils.load('client_submitted_data.txt')
+data_path = sys.argv[1]
+parameters = utils.load(data_path)
 
 #CONSTANTS
 LIST_ERROR_CORECTION_ALGOS = ['CASCADE', 'BICONF', 'YANETAL']
 LIST_PRIVACY_AMPLIFACTION_ALGOS = ['RANDOM', 'SHA', 'BLAKE', 'MD']
 BACKEND_EC_ALGO_NAMES = {'CASCADE': 'original',
                          'BICONF': 'biconf', 'YANETAL': 'yanetal'}
+
 
 bob = QKDClient('Bob', current_key=Key(key_as_str=parameters['key_str']),
                 server_address=parameters['address'])
@@ -34,10 +36,26 @@ bob.console_output('Key Size after Recon: ', bob.get_key()._size)
 
 # Privacy Amplification
 paTime = time.perf_counter()
-bob.ask_server_to_do_privacy_amplification(
+pa_algoname = bob.ask_server_to_do_privacy_amplification(
     final_key_bytes_size=parameters["final_key_size"], algorithm=None)
 paTime = time.perf_counter() - paTime
 bob.console_output('Priv. Amplification Time: ', paTime, 's \n')
 
-# window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(bob.get_key()._size)
+data_to_write = {
+    'final_key_length': bob._current_key._size,
+    'time_reconciliation' : reconTime,
+    'time_qkd' : totalTime,
+    'qber' : initial_qber,
+    'fraction_for_qber': parameters["fraction_for_qber_estm"],
+    'algorithm_pa' : pa_algoname,
+    'recon_algo': parameters["ec_algorithm"],
+    'parity_msgs_bits': (recon.stats.ask_parity_messages, recon.stats.ask_parity_bits),
+    'unrealistic_effieciency':recon.stats.unrealistic_efficiency,
+    'realistic_effieciency':recon.stats.realistic_efficiency,
+}
+
+bob.send_message_to_server('final_data_to_display_on_gui', data_to_write)
+
+utils.dump(data_to_write, data_path)
+
 bob.stopClient()
