@@ -3,6 +3,7 @@ import socket, pickle, jsonpickle
 from typing import Any
 from posproc import constants
 import PySimpleGUI as sg
+        
 
 def start_ngrok_tunnel(port):
     """
@@ -26,8 +27,18 @@ def dumps(Object: Any, format = constants.FORMAT) -> bytes:
     dataBytes = jsonpickle.dumps(Object, keys=True).encode(format)
     return dataBytes
 
+def dump(Object: Any, file_path: str,format = constants.FORMAT) -> None:
+    with open(file_path, "wb") as f:
+        f.write(dumps(Object))
+
 def loads(dataBytes: bytes, format = constants.FORMAT) -> Any:
     Object = jsonpickle.loads(dataBytes.decode(format), keys=True)
+    return Object
+
+
+def load(file_path: str, format=constants.FORMAT) -> Any:
+    with open(file_path, "rb") as f:
+        Object = loads(f.read(), format=format)
     return Object
 
 # def dump(Object: Any, path = constants.DATA_STORAGE, format=constants.FORMAT) -> bytes:

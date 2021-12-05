@@ -1,4 +1,4 @@
-import threading
+import multiprocessing
 import PySimpleGUI as sg
 from posproc import*
 import clipboard
@@ -241,9 +241,9 @@ def handle_post_processing_button():
     # QBER Estimation
     initial_qber = qber.qber_estimation(
         bob, bob.fraction_for_qber_estm, seed=None)
-    bob.console_output('Initial QBER: ', initial_qber)
+    bob.console_output('Initial QBER: ' + str(initial_qber))
     bob.console_output(
-        'Key Size after QBER Estimation: ', bob.get_key()._size)
+        'Key Size after QBER Estimation: ' + str(bob.get_key()._size))
 
     # Reconciliation
     reconTime = time.perf_counter()
