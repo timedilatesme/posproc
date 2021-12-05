@@ -252,7 +252,7 @@ def handle_post_processing_button():
                                     initial_qber)
     bob._current_key = recon.reconcile()
     reconTime = time.perf_counter() - reconTime
-    bob.console_output('Reconciliation Time', (reconTime), 's \n')
+    bob.console_output('Reconciliation Time'+ str(reconTime) + 's \n')
     bob.console_output('Key Size after Recon: ', bob.get_key()._size)
 
     # Privacy Amplification
@@ -260,7 +260,7 @@ def handle_post_processing_button():
     bob.ask_server_to_do_privacy_amplification(
         final_key_bytes_size=bob.final_key_size,algorithm=None)
     paTime = time.perf_counter() - paTime
-    bob.console_output('Priv. Amplification Time: ', paTime, 's \n')
+    bob.console_output('Priv. Amplification Time: ' + str(paTime) +  's \n')
     
     window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(bob.get_key()._size)
 
