@@ -164,12 +164,13 @@ class Client(AdvancedClient):
         self.send_message_to_server('askParities', block_indexes_list)
         
         # receiving:
-        @self.receiver_event
-        def askParitiesReply():
-            pass
+        # @self.receiver_event
+        # def askParitiesReply():
+        #     pass
+        # parities = askParitiesReply()
         
-        # parities = eval(name + '()')
-        parities = askParitiesReply()
+        self.events_manager.add_receiver('askParitiesReply')
+        parities = self.events_manager.access_data('askParitiesReply')
         
         return parities
     

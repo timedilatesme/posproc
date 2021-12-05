@@ -56,6 +56,7 @@ data_to_write = {
 
 bob.send_message_to_server('final_data_to_display_on_gui', data_to_write)
 
+data_to_write['final_key'] = bob._current_key.__str__()
 utils.dump(data_to_write, data_path)
 
 bob.stopClient()

@@ -227,7 +227,7 @@ def handle_post_processing_button(event):
     if event == START_POST_PROCESSING_EVENT:
         subprocess.run('python client_backend.py ' + parameters_data_path)
         final_data = utils.load(parameters_data_path)
-        
+        window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data['final_key_length'])
 
 while True:
     event, values = window.read()

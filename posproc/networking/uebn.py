@@ -117,6 +117,10 @@ class UrsinaNetworkingEvents():
             Func = event[0]  # name of func
             Kwargs = event[1]
             # try:
+            if Func in self.received_data:
+                self.received_data[Func]['Content'] = Kwargs['Content']
+                self.received_data[Func]['threadEvent'].set()
+            
             for events_ in EventTable:
                 # print("EVENT TABLE:",self.event_table)
                 for event_ in EventTable[events_]:
@@ -130,10 +134,23 @@ class UrsinaNetworkingEvents():
             # except Exception as e:
             #     networking_log(
             #         "UrsinaNetworkingEvents", "process_net_events", f"Unable to correctly call '{Func}' : '{e}'")
+        
 
         self.events.clear()
 
         self.lock.release()
+    
+    def add_receiver(self, Message_:str):
+        self.received_data[Message_] = {
+            'threadEvent': threading.Event(), 'Content': None}
+        self.event_table
+    
+    def access_data(self, Message_: str):
+        if Message_ in self.received_data:
+            self.received_data[Message_]['threadEvent'].wait()
+            data = self.received_data[Message_]['Content']
+            self.received_data.pop(Message_)
+            return data
 
     def event(self, func):
         """
