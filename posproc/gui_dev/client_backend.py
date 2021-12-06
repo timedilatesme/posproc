@@ -50,8 +50,8 @@ data_to_write = {
     'algorithm_pa' : pa_algoname,
     'recon_algo': parameters["ec_algorithm"],
     'parity_msgs_bits': (recon.stats.ask_parity_messages, recon.stats.ask_parity_bits),
-    'unrealistic_effieciency':recon.stats.unrealistic_efficiency,
-    'realistic_effieciency':recon.stats.realistic_efficiency,
+    'unrealistic_efficiency':recon.stats.unrealistic_efficiency,
+    'realistic_efficiency':recon.stats.realistic_efficiency,
 }
 
 bob.send_message_to_server('final_data_to_display_on_gui', data_to_write)

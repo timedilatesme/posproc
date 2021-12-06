@@ -130,6 +130,7 @@ result_tab_layout = [
                 sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(),
                 sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)],
                 [sg.Text('')]
+
                 ]
 
 tabs = [
@@ -142,7 +143,6 @@ tabgrp = [[sg.TabGroup(tabs,)],
                         size=(128, 10), background_color=CONSOLE_BACKGROUND_COLOR,
                         text_color=CONSOLE_TEXT_COLOR, no_scrollbar=True)],
           ]
-
 window = sg.Window("QKD Client",tabgrp)
 
 # TEMPORARY FILE TO STORE PARAMETERS DATA
@@ -228,6 +228,19 @@ def handle_post_processing_button(event):
         subprocess.run('python client_backend.py ' + parameters_data_path)
         final_data = utils.load(parameters_data_path)
         window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data['final_key_length'])
+        #TODO:Radio Button for key type
+        #if(RECONCILIATION_TIME_OUTPUT_EVENT):
+        #    window.Element(RECONCILIATION_TIME_OUTPUT_EVENT).Update(final_data['time_reconciliation'])
+        #elif(QKD_TIME_OUPUT_EVENT):
+        #    window.Element(QKD_TIME_OUPUT_EVENT).Update(final_data['time_qkd'])
+        window.Element(QBER_OUTPUT_EVENT).Update(final_data['qber'])
+        window.Element(FRACTION_OUTPUT_EVENT).Update(final_data['fraction_for_qber'])
+        window.Element(PA_ALGORITHM_EVENT).Update(final_data['algorithm_pa'])
+        window.Element(RECONCILIATION_ALGORITHM_EVENT).Update(final_data['recon_algo'])
+        window.Element(ASK_PARITY_BLOCKS_AND_BITS_EVENT).Update(str(final_data['parity_msgs_bits'][0])+' & '+str(final_data['parity_msgs_bits'][1]))
+        window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data['unrealistic_efficiency']))
+        window.Element(REALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data['realistic_efficiency']))
+
 
 while True:
     event, values = window.read()

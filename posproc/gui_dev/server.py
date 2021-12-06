@@ -127,6 +127,19 @@ final_data_to_display = None
 @alice.event
 def final_data_to_display_on_gui(Client, Content):
     final_data_to_display = Content
+    window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data_to_display['final_key_length'])
+    #TODO:Radio Button for key type
+    #if(RECONCILIATION_TIME_OUTPUT_EVENT):
+    #    window.Element(RECONCILIATION_TIME_OUTPUT_EVENT).Update(final_data['time_reconciliation'])
+    #elif(QKD_TIME_OUPUT_EVENT):
+    #    window.Element(QKD_TIME_OUPUT_EVENT).Update(final_data['time_qkd'])
+    window.Element(QBER_OUTPUT_EVENT).Update(final_data_to_display['qber'])
+    window.Element(FRACTION_OUTPUT_EVENT).Update(final_data_to_display['fraction_for_qber'])
+    window.Element(PA_ALGORITHM_EVENT).Update(final_data_to_display['algorithm_pa'])
+    window.Element(RECONCILIATION_ALGORITHM_EVENT).Update(final_data_to_display['recon_algo'])
+    window.Element(ASK_PARITY_BLOCKS_AND_BITS_EVENT).Update(str(final_data_to_display['parity_msgs_bits'][0]) + ' & ' + str(final_data_to_display['parity_msgs_bits'][1]))
+    window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data_to_display['unrealistic_efficiency']))
+    window.Element(REALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data_to_display['realistic_efficiency']))
     print(final_data_to_display)
 
 # EVENT HANDLING METHODS
