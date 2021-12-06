@@ -82,18 +82,18 @@ opening_tab_layout = [ [sg.Text('')],
                     ]
 
 QKD_stats_frame_layout = [
-                            [sg.Text("Final Key Length:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=FINAL_KEY_LENGTH_OUTPUT)],
+                            [sg.Text("Final Key Length:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=FINAL_KEY_LENGTH_OUTPUT,text_color='black')],
                             [sg.Text("Time for:"), sg.Radio('Reconciliation',group_id=TIME_OUTPUT_EVENT,key = RECONCILIATION_TIME_OUTPUT_EVENT,enable_events=True),
-                            sg.Radio('QKD',group_id=TIME_OUTPUT_EVENT,key = QKD_TIME_OUPUT_EVENT,enable_events=True),sg.InputText('',readonly=True,size=(5,1))],
-                            [sg.Text("QBER:",justification='l'), sg.InputText('',readonly=True,size=(5,1),key= QBER_OUTPUT_EVENT),sg.Text('         ') ,sg.Text("Fraction Used"), sg.InputText('',readonly=True,size=(5,1),key=FRACTION_OUTPUT_EVENT)],
-                            [sg.Text("Algorithm for Privacy Amplification:",justification='l'),sg.InputText('',readonly=True,size=(10,1),key=PA_ALGORITHM_EVENT)]
+                            sg.Radio('QKD',group_id=TIME_OUTPUT_EVENT,key = QKD_TIME_OUPUT_EVENT,enable_events=True),sg.InputText('',readonly=True,size=(5,1),text_color='black')],
+                            [sg.Text("QBER:",justification='l'), sg.InputText('',readonly=True,size=(5,1),key= QBER_OUTPUT_EVENT,text_color='black'),sg.Text('         ') ,sg.Text("Fraction Used"), sg.InputText('',readonly=True,size=(5,1),key=FRACTION_OUTPUT_EVENT,text_color='black')],
+                            [sg.Text("Algorithm for Privacy Amplification:",justification='l'),sg.InputText('',readonly=True,size=(10,1),key=PA_ALGORITHM_EVENT,text_color='black')],
                         ]
 
 reconciliation_stats_frame_layout = [
-                            [sg.Text("Reconciliation Algorithm:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=RECONCILIATION_ALGORITHM_EVENT)],
-                            [sg.Text("Parity Blocks Messages & Bits:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=ASK_PARITY_BLOCKS_AND_BITS_EVENT)],
-                            [sg.Text("Unrealistic Efficiency:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key = UNREALISTIC_EFFICIENCY_EVENT)],
-                            [sg.Text("Realistic Efficiency:",justification='l'),sg.InputText('',readonly=True,size=(10,1),justification='r',key=REALISTIC_EFFICIENCY_EVENT)]
+                            [sg.Text("Reconciliation Algorithm:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=RECONCILIATION_ALGORITHM_EVENT,text_color='black')],
+                            [sg.Text("Parity Blocks Messages & Bits:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=ASK_PARITY_BLOCKS_AND_BITS_EVENT,text_color='black')],
+                            [sg.Text("Unrealistic Efficiency:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key = UNREALISTIC_EFFICIENCY_EVENT,text_color='black')],
+                            [sg.Text("Realistic Efficiency:",justification='l'),sg.InputText('',readonly=True,size=(10,1),justification='r',key=REALISTIC_EFFICIENCY_EVENT,text_color='black')],
                             ]
 
                 

@@ -43,7 +43,7 @@ COPY_CLIPBOARD_EVENT = '-copy_clipboard-'
 OUTPUT_KEY_BOX_EVENT = '-output_key_box-'
 TIME_OUTPUT_EVENT = '-time_output_-'
 RECONCILIATION_TIME_OUTPUT_EVENT = '-reconciliation_time_output-'
-QKD_TIME_OUPUT_EVENT = '-qkd_time_output-'
+QKD_TIME_OUTPUT_EVENT = '-qkd_time_output-'  
 FINAL_KEY_LENGTH_OUTPUT = '-final_key_length-'
 QBER_OUTPUT_EVENT = '-qber_output-'
 FRACTION_OUTPUT_EVENT = '-fraction_output-'
@@ -54,6 +54,11 @@ REALISTIC_EFFICIENCY_EVENT = '-realistic_efficiency-'
 UNREALISTIC_EFFICIENCY_EVENT ='-unrealistic_efficiency-'
 START_POST_PROCESSING_EVENT = '-start_post_processing-' 
 
+
+
+
+# final data
+final_data = None
 
 # tooltips
 INITIAL_KEY_TOOLTIP = "Please Choose the Method for providing the sifted Raw Key"
@@ -106,19 +111,19 @@ opening_tab_layout = [  [sg.Text('')],
                     ]
 
 QKD_stats_frame_layout = [
-                            [sg.Text("Final Key Length:                         ",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=FINAL_KEY_LENGTH_OUTPUT)],
+                            [sg.Text("Final Key Length:                         ",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=FINAL_KEY_LENGTH_OUTPUT,text_color='black')],
                             [sg.Text("Time for:"), sg.Radio('Reconciliation',group_id=TIME_OUTPUT_EVENT,key = RECONCILIATION_TIME_OUTPUT_EVENT,enable_events=True),
-                            sg.Radio('QKD',group_id=TIME_OUTPUT_EVENT,key = QKD_TIME_OUPUT_EVENT,enable_events=True),sg.InputText('',readonly=True,size=(5,1))],
-                            [sg.Text("QBER:",justification='l'), sg.InputText('',readonly=True,size=(5,1),key= QBER_OUTPUT_EVENT),sg.Text('         ') ,sg.Text("Fraction Used"), sg.InputText('',readonly=True,size=(5,1),key=FRACTION_OUTPUT_EVENT)],
-                            [sg.Text("Algorithm for Privacy Amplification:",justification='l'),sg.InputText('',readonly=True,size=(10,1),key=PA_ALGORITHM_EVENT)]
+                            sg.Radio('QKD',group_id=TIME_OUTPUT_EVENT,key = QKD_TIME_OUTPUT_EVENT,enable_events=True),sg.InputText('',readonly=True,size=(5,1),justification='r',key=QKD_TIME_OUTPUT_EVENT,text_color='black')],
+                            [sg.Text("QBER:",justification='l'), sg.InputText('',readonly=True,size=(5,1),key= QBER_OUTPUT_EVENT,text_color='black'),sg.Text('         ') ,sg.Text("Fraction Used"), sg.InputText('',readonly=True,size=(5,1),key=FRACTION_OUTPUT_EVENT,text_color='black')],
+                            [sg.Text("Algorithm for Privacy Amplification:",justification='l'),sg.InputText('',readonly=True,size=(10,1),key=PA_ALGORITHM_EVENT,text_color='black')],
                         ]
 
 reconciliation_stats_frame_layout = [
 
-                            [sg.Text("Reconciliation Algorithm:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=RECONCILIATION_ALGORITHM_EVENT)],
-                            [sg.Text("Parity Blocks Messages & Bits:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=ASK_PARITY_BLOCKS_AND_BITS_EVENT)],
-                            [sg.Text("Unrealistic Efficiency:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key = UNREALISTIC_EFFICIENCY_EVENT)],
-                            [sg.Text("Realistic Efficiency:",justification='l'),sg.InputText('',readonly=True,size=(10,1),justification='r',key=REALISTIC_EFFICIENCY_EVENT)]
+                            [sg.Text("Reconciliation Algorithm:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=RECONCILIATION_ALGORITHM_EVENT,text_color='black')],
+                            [sg.Text("Parity Blocks Messages & Bits:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=ASK_PARITY_BLOCKS_AND_BITS_EVENT,text_color='black')],
+                            [sg.Text("Unrealistic Efficiency:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key = UNREALISTIC_EFFICIENCY_EVENT,text_color='black')],
+                            [sg.Text("Realistic Efficiency:",justification='l'),sg.InputText('',readonly=True,size=(10,1),justification='r',key=REALISTIC_EFFICIENCY_EVENT,text_color='black')],
                             ]
                 
 result_tab_layout = [
@@ -209,10 +214,10 @@ def handle_key_inputs(event):
 
 def handle_copy_final_key_to_clipboard(event, values):
     if event == COPY_CLIPBOARD_EVENT:
-        clipboard.copy(bob.get_key().__str__())
+        clipboard.copy(final_data['final_key'])
         if values[OUTPUT_KEY_BOX_EVENT] != '':
             with open(values[OUTPUT_KEY_BOX_EVENT], 'w') as fh:
-                fh.write(bob.get_key().__str__())
+                fh.write(final_data['final_key'])
 
 
 def handle_reset_button(event):
@@ -241,6 +246,8 @@ def handle_post_processing_button(event):
         window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data['unrealistic_efficiency']))
         window.Element(REALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data['realistic_efficiency']))
 
+        
+
 
 while True:
     event, values = window.read()
@@ -255,8 +262,9 @@ while True:
     handle_copy_final_key_to_clipboard(event, values)
     handle_post_processing_button(event)
     handle_reset_button(event)
+
     
-    if event == QKD_TIME_OUPUT_EVENT:
+    if event == QKD_TIME_OUTPUT_EVENT:
         pass
     if event == RECONCILIATION_TIME_OUTPUT_EVENT:
         pass
