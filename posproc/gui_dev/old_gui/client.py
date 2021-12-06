@@ -252,8 +252,8 @@ def handle_post_processing_button():
                                     initial_qber)
     bob._current_key = recon.reconcile()
     reconTime = time.perf_counter() - reconTime
-    bob.console_output('Reconciliation Time'+ str(reconTime) + 's \n')
-    bob.console_output('Key Size after Recon: ', bob.get_key()._size)
+    bob.console_output('Reconciliation Time: '+ str(reconTime) + 's \n')
+    bob.console_output('Key Size after Recon: ' + str(bob.get_key()._size))
 
     # Privacy Amplification
     paTime = time.perf_counter()
