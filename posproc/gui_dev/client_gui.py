@@ -231,6 +231,7 @@ def handle_reset_button(event):
 def handle_post_processing_button(event):
     if event == START_POST_PROCESSING_EVENT:
         subprocess.run('python client_backend.py ' + parameters_data_path)
+        global final_data
         final_data = utils.load(parameters_data_path)
         window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data['final_key_length'])
         #TODO:Radio Button for key type

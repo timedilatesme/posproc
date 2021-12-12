@@ -147,7 +147,9 @@ class UrsinaNetworkingEvents():
     
     def access_data(self, Message_: str):
         if Message_ in self.received_data:
+            print('started waiting')
             self.received_data[Message_]['threadEvent'].wait()
+            print('ended receiving')
             data = self.received_data[Message_]['Content']
             self.received_data.pop(Message_)
             return data

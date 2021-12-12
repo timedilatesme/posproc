@@ -42,6 +42,7 @@ paTime = time.perf_counter() - paTime
 bob.console_output('Priv. Amplification Time: ', paTime, 's \n')
 
 data_to_write = {
+    'final_key' : bob._current_key.__str__(),
     'final_key_length': bob._current_key._size,
     'time_reconciliation' : reconTime,
     'time_qkd' : totalTime,

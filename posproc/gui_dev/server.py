@@ -140,7 +140,7 @@ def final_data_to_display_on_gui(Client, Content):
     window.Element(ASK_PARITY_BLOCKS_AND_BITS_EVENT).Update(str(final_data_to_display['parity_msgs_bits'][0]) + ' & ' + str(final_data_to_display['parity_msgs_bits'][1]))
     window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data_to_display['unrealistic_efficiency']))
     window.Element(REALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data_to_display['realistic_efficiency']))
-    print(final_data_to_display)
+    # print(final_data_to_display)
 
 # EVENT HANDLING METHODS
 def handle_submit_button(event,values):

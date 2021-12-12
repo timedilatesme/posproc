@@ -161,15 +161,8 @@ class Client(AdvancedClient):
         # tuple_to_send = self.askParitiesReplyCurrentIndex, block_indexes_list
         
         # asking:
-        self.send_message_to_server('askParities', block_indexes_list)
-        
-        # receiving:
-        # @self.receiver_event
-        # def askParitiesReply():
-        #     pass
-        # parities = askParitiesReply()
-        
         self.events_manager.add_receiver('askParitiesReply')
+        self.send_message_to_server('askParities', block_indexes_list)
         parities = self.events_manager.access_data('askParitiesReply')
         
         return parities
