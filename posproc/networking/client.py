@@ -72,7 +72,8 @@ class Client(AdvancedClient):
                 self.send_message_to_server(
                     'authenticateClient', msg_to_send_dict)
             else:
-                self.console_output(f'[QKDServer]: {Content}')
+                # self.console_output(f'[QKDServer]: {Content}')
+                print(f'[QKDServer]: {Content}')
                 if 'Unsuccessful' in Content:
                     self.stopClient()
                 elif 'Successful' in Content:
@@ -160,7 +161,7 @@ class Client(AdvancedClient):
         # dict_to_send = {'askParitiesIndex':self.askParitiesReplyCurrentIndex, 'blocks_indexes':block_indexes_list}
         # tuple_to_send = self.askParitiesReplyCurrentIndex, block_indexes_list
         
-        # asking:
+        # asking & receiving:
         self.events_manager.add_receiver('askParitiesReply')
         self.send_message_to_server('askParities', block_indexes_list)
         parities = self.events_manager.access_data('askParitiesReply')
@@ -203,15 +204,11 @@ class Client(AdvancedClient):
         # print("Message Send for QBER: ", msg_to_send)
 
         self.authenticated.wait()
-        # asking:
-        self.send_message_to_server('qberEstimation', indexes)
         
-        # receiving:        
-        @self.receiver_event
-        def qberEstimationReply():
-            pass
-                
-        bits_dict = qberEstimationReply()
+        # asking & receiving:        
+        self.events_manager.add_receiver('qberEstimationReply')
+        self.send_message_to_server('qberEstimation', indexes)
+        bits_dict = self.events_manager.access_data('qberEstimationReply')
         
         return bits_dict
     

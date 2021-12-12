@@ -3,7 +3,6 @@ import socket, pickle, jsonpickle
 from typing import Any
 from posproc import constants
 import PySimpleGUI as sg
-        
 
 def start_ngrok_tunnel(port):
     """
@@ -56,6 +55,9 @@ def gui_console_print(text: str, window: sg.Window):
     current_text_console = window.Element(CONSOLE_EVENT).Get()
     window.Element(CONSOLE_EVENT).Update(
         current_text_console +'\n >>> ' +text)
+
+def style_print(*text):
+    print('>>> ', *text )
 
 def rename(newName):
     def decorator(f):

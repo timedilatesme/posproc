@@ -4,6 +4,8 @@ from posproc import*
 import clipboard
 import tempfile
 
+from posproc.utils import gui_console_print
+
 
 # METHODS :
 def check_valid_key_box_input(key_str):
@@ -231,7 +233,19 @@ def handle_reset_button(event):
 
 def handle_post_processing_button(event):
     if event == START_POST_PROCESSING_EVENT:
-        subprocess.run('python client_backend.py ' + parameters_data_path)
+        client_backend = subprocess.Popen('python client_backend.py ' + parameters_data_path,
+                                          stdout=subprocess.PIPE, 
+                                          universal_newlines=True, text=True, shell = True)
+    
+        while True:
+            output = client_backend.stdout.readline()
+            if output == '' and client_backend.poll() is not None:
+                break
+            if output.strip():
+                utils.gui_console_print(output.strip(), window)
+        
+        client_backend.wait()
+        
         global final_data
         final_data = utils.load(parameters_data_path)
         window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data['final_key_length'])

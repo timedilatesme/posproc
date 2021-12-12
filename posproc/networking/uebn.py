@@ -147,9 +147,9 @@ class UrsinaNetworkingEvents():
     
     def access_data(self, Message_: str):
         if Message_ in self.received_data:
-            print('started waiting')
+            # print('started waiting')
             self.received_data[Message_]['threadEvent'].wait()
-            print('ended receiving')
+            # print('ended receiving')
             data = self.received_data[Message_]['Content']
             self.received_data.pop(Message_)
             return data
@@ -179,41 +179,6 @@ class UrsinaNetworkingEvents():
         
         self.lock.release()
     
-    def receiver_event(self, func):
-        """
-        A decorator used for returning data!
-        
-        For eg. we can use this as:
-        >>> @receiver_event
-            def some_function(*args):
-                # some Logic ...
-                pass
-            
-        >>> dataOutput = some_function(*args) # == Content        
-        """
-        self.lock.acquire()
-
-        if func.__name__ in self.event_table:
-            self.event_table[func.__name__].append(func)
-        else:
-            self.event_table[func.__name__] = [func]
-
-        self.received_data[func.__name__] = {'threadEvent' : threading.Event(), 'Content' : None}
-        
-        self.lock.release()
-        
-        def wrapper(*args):
-                
-            self.received_data[func.__name__]['threadEvent'].wait()
-            
-            self.lock.acquire()
-            data = self.received_data.pop(func.__name__)['Content']
-            self.lock.release()
-               
-            func(*args)
-            return  data
-        return wrapper
-
 class UrsinaNetworkingDatagramsBuffer():
 
     def __init__(self):
@@ -523,7 +488,6 @@ class AdvancedServer:
         self.shutdown = threading.Event()  # Keeps a tab on whether to keep the server running or not?
         self.events_manager = UrsinaNetworkingEvents(self.lock)
         self.event = self.events_manager.event
-        self.receiver_event = self.events_manager.receiver_event
         self.clients = []       
 
     def start_ursina_server(self):
@@ -554,7 +518,6 @@ class AdvancedClient:
         self.shutdown = threading.Event()
         self.events_manager = UrsinaNetworkingEvents(self.lock)
         self.event = self.events_manager.event
-        self.receiver_event = self.events_manager.receiver_event
 
     def start_ursina_client(self):
         self.ursinaClient = SocketClient(
