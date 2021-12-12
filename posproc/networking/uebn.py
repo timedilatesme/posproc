@@ -434,19 +434,23 @@ class SocketClient:
                         self.network_buffer.datagrams = []
                     except ConnectionError as e:
                         if self.shutdown.is_set():
-                            self.console_output('You are disconnected from the Server!')
+                            print('You are disconnected from the Server!')
+                            # self.console_output('You are disconnected from the Server!')
                         else:
                             self.events_manager.push_event(
                                 name = BUILTIN_EVENT_CONNECTION_ERROR, Reason = e)
-                            networking_log(
-                                "SocketClient", "handle", f"connectionError : {e}")
+                            # networking_log(
+                            #     "SocketClient", "handle", f"connectionError : {e}")
+                            print('You are disconnected from the Server!')
                             break
                     except Exception as e:
                         if self.shutdown.is_set():
-                            self.console_output('You are disconnected from the Server!')
+                            print('You are disconnected from the Server!')
+                            # self.console_output('You are disconnected from the Server!')
                         else:
-                            networking_log(
-                                "SocketClient", "handle", f"unknown error : {e}")
+                            # networking_log(
+                            #     "SocketClient", "handle", f"unknown error : {e}")
+                            print('You are disconnected from the Server!')
                         break
             else:
                 self.events_manager.push_event(
@@ -524,7 +528,7 @@ class AdvancedClient:
             *self.server_address, events_manager=self.events_manager, gui_window=self.gui_window)
         self.ursinaClient.connected.wait()
         self.address = self.ursinaClient.socketAddress
-        self.console_output(f'Connection established with Server @ {self.ursinaClient.socket.getpeername()}')
+        print(f'Connection established with Server @ {self.ursinaClient.socket.getpeername()}')
 
     def start_events_processing_thread(self):
         def process_net_events():

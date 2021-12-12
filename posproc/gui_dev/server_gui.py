@@ -35,7 +35,7 @@ COPY_CLIPBOARD_EVENT = '-copy_clipboard-'
 OUTPUT_KEY_BOX_EVENT = '-output_key_box-'
 
 RECONCILIATION_TIME_OUTPUT_EVENT = '-reconciliation_time_output-'
-QKD_TIME_OUPUT_EVENT = '-qkd_time_output-'
+QKD_TIME_OUTPUT_EVENT = '-qkd_time_output-'
 FINAL_KEY_LENGTH_OUTPUT = '-final_key_length-'
 QBER_OUTPUT_EVENT = '-qber_output-'
 FRACTION_OUTPUT_EVENT = '-fraction_output-'
@@ -55,7 +55,7 @@ error = False
 # RADIO ID
 INPUT_KEY_RADIO_ID = '-input_key_radio_id-'
 TIME_OUTPUT_EVENT = '-time_output_-'
-
+TEXT_TIME_OUTPUT_EVENT = '-text_time_output-'
 
 
 # layouts
@@ -84,7 +84,7 @@ opening_tab_layout = [ [sg.Text('')],
 QKD_stats_frame_layout = [
                             [sg.Text("Final Key Length:",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=FINAL_KEY_LENGTH_OUTPUT,text_color='black')],
                             [sg.Text("Time for:"), sg.Radio('Reconciliation',group_id=TIME_OUTPUT_EVENT,key = RECONCILIATION_TIME_OUTPUT_EVENT,enable_events=True),
-                            sg.Radio('QKD',group_id=TIME_OUTPUT_EVENT,key = QKD_TIME_OUPUT_EVENT,enable_events=True),sg.InputText('',readonly=True,size=(5,1),text_color='black')],
+                            sg.Radio('QKD',group_id=TIME_OUTPUT_EVENT,key = QKD_TIME_OUTPUT_EVENT,enable_events=True),sg.InputText('',readonly=True,size=(5,1),text_color='black', key = TEXT_TIME_OUTPUT_EVENT)],
                             [sg.Text("QBER:",justification='l'), sg.InputText('',readonly=True,size=(5,1),key= QBER_OUTPUT_EVENT,text_color='black'),sg.Text('         ') ,sg.Text("Fraction Used"), sg.InputText('',readonly=True,size=(5,1),key=FRACTION_OUTPUT_EVENT,text_color='black')],
                             [sg.Text("Algorithm for Privacy Amplification:",justification='l'),sg.InputText('',readonly=True,size=(10,1),key=PA_ALGORITHM_EVENT,text_color='black')],
                         ]
@@ -126,13 +126,9 @@ alice = QKDServer('Alice', gui_window=window)
 final_data_to_display = None
 @alice.event
 def final_data_to_display_on_gui(Client, Content):
+    global final_data_to_display
     final_data_to_display = Content
     window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data_to_display['final_key_length'])
-    #TODO:Radio Button for key type
-    #if(RECONCILIATION_TIME_OUTPUT_EVENT):
-    #    window.Element(RECONCILIATION_TIME_OUTPUT_EVENT).Update(final_data['time_reconciliation'])
-    #elif(QKD_TIME_OUPUT_EVENT):
-    #    window.Element(QKD_TIME_OUPUT_EVENT).Update(final_data['time_qkd'])
     window.Element(QBER_OUTPUT_EVENT).Update(final_data_to_display['qber'])
     window.Element(FRACTION_OUTPUT_EVENT).Update(final_data_to_display['fraction_for_qber'])
     window.Element(PA_ALGORITHM_EVENT).Update(final_data_to_display['algorithm_pa'])
@@ -224,11 +220,13 @@ while True:
     handle_reset_button(event,values)
     handle_start_listening_button(event,values)
     
+    # Update Time for reconciliation and QBER
+    if final_data_to_display:
+        if event == RECONCILIATION_TIME_OUTPUT_EVENT:
+            window.Element(TEXT_TIME_OUTPUT_EVENT).Update(final_data_to_display['time_reconciliation'])
+        if event == QKD_TIME_OUTPUT_EVENT:
+            window.Element(TEXT_TIME_OUTPUT_EVENT).Update(final_data_to_display['time_qkd'])
 
-    if event == QKD_TIME_OUPUT_EVENT:
-        pass
-    if event == RECONCILIATION_TIME_OUTPUT_EVENT:
-        pass
 
 
 window.close()
