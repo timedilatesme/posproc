@@ -13,9 +13,9 @@ BACKEND_EC_ALGO_NAMES = {'CASCADE': 'original',
 bob = QKDClient('Bob', current_key=Key(key_as_str=parameters['key_str']),
                 server_address=parameters['address'])
 
-bob.start_connecting()
-
 totalTime = time.perf_counter()
+
+bob.start_connecting()
 
 # QBER Estimation
 initial_qber = qber.qber_estimation(
@@ -40,6 +40,8 @@ pa_algoname = bob.ask_server_to_do_privacy_amplification(
     final_key_bytes_size=parameters["final_key_size"], algorithm=None)
 paTime = time.perf_counter() - paTime
 bob.console_output('Priv. Amplification Time: ', paTime, 's \n')
+
+totalTime = time.perf_counter() - totalTime
 
 data_to_write = {
     'final_key' : bob._current_key.__str__(),

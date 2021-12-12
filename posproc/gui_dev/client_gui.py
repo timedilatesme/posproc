@@ -44,6 +44,7 @@ OUTPUT_KEY_BOX_EVENT = '-output_key_box-'
 TIME_OUTPUT_EVENT = '-time_output_-'
 RECONCILIATION_TIME_OUTPUT_EVENT = '-reconciliation_time_output-'
 QKD_TIME_OUTPUT_EVENT = '-qkd_time_output-'  
+TEXT_TIME_OUTPUT_EVENT = '-text_time_output-'
 FINAL_KEY_LENGTH_OUTPUT = '-final_key_length-'
 QBER_OUTPUT_EVENT = '-qber_output-'
 FRACTION_OUTPUT_EVENT = '-fraction_output-'
@@ -113,7 +114,7 @@ opening_tab_layout = [  [sg.Text('')],
 QKD_stats_frame_layout = [
                             [sg.Text("Final Key Length:                         ",justification='l'), sg.InputText('',readonly=True,size=(10,1),justification='r',key=FINAL_KEY_LENGTH_OUTPUT,text_color='black')],
                             [sg.Text("Time for:"), sg.Radio('Reconciliation',group_id=TIME_OUTPUT_EVENT,key = RECONCILIATION_TIME_OUTPUT_EVENT,enable_events=True),
-                            sg.Radio('QKD',group_id=TIME_OUTPUT_EVENT,key = QKD_TIME_OUTPUT_EVENT,enable_events=True),sg.InputText('',readonly=True,size=(5,1),justification='r',key=QKD_TIME_OUTPUT_EVENT,text_color='black')],
+                            sg.Radio('QKD',group_id=TIME_OUTPUT_EVENT,key = QKD_TIME_OUTPUT_EVENT,enable_events=True),sg.InputText('',readonly=True,size=(5,1),justification='r',key=TEXT_TIME_OUTPUT_EVENT,text_color='black')],
                             [sg.Text("QBER:",justification='l'), sg.InputText('',readonly=True,size=(5,1),key= QBER_OUTPUT_EVENT,text_color='black'),sg.Text('         ') ,sg.Text("Fraction Used"), sg.InputText('',readonly=True,size=(5,1),key=FRACTION_OUTPUT_EVENT,text_color='black')],
                             [sg.Text("Algorithm for Privacy Amplification:",justification='l'),sg.InputText('',readonly=True,size=(10,1),key=PA_ALGORITHM_EVENT,text_color='black')],
                         ]
@@ -263,11 +264,12 @@ while True:
     handle_copy_final_key_to_clipboard(event, values)
     handle_post_processing_button(event)
     handle_reset_button(event)
-
     
-    if event == QKD_TIME_OUTPUT_EVENT:
-        pass
-    if event == RECONCILIATION_TIME_OUTPUT_EVENT:
-        pass
+    # Update Time for reconciliation and QBER
+    if final_data:
+        if event == RECONCILIATION_TIME_OUTPUT_EVENT:
+            window.Element(TEXT_TIME_OUTPUT_EVENT).Update(final_data['time_reconciliation'])
+        if event == QKD_TIME_OUTPUT_EVENT:
+            window.Element(TEXT_TIME_OUTPUT_EVENT).Update(final_data['time_qkd'])
 
 window.close()
