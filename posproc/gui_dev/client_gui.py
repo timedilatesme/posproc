@@ -246,6 +246,9 @@ def handle_post_processing_button(event):
         
         client_backend.wait()
         
+        # proc = subprocess.run(['python', 'client_backend.py', parameters_data_path])
+        # utils.gui_console_print(proc.stdout, window)
+        
         global final_data
         final_data = utils.load(parameters_data_path)
         window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data['final_key_length'])
@@ -256,11 +259,18 @@ def handle_post_processing_button(event):
         #    window.Element(QKD_TIME_OUPUT_EVENT).Update(final_data['time_qkd'])
         window.Element(QBER_OUTPUT_EVENT).Update(final_data['qber'])
         window.Element(FRACTION_OUTPUT_EVENT).Update(final_data['fraction_for_qber'])
-        window.Element(PA_ALGORITHM_EVENT).Update(final_data['algorithm_pa'])
-        window.Element(RECONCILIATION_ALGORITHM_EVENT).Update(final_data['recon_algo'])
         window.Element(ASK_PARITY_BLOCKS_AND_BITS_EVENT).Update(str(final_data['parity_msgs_bits'][0])+' & '+str(final_data['parity_msgs_bits'][1]))
-        window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data['unrealistic_efficiency']))
-        window.Element(REALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data['realistic_efficiency']))
+        
+        if  0 < final_data['qber'] < final_data['qber_threshold']:   
+            window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update(f"{round(final_data['unrealistic_efficiency'],2)}")
+            window.Element(REALISTIC_EFFICIENCY_EVENT).Update(f"{round(final_data['realistic_efficiency'],2)}")
+            window.Element(PA_ALGORITHM_EVENT).Update(final_data['algorithm_pa'])
+            window.Element(RECONCILIATION_ALGORITHM_EVENT).Update(final_data['recon_algo'])
+        else:
+            window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update('N/A')
+            window.Element(REALISTIC_EFFICIENCY_EVENT).Update('N/A')
+            window.Element(RECONCILIATION_ALGORITHM_EVENT).Update('N/A')
+            window.Element(PA_ALGORITHM_EVENT).Update('N/A')
 
         
 
