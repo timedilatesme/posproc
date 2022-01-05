@@ -51,14 +51,13 @@ else:
 totalTime = time.perf_counter() - totalTime
 
 data_to_write = {
-    'final_key' : bob._current_key.__str__(),
     'final_key_length': bob._current_key._size,
     'time_reconciliation' : reconTime,
     'time_qkd' : totalTime,
     'qber' : initial_qber,
     'fraction_for_qber': parameters["fraction_for_qber_estm"],
     'algorithm_pa' : pa_algoname,
-    'recon_algo': parameters["ec_algorithm"],
+    'recon_algo': parameters["ec_algorithm"] if 0 < initial_qber <= parameters["qber_threshold"] else None,
     'parity_msgs_bits': (recon.stats.ask_parity_messages, recon.stats.ask_parity_bits),
     'unrealistic_efficiency':recon.stats.unrealistic_efficiency,
     'realistic_efficiency':recon.stats.realistic_efficiency,

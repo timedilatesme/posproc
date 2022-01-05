@@ -134,8 +134,8 @@ result_tab_layout = [
                 [sg.Frame('QKD Stats',QKD_stats_frame_layout, font= 'Arial', title_color='lightblue',element_justification='r'), 
                  sg.Frame('Reconciliation Stats',reconciliation_stats_frame_layout, font = 'Arial', title_color='lightblue',element_justification='r')],
                 [sg.Text('',size=(1,2))],                 
-                [sg.Text('Save the Final Key:', justification='c'),
-                sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(),
+                [sg.Text('Save the Final Data:', justification='c'),
+                sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(button_text='Browse Location'),
                 sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)],
                 [sg.Text('')]
 
@@ -218,9 +218,12 @@ def handle_key_inputs(event):
 def handle_copy_final_key_to_clipboard(event, values):
     if event == COPY_CLIPBOARD_EVENT:
         clipboard.copy(final_data['final_key'])
+        to_write = ""
+        for key in final_data:
+            to_write += f"{key}: {final_data[key]}\n"
         if values[OUTPUT_KEY_BOX_EVENT] != '':
             with open(values[OUTPUT_KEY_BOX_EVENT], 'w') as fh:
-                fh.write(final_data['final_key'])
+                fh.write(to_write)
 
 
 def handle_reset_button(event):

@@ -107,8 +107,8 @@ reconciliation_stats_frame_layout = [
 result_tab_layout = [ [sg.Text('')],
                 [sg.Frame('QKD Stats',QKD_stats_frame_layout, font= 'Arial', title_color='lightblue',element_justification='l'), sg.Frame('Reconciliation Stats',reconciliation_stats_frame_layout, font = 'Arial', title_color='lightblue',element_justification='r')],
                 [sg.Text('',size =(1,3))],
-                [sg.Text('Save the Final Key:', justification='c'),
-                sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(),
+                [sg.Text('Save the Final Data:', justification='c'),
+                sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(button_text='Browse Location'),
                 sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)]
                 ]
 
@@ -136,7 +136,7 @@ def final_data_to_display_on_gui(Client, Content):
     window.Element(QBER_OUTPUT_EVENT).Update(final_data_to_display['qber'])
     window.Element(FRACTION_OUTPUT_EVENT).Update(final_data_to_display['fraction_for_qber'])
     window.Element(ASK_PARITY_BLOCKS_AND_BITS_EVENT).Update(str(final_data_to_display['parity_msgs_bits'][0]) + ' & ' + str(final_data_to_display['parity_msgs_bits'][1]))
-    
+    final_data_to_display['final_key'] = alice._current_key.__str__()
     
     if 0 < final_data_to_display['qber'] < final_data_to_display['qber_threshold']:   
         window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update(f"{round(final_data_to_display['unrealistic_efficiency'],2)}")
@@ -202,8 +202,11 @@ def handle_copy_final_key_to_clipboard(event,values):
     if event == COPY_CLIPBOARD_EVENT:
         clipboard.copy(alice.get_key().__str__())
         if values[OUTPUT_KEY_BOX_EVENT] != '':
+            to_write = ""
+            for key in final_data_to_display:
+                to_write += f"{key}: {final_data_to_display[key]}\n"
             with open(values[OUTPUT_KEY_BOX_EVENT], 'w') as fh:
-                fh.write(alice.get_key().__str__())
+                fh.write(to_write)
 
 def handle_reset_button(event,values):
     if event == RESET_BUTTON_EVENT:
