@@ -112,9 +112,6 @@ result_tab_layout = [ [sg.Text('')],
                 sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)]
                 ]
 
-
-
-
 tabs = [
     [sg.Tab('Parameters', opening_tab_layout, element_justification='c'),
      sg.Tab('Results', result_tab_layout,element_justification='c')],
