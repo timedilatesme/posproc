@@ -254,7 +254,6 @@ def handle_post_processing_button(event):
         
         global final_data
         final_data = utils.load(parameters_data_path)
-        window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data['final_key_length'])
         #TODO:Radio Button for key type
         #if(RECONCILIATION_TIME_OUTPUT_EVENT):
         #    window.Element(RECONCILIATION_TIME_OUTPUT_EVENT).Update(final_data['time_reconciliation'])
@@ -263,6 +262,7 @@ def handle_post_processing_button(event):
         window.Element(QBER_OUTPUT_EVENT).Update(final_data['qber'])
         window.Element(FRACTION_OUTPUT_EVENT).Update(final_data['fraction_for_qber'])
         window.Element(ASK_PARITY_BLOCKS_AND_BITS_EVENT).Update(str(final_data['parity_msgs_bits'][0])+' & '+str(final_data['parity_msgs_bits'][1]))
+        window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data['final_key_length'])
         
         if  0 < final_data['qber'] < final_data['qber_threshold']:   
             window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update(f"{round(final_data['unrealistic_efficiency'],2)}")

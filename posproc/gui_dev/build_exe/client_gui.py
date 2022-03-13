@@ -134,8 +134,8 @@ result_tab_layout = [
                 [sg.Frame('QKD Stats',QKD_stats_frame_layout, font= 'Arial', title_color='lightblue',element_justification='r'), 
                  sg.Frame('Reconciliation Stats',reconciliation_stats_frame_layout, font = 'Arial', title_color='lightblue',element_justification='r')],
                 [sg.Text('',size=(1,2))],                 
-                [sg.Text('Save the Final Key:', justification='c'),
-                sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(),
+                [sg.Text('Save the Final Data:', justification='c'),
+                sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(button_text='Browse Location'),
                 sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)],
                 [sg.Text('')]
 
@@ -218,9 +218,12 @@ def handle_key_inputs(event):
 def handle_copy_final_key_to_clipboard(event, values):
     if event == COPY_CLIPBOARD_EVENT:
         clipboard.copy(final_data['final_key'])
+        to_write = ""
+        for key in final_data:
+            to_write += f"{key}: {final_data[key]}\n"
         if values[OUTPUT_KEY_BOX_EVENT] != '':
             with open(values[OUTPUT_KEY_BOX_EVENT], 'w') as fh:
-                fh.write(final_data['final_key'])
+                fh.write(to_write)
 
 
 def handle_reset_button(event):
@@ -246,9 +249,11 @@ def handle_post_processing_button(event):
         
         client_backend.wait()
         
+        # proc = subprocess.run(['python', 'client_backend.py', parameters_data_path])
+        # utils.gui_console_print(proc.stdout, window)
+        
         global final_data
         final_data = utils.load(parameters_data_path)
-        window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data['final_key_length'])
         #TODO:Radio Button for key type
         #if(RECONCILIATION_TIME_OUTPUT_EVENT):
         #    window.Element(RECONCILIATION_TIME_OUTPUT_EVENT).Update(final_data['time_reconciliation'])
@@ -256,11 +261,19 @@ def handle_post_processing_button(event):
         #    window.Element(QKD_TIME_OUPUT_EVENT).Update(final_data['time_qkd'])
         window.Element(QBER_OUTPUT_EVENT).Update(final_data['qber'])
         window.Element(FRACTION_OUTPUT_EVENT).Update(final_data['fraction_for_qber'])
-        window.Element(PA_ALGORITHM_EVENT).Update(final_data['algorithm_pa'])
-        window.Element(RECONCILIATION_ALGORITHM_EVENT).Update(final_data['recon_algo'])
         window.Element(ASK_PARITY_BLOCKS_AND_BITS_EVENT).Update(str(final_data['parity_msgs_bits'][0])+' & '+str(final_data['parity_msgs_bits'][1]))
-        window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data['unrealistic_efficiency']))
-        window.Element(REALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data['realistic_efficiency']))
+        window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data['final_key_length'])
+        
+        if  0 < final_data['qber'] < final_data['qber_threshold']:   
+            window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update(f"{round(final_data['unrealistic_efficiency'],2)}")
+            window.Element(REALISTIC_EFFICIENCY_EVENT).Update(f"{round(final_data['realistic_efficiency'],2)}")
+            window.Element(PA_ALGORITHM_EVENT).Update(final_data['algorithm_pa'])
+            window.Element(RECONCILIATION_ALGORITHM_EVENT).Update(final_data['recon_algo'])
+        else:
+            window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update('N/A')
+            window.Element(REALISTIC_EFFICIENCY_EVENT).Update('N/A')
+            window.Element(RECONCILIATION_ALGORITHM_EVENT).Update('N/A')
+            window.Element(PA_ALGORITHM_EVENT).Update('N/A')
 
         
 

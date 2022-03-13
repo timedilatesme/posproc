@@ -43,7 +43,7 @@ if 0 < initial_qber <= parameters["qber_threshold"]:
     
 else:
     reconTime = 0 
-    print('Reconciliation not needed')
+    print('QBER > threshold, no reconciliation!')
     
     paTime = 0
     pa_algoname = None

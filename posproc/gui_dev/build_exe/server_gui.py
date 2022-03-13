@@ -23,6 +23,8 @@ INPUT_KEY_TYPE_RANDOM_EVENT = '-input_key_type_2-'
 INPUT_KEY_TYPE_FILE_EVENT = '-input_key_type_3-'
 INPUT_KEY_TEXT_EVENT = '-input_key_text-'
 INPUT_KEY_BOX_EVENT = '-input_key_box-'
+LOCAL_SERVER_TYPE_EVENT = '-local_server_type-'
+PUBLIC_SERVER_TYPE_EVENT = '-public_server_type-'
 INPUT_FILE_EVENT = '-input_file-'
 INPUT_IP_EVENT = '-input_ip-'
 INPUT_PORT_EVENT = '-input_port-'
@@ -54,6 +56,7 @@ error = False
 
 # RADIO ID
 INPUT_KEY_RADIO_ID = '-input_key_radio_id-'
+SERVER_TYPE_RADIO_ID = '-server_type_radio_id-'
 TIME_OUTPUT_EVENT = '-time_output_-'
 TEXT_TIME_OUTPUT_EVENT = '-text_time_output-'
 
@@ -68,6 +71,10 @@ initialization_frame_layout = [ [sg.T('Provide the sifted key in binary format')
                                 [sg.Text('Input the Key:',  key=INPUT_KEY_TEXT_EVENT,justification='c'),
                                 sg.Input(key=INPUT_KEY_BOX_EVENT, justification='c', disabled=True),
                                 sg.FileBrowse(disabled=True, key=INPUT_FILE_EVENT)],
+                                [sg.Text('Server Type :',justification='r'),
+                                sg.Radio(' Local', SERVER_TYPE_RADIO_ID, key=LOCAL_SERVER_TYPE_EVENT,enable_events=True),
+                                #  sg.Radio(' Random Key', INPUT_KEY_RADIO_ID, key=INPUT_KEY_TYPE_RANDOM_EVENT,enable_events=True),
+                                sg.Radio(' Public', SERVER_TYPE_RADIO_ID, key=PUBLIC_SERVER_TYPE_EVENT, enable_events=True)],                                
                                 [sg.Text("Server Address:",justification='l'),sg.Text('IP',justification='c'), sg.Input(constants.LOCAL_IP,key=INPUT_IP_EVENT,size = (15,1),justification='c'),
                                 sg.Text('Port',justification='c'), sg.Input(constants.LOCAL_PORT,key=INPUT_PORT_EVENT,size = (8,1),justification='c')]
                                 ]
@@ -100,13 +107,10 @@ reconciliation_stats_frame_layout = [
 result_tab_layout = [ [sg.Text('')],
                 [sg.Frame('QKD Stats',QKD_stats_frame_layout, font= 'Arial', title_color='lightblue',element_justification='l'), sg.Frame('Reconciliation Stats',reconciliation_stats_frame_layout, font = 'Arial', title_color='lightblue',element_justification='r')],
                 [sg.Text('',size =(1,3))],
-                [sg.Text('Save the Final Key:', justification='c'),
-                sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(),
+                [sg.Text('Save the Final Data:', justification='c'),
+                sg.InputText(key=OUTPUT_KEY_BOX_EVENT, justification='c'),sg.FileSaveAs(button_text='Browse Location'),
                 sg.Button('Save / Copy to Clipboard', key = COPY_CLIPBOARD_EVENT)]
                 ]
-
-
-
 
 tabs = [
     [sg.Tab('Parameters', opening_tab_layout, element_justification='c'),
@@ -131,11 +135,19 @@ def final_data_to_display_on_gui(Client, Content):
     window.Element(FINAL_KEY_LENGTH_OUTPUT).Update(final_data_to_display['final_key_length'])
     window.Element(QBER_OUTPUT_EVENT).Update(final_data_to_display['qber'])
     window.Element(FRACTION_OUTPUT_EVENT).Update(final_data_to_display['fraction_for_qber'])
-    window.Element(PA_ALGORITHM_EVENT).Update(final_data_to_display['algorithm_pa'])
-    window.Element(RECONCILIATION_ALGORITHM_EVENT).Update(final_data_to_display['recon_algo'])
     window.Element(ASK_PARITY_BLOCKS_AND_BITS_EVENT).Update(str(final_data_to_display['parity_msgs_bits'][0]) + ' & ' + str(final_data_to_display['parity_msgs_bits'][1]))
-    window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data_to_display['unrealistic_efficiency']))
-    window.Element(REALISTIC_EFFICIENCY_EVENT).Update("{:.2f}".format(final_data_to_display['realistic_efficiency']))
+    final_data_to_display['final_key'] = alice._current_key.__str__()
+    
+    if 0 < final_data_to_display['qber'] < final_data_to_display['qber_threshold']:   
+        window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update(f"{round(final_data_to_display['unrealistic_efficiency'],2)}")
+        window.Element(REALISTIC_EFFICIENCY_EVENT).Update(f"{round(final_data_to_display['realistic_efficiency'],2)}")
+        window.Element(RECONCILIATION_ALGORITHM_EVENT).Update(final_data_to_display['recon_algo'])
+        window.Element(PA_ALGORITHM_EVENT).Update(final_data_to_display['algorithm_pa'])
+    else:
+        window.Element(UNREALISTIC_EFFICIENCY_EVENT).Update('N/A')
+        window.Element(REALISTIC_EFFICIENCY_EVENT).Update('N/A')
+        window.Element(RECONCILIATION_ALGORITHM_EVENT).Update('N/A')
+        window.Element(PA_ALGORITHM_EVENT).Update('N/A')
     # print(final_data_to_display)
 
 # EVENT HANDLING METHODS
@@ -190,8 +202,11 @@ def handle_copy_final_key_to_clipboard(event,values):
     if event == COPY_CLIPBOARD_EVENT:
         clipboard.copy(alice.get_key().__str__())
         if values[OUTPUT_KEY_BOX_EVENT] != '':
+            to_write = ""
+            for key in final_data_to_display:
+                to_write += f"{key}: {final_data_to_display[key]}\n"
             with open(values[OUTPUT_KEY_BOX_EVENT], 'w') as fh:
-                fh.write(alice.get_key().__str__())
+                fh.write(to_write)
 
 def handle_reset_button(event,values):
     if event == RESET_BUTTON_EVENT:
@@ -202,6 +217,11 @@ def handle_reset_button(event,values):
 
 def handle_start_listening_button(event, values):
     if event == START_LISTENING_BUTTON_EVENT:
+        if window.Element(PUBLIC_SERVER_TYPE_EVENT).Get():
+            public_address = utils.start_ngrok_tunnel(alice.address[1])
+            alice.console_output(f'Public Server Started! @ {public_address}')
+            window.Element(INPUT_IP_EVENT).Update(public_address[0])
+            window.Element(INPUT_PORT_EVENT).Update(public_address[1])
         alice.start_listening()
 
 

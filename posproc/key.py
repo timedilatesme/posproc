@@ -171,7 +171,7 @@ class Key:
         """
         self._bits[index] = 1 - self._bits[index]
 
-    def copy(self, error_rate, error_method):
+    def copy(self, error_rate, error_method = ERROR_METHOD_BERNOULLI):
         """
         Copy a key and optionally apply noise.
 

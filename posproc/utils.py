@@ -52,7 +52,7 @@ def load(file_path: str, format=constants.FORMAT) -> Any:
 
 CONSOLE_EVENT = '-console-'
 def gui_console_print(text: str, window: sg.Window):
-    current_text_console = window.Element(CONSOLE_EVENT).Get()
+    current_text_console = str(window.Element(CONSOLE_EVENT).Get())
     window.Element(CONSOLE_EVENT).Update(
         current_text_console +'\n >>> ' +text)
 
