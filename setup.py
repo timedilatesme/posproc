@@ -23,6 +23,9 @@ setup(
         'bitstring',
         'jsonpickle',
         'starkbank-ecdsa',
+        'PySimpleGUI',
+        'termcolor',
+        'clipboard'
     ],
     # dependency_links = [
     #     'https://github.com/starkbank/ecdsa-python.git'
